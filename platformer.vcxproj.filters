@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src/animation.cpp" />
+    <ClCompile Include="src/config.cpp" />
+    <ClCompile Include="src/camera.cpp" />
+    <ClCompile Include="src/entities.cpp" />
+    <ClCompile Include="src/gamelogic.cpp" />
+    <ClCompile Include="src/graphics.cpp" />
+    <ClCompile Include="src/input.cpp" />
+    <ClCompile Include="src/interface.cpp" />
+    <ClCompile Include="src/level.cpp" />
+    <ClCompile Include="src/main.cpp" />
+    <ClCompile Include="src/menu.cpp" />
+    <ClCompile Include="src/physics.cpp" />
+    <ClCompile Include="src/sound.cpp" />
+    <ClCompile Include="src/sprite.cpp" />
+    <ClCompile Include="src/state.cpp" />
+    <ClCompile Include="src/tiles.cpp" />
+    <ClCompile Include="src/transition.cpp" />
+    <ClCompile Include="src/utils.cpp" />
+    <ClCompile Include="src\ai.cpp" />
+    <ClCompile Include="src\tinyxml\tinystr.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tinyxml\tinyxml.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tinyxml\tinyxmlerror.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tinyxml\tinyxmlparser.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\levelspecific.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src/animation.h" />
+    <ClInclude Include="src/config.h" />
+    <ClInclude Include="src/camera.h" />
+    <ClInclude Include="src/entities.h" />
+    <ClInclude Include="src/gamelogic.h" />
+    <ClInclude Include="src/globals.h" />
+    <ClInclude Include="src/graphics.h" />
+    <ClInclude Include="src/input.h" />
+    <ClInclude Include="src/interface.h" />
+    <ClInclude Include="src/level.h" />
+    <ClInclude Include="src/main.h" />
+    <ClInclude Include="src/menu.h" />
+    <ClInclude Include="src/physics.h" />
+    <ClInclude Include="src/resource.h" />
+    <ClInclude Include="src/sound.h" />
+    <ClInclude Include="src/sprite.h" />
+    <ClInclude Include="src/state.h" />
+    <ClInclude Include="src/tiles.h" />
+    <ClInclude Include="src/transition.h" />
+    <ClInclude Include="src/utils.h" />
+    <ClInclude Include="src\ai.h" />
+    <ClInclude Include="src\include\tinystr.h">
+      <Filter>tinyxml</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\tinyxml.h">
+      <Filter>tinyxml</Filter>
+    </ClInclude>
+    <ClInclude Include="src\levelspecific.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src/platformer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets/misc/icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="tinyxml">
+      <UniqueIdentifier>{a34949bf-eb18-43ba-8579-5781fa3f8f4f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

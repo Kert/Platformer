@@ -12,6 +12,8 @@ This is my precious sandbox
 Project is built with Visual Studio 2015
 It uses external libraries: SDL2, SDL2_image, SDL2_mixer, SDL2_ttf, vld, tinyxml, INIReader, dirent.h
 
+Game levels are made with [Tiled Map Editor](https://www.mapeditor.org/)
+
 # Contributing
 
 If anyone would like to work on this with me or even just give ideas and feedback, I'll be happy to have you onboard or hear you out :)

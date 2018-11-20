@@ -14,7 +14,7 @@ void OnKeyHold(SDL_Keycode key, Uint8 jbutton);
 void OnKeyUnpress(SDL_Keycode key, Uint8 jbutton);
 void OnHardcodedKeyPress(SDL_Keycode key);
 
-void ProcessInput();
+void InputUpdate();
 void InitInput();
 void InputCleanup();
 

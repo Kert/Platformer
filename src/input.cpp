@@ -14,7 +14,7 @@ extern Player *player;
 extern std::vector<Machinery*> machinery;
 extern int GameState;
 extern int SelectedItem;
-extern bool loadDebugStuff;
+extern bool IsDebugMode;
 extern int FadingState;
 extern int TransitionID;
 
@@ -25,7 +25,7 @@ std::map<Uint8, int> jbuttons;
 SDL_Joystick* gamepad = NULL;
 
 // ends gameloop
-extern bool ENDGAME;
+extern bool GameEndFlag;
 
 extern Level *level;
 
@@ -164,7 +164,7 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 	if(GameState == STATE_GAME)
 	{
 		// debug!!
-		if(loadDebugStuff || mkeys[SDLK_LSHIFT] || mkeys[SDLK_RSHIFT])
+		if(IsDebugMode || mkeys[SDLK_LSHIFT] || mkeys[SDLK_RSHIFT])
 		{
 			if(key == SDLK_KP_4 || key == SDLK_j)
 			{
@@ -287,7 +287,7 @@ void OnKeyHold(SDL_Keycode key, Uint8 jbutton)
 	OnBindHold(bind);
 }
 
-void ProcessInput()
+void InputUpdate()
 {
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
@@ -318,7 +318,7 @@ void ProcessInput()
 				break;
 		}
 		if(e.window.event == SDL_WINDOWEVENT_CLOSE)
-			ENDGAME = true;
+			GameEndFlag = true;
 	}
 	for(auto key : mkeys)
 	{

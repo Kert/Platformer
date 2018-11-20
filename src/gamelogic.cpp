@@ -17,6 +17,7 @@ int min, sec;
 int timeLimit = 300;
 Timer gameTimer{ 1000 };
 
+Player *player;
 int playerLives;
 int currentLives;
 extern int SelectedItem;
@@ -47,10 +48,34 @@ void StartGame()
 	PlayMusic("1");
 }
 
-void GameLogic()
+extern std::vector<Bullet*> bullets;
+extern std::vector<Effect*> effects;
+extern std::vector<Creature*> creatures;
+extern std::vector<Pickup*> pickups;
+extern std::vector<Machinery*> machinery;
+extern std::vector<Lightning*> lightnings;
+
+extern Camera* camera;
+
+template<typename T>
+void CleanFromNullPointers(std::vector<T> *collection)
+{
+	for(auto j = collection->begin(); j != collection->end();)
+	{
+		if(*j == nullptr)
+			j = collection->erase(j);
+		else
+			++j;
+	}
+}
+
+void LogicUpdate(Uint32 dt)
 {
 	if(player->status == STATUS_DYING)
+	{
 		GameOver(GAME_OVER_REASON_DIED);
+		return;
+	}
 
 	gameTimer.Run();
 	if(gameTimer.completed)
@@ -60,6 +85,83 @@ void GameLogic()
 	}
 
 	LevelLogic();
+
+	player->HandleStateIdle();
+	ApplyPhysics(*player, dt);
+	//// Updating camera
+	//if(player->hasState(STATE_ONLADDER))
+	//{
+	//	if(player->GetVelocity().y > 0)
+	//		camera->SetOffsetY(30);
+	//	else if(player->GetVelocity().y < 0)
+	//		camera->SetOffsetY(-10);
+	//	else
+	//		camera->SetOffsetY(10);
+	//}
+	//if(player->hasState(STATE_LOOKINGUP))
+	//	camera->SetOffsetY(-20);
+	//else if(!player->hasState(STATE_ONLADDER))
+	//	camera->SetOffsetY(15);
+	//if(player->hasState(STATE_DUCKING))
+	//	camera->SetOffsetY(35);
+	camera->Update();
+
+	for(auto &m : machinery)
+	{
+		ApplyPhysics(*m, dt);
+	}
+
+	for(auto &b : bullets)
+	{
+		ApplyPhysics(*b, dt);
+	}
+	CleanFromNullPointers(&bullets);
+	CleanFromNullPointers(&creatures); // they can be dead already
+
+	for(auto &l : lightnings)
+	{
+		if(!ApplyPhysics(*l, dt))
+			break; // workaround to stop physicsing once a lightning is deleted
+	}
+	CleanFromNullPointers(&creatures); // they can be dead already
+
+	for(auto &i : creatures)
+	{
+		if(player->hitbox->HasCollision(i->hitbox))
+		{
+			OnHitboxCollision(*player, *i, dt);
+			PrintLog(LOG_SUPERDEBUG, "what %d", SDL_GetTicks());
+		}
+		if(i->AI)
+			i->AI->RunAI();
+		ApplyPhysics(*i, dt);
+		UpdateStatus(*i, 8);
+		if(i->REMOVE_ME)
+			delete i;
+	}
+	CleanFromNullPointers(&creatures);
+
+	for(auto &j : pickups)
+	{
+		if(player->hitbox->HasCollision(j->hitbox))
+		{
+			OnHitboxCollision(*player, *j, dt);
+			PrintLog(LOG_SUPERDEBUG, "what %d", SDL_GetTicks());
+		}
+		if(j->status == STATUS_DYING)
+		{
+			if(!UpdateStatus(*j, dt))
+				break; // j has been deleted, let's get out of here
+		}
+	}
+	for(auto &e : effects)
+	{
+		if(e->status == STATUS_DYING)
+		{
+			if(!UpdateStatus(*e, dt))
+				break; // j has been deleted, let's get out of here
+		}
+	}
 }
 
 void ResetLogic()
@@ -120,7 +222,7 @@ void RemoveFading()
 	FadingState = FADING_STATE_NONE;
 }
 
-void DoFading()
+void FadingUpdate()
 {
 	if(FadingState == FADING_STATE_IN)
 	{

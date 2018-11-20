@@ -8,8 +8,6 @@
 
 extern std::vector<std::vector<int>> tiles;
 
-extern RandomGenerator *rg;
-
 extern SDL_Surface *surface_level_textures;
 extern SDL_Surface *surface_fg;
 extern SDL_Texture *level_fgLayer_tex;

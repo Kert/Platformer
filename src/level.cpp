@@ -10,7 +10,6 @@
 #include "tinyxml.h"
 #include "utils.h"
 
-extern RandomGenerator *rg;
 extern Player *player;
 extern Camera* camera;
 
@@ -51,9 +50,6 @@ Level::Level()
 void Level::Init()
 {
 	loaded = false;
-
-	rg->Reseed();
-	rg->SaveSeed();
 
 	LoadLevelFromFile("assets/levels/volcano_surroundings.tmx");
 	LoadNonRandomElements();
@@ -404,4 +400,10 @@ void Level::LoadNonRandomElements()
 void Level::MakeDoorWithButtons(int x, int y)
 {
 	new Door(x, y, true);
+}
+
+void LevelCleanup()
+{
+	if(level != nullptr)
+		delete level;
 }

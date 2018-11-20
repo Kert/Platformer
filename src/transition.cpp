@@ -32,7 +32,7 @@ void ProgressTransition()
 			ChangeGamestate(STATE_TRANSITION);
 			// force the loading screen to draw for one frame before we start loading
 			UpdateTransition();
-			UpdateWindow();
+			WindowUpdate();
 			delete level;
 			level = new Level();
 			break;
@@ -50,7 +50,7 @@ void ProgressTransition()
 				if(offset == 1) currentLives = playerLives;
 				// force the loading screen to draw for one frame before we start loading
 				UpdateTransition();
-				UpdateWindow();
+				WindowUpdate();
 				level->Reload();
 			}
 			else if(SelectedItem + offset == 2)

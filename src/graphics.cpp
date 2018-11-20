@@ -10,7 +10,7 @@
 #include "transition.h"
 #include "utils.h"
 
-extern bool loadDebugStuff;
+extern bool IsDebugMode;
 bool RENDER_ONLY_OBSERVABLE = true;
 
 Camera* camera;
@@ -219,7 +219,7 @@ int GraphicsSetup()
 
 	lightningSegment = IMG_Load("assets/textures/millhilightning.png");
 	
-	if(loadDebugStuff)
+	if(IsDebugMode)
 		CreateMapWindow();
 	graphicsLoaded = true;
 	return 1;
@@ -424,9 +424,9 @@ void GraphicsUpdate()
 	int healthFrame = ((100 - player->health) / 25);
 	ChangeInterfaceFrame(healthFrame, INTERFACE_LIFE);
 
-	if(loadDebugStuff) ShowDebugInfo(*player);
+	if(IsDebugMode) ShowDebugInfo(*player);
 
-	if(loadDebugStuff)
+	if(IsDebugMode)
 	{
 		// background color
 		SDL_SetRenderDrawColor(maprenderer, 210, 226, 254, 255);
@@ -560,7 +560,7 @@ void Render(Entity &e)
 		flip = SDL_FLIP_HORIZONTAL;
 	SDL_RenderCopyEx(renderer, e.sprite->GetSpriteSheet(), &e.sprite->GetTextureCoords(), &realpos, NULL, NULL, flip);
 
-	if(loadDebugStuff)
+	if(IsDebugMode)
 		DrawHitbox(e);
 }
 
@@ -872,7 +872,7 @@ void UpdateTransition()
 	}
 }
 
-void UpdateMenu()
+void MenuUpdate()
 {
 	currentLives = playerLives;
 }
@@ -1015,20 +1015,20 @@ void DrawFading()
 	SDL_DestroyTexture(tmp);
 }
 
-void FlushWindow()
+void WindowFlush()
 {
 	// clear the screen
 	SDL_RenderClear(renderer);
-	if(loadDebugStuff)
+	if(IsDebugMode)
 	{
 		SDL_RenderClear(maprenderer);
 	}
 }
 
-void UpdateWindow()
+void WindowUpdate()
 {
 	SDL_RenderPresent(renderer);
-	if(loadDebugStuff)
+	if(IsDebugMode)
 	{
 		SDL_RenderPresent(maprenderer);
 	}

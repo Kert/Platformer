@@ -12,7 +12,7 @@ std::vector<Menu*> menus;
 extern Level *level;
 extern int playerLives;
 extern int fullscreenMode;
-extern bool ENDGAME;
+extern bool GameEndFlag;
 extern TTF_Font *minor_font;
 extern TTF_Font *menu_font;
 extern TTF_Font *game_font;
@@ -45,7 +45,7 @@ void DoMenuAction(int code, int bind)
 						ChangeGamestate(STATE_TRANSITION);
 						// force the loading screen to draw for one frame before we start loading
 						UpdateTransition();
-						UpdateWindow();
+						WindowUpdate();
 						level = new Level();
 					}
 					if(SelectedItem == 1)
@@ -53,7 +53,7 @@ void DoMenuAction(int code, int bind)
 						SetCurrentMenu(MENU_OPTIONS);
 					}
 					if(SelectedItem == 2)
-						ENDGAME = true;
+						GameEndFlag = true;
 				}
 				else if(CurrentMenu == MENU_OPTIONS)
 				{

@@ -37,4 +37,6 @@ class Level
 		void MakeDoorWithButtons(int x, int y);
 };
 
+void LevelCleanup();
+
 #endif

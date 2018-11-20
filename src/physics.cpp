@@ -25,22 +25,22 @@ extern Player *player;
 std::pair<double, double> GetAngleSinCos(DynamicEntity &shooter)
 {
 	double angle;
-	if (shooter.direction) angle = 0;
+	if(shooter.direction) angle = 0;
 	else angle = 180;
-	if (shooter.hasState(STATE_LOOKINGUP))
+	if(shooter.hasState(STATE_LOOKINGUP))
 	{
-		if (!angle)
+		if(!angle)
 			angle -= 45;
 		else angle += 45;
 	}
 	angle = angle * M_PI / 180.0;
-	return std::pair<double, double> (std::sin(angle), std::abs(std::cos(angle)));
+	return std::pair<double, double>(std::sin(angle), std::abs(std::cos(angle)));
 }
 
 void ProcessShot(WEAPONS weapon, Creature &shooter)
 {
 	const int offset_weapon_y = 1;
-	
+
 	if(weapon != WEAPONS::WEAPON_LIGHTNING)
 	{
 		// LEAK: bullets created here aren't properly disposed??
@@ -51,7 +51,7 @@ void ProcessShot(WEAPONS weapon, Creature &shooter)
 			rect.y += 6;
 			rect.x -= 6;
 		}
-    if(shooter.hasState(STATE_HANGING))
+		if(shooter.hasState(STATE_HANGING))
 		{
 			rect.y += 2;
 		}
@@ -99,7 +99,7 @@ void DetectAndResolveEntityCollisions(Creature &p)
 	{
 		if(HasCollisionWithEntity(p, *machy, result))
 		{
-			if (p.IsAI()) 
+			if(p.IsAI())
 			{
 				p.SwitchDirection();
 				p.Walk();
@@ -146,12 +146,12 @@ void CheckSpecialBehaviour(Creature &p) {
 	p.nearladder = false;
 
 	bool flag = false;
-	for (int i = minx; i <= maxx; i++) {
-		if (flag) break;
-		for (int j = head; j <= feet; j++) {
-			if (GetTileTypeAtTiledPos(i, j) == PHYSICS_LADDER) {
+	for(int i = minx; i <= maxx; i++) {
+		if(flag) break;
+		for(int j = head; j <= feet; j++) {
+			if(GetTileTypeAtTiledPos(i, j) == PHYSICS_LADDER) {
 				p.nearladder = true;
-				if (p.hasState(STATE_ONLADDER))
+				if(p.hasState(STATE_ONLADDER))
 					x = i * TILESIZE;
 			}
 		}
@@ -159,7 +159,7 @@ void CheckSpecialBehaviour(Creature &p) {
 
 	p.SetPos(x, y);
 
-	if (!p.nearladder)
+	if(!p.nearladder)
 	{
 		minx = ConvertToTileCoord(x + 12, false);
 		maxx = ConvertToTileCoord(x + 24, true);
@@ -184,11 +184,11 @@ void CheckSpecialBehaviour(Creature &p) {
 	//if (minx == maxx)
 	//	maxx++;
 	// checking for hanging
-	
 
-	for (int z = minx; z <= maxx; z++)
+
+	for(int z = minx; z <= maxx; z++)
 	{
-		if (GetTileTypeAtTiledPos(z, head) == PHYSICS_HOOK)
+		if(GetTileTypeAtTiledPos(z, head) == PHYSICS_HOOK)
 		{
 			SDL_Rect hook;
 			hook.x = z * TILESIZE + 6;
@@ -202,7 +202,7 @@ void CheckSpecialBehaviour(Creature &p) {
 			if(SDL_HasIntersection(&hook, &hand))
 			{
 				p.nearhook = true;
-			
+
 				if(!p.hasState(STATE_HANGING) && p.GetVelocity().y > 0 && !p.lefthook)
 				{
 					((Player &)p).SetState(1);
@@ -212,7 +212,7 @@ void CheckSpecialBehaviour(Creature &p) {
 			}
 		}
 	}
-	if (p.lefthook && !p.nearhook)
+	if(p.lefthook && !p.nearhook)
 		p.lefthook = false;
 
 	p.SetPos(x, y);
@@ -220,20 +220,20 @@ void CheckSpecialBehaviour(Creature &p) {
 
 void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 {
-	if (p.REMOVE_ME)
+	if(p.REMOVE_ME)
 		return;
 
 	ApplyForces(p, deltaTicks);
 	if(IsInDeathZone(p) && !p.ignoreGravity)
 	{
-		if (&p == player)
+		if(&p == player)
 			GameOver(GAME_OVER_REASON_DIED);
 		else
 			p.REMOVE_ME = true;
 		return;
 	}
 
-	if(!p.ignoreWorld) 
+	if(!p.ignoreWorld)
 	{
 		if(!p.IsAI())
 			DetectAndResolveEntityCollisions(p);
@@ -243,7 +243,7 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 	else
 		p.SetPos(p.xNew, p.yNew);
 
-	if (GameState != STATE_GAME) return; // we hit the exit block, don't process further
+	if(GameState != STATE_GAME) return; // we hit the exit block, don't process further
 
 	//DetectAndResolveEntityCollisions(p);
 	UpdateStatus(p, deltaTicks);
@@ -386,8 +386,8 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 
 	Velocity vel; // Resulting velocity
 	vel = p.GetVelocity();
-		
-	if (p.hasState(STATE_ONGROUND) && !p.hasState(STATE_ONLADDER) && p.status != STATUS_STUN)
+
+	if(p.hasState(STATE_ONGROUND) && !p.hasState(STATE_ONLADDER) && p.status != STATUS_STUN)
 		vel.y = 0;
 
 	if(!p.ignoreGravity)
@@ -398,23 +398,23 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 			p.accel.y = 0;
 	}
 
-	if (p.hasState(STATE_ONLADDER) || p.hasState(STATE_ONMACHINERY))
+	if(p.hasState(STATE_ONLADDER) || p.hasState(STATE_ONMACHINERY))
 		p.accel.y = 0;
 
 	if(p.jumptime > 0)
 		vel.y = -155;
-	
+
 	p.SetVelocity(vel);
 
 	vel = p.GetVelocity();
 
 	vel.y += p.accel.y;
-	if (!p.hasState(STATE_ONGROUND) && !p.ignoreWorld)
+	if(!p.hasState(STATE_ONGROUND) && !p.ignoreWorld)
 		p.accel.x *= 99999;
 	vel.x += p.accel.x * deltaTicks;
-	
+
 	double friction = 4;
-	if (!p.hasState(STATE_ONGROUND))
+	if(!p.hasState(STATE_ONGROUND))
 		friction = 10;
 
 	if(IsOnIce(p))
@@ -424,7 +424,7 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 		else
 			friction = 1.5;
 	}
-	
+
 	if(IsInWater(p))
 		friction *= 1.5;
 
@@ -468,7 +468,7 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	vel = p.GetVelocity();
 
 	// Applying external forces
-	if (p.hasState(STATE_ONMACHINERY))
+	if(p.hasState(STATE_ONMACHINERY))
 	{
 		vel.x += p.externSpeed.x;
 		//vel.y += p.externSpeed.y;
@@ -492,19 +492,19 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 	vel = d.GetVelocity();
 	d.GetPos(x, y);
 	// Doors
-	if (!d.automatic)
+	if(!d.automatic)
 	{
-		if (!d.attachToScreen)
+		if(!d.attachToScreen)
 		{
 			y += vel.y * (deltaTicks * PHYSICS_SPEED);
 
 			// BROKE DOORS
-			if (y < d.default_pos.y - d.default_pos.h)
+			if(y < d.default_pos.y - d.default_pos.h)
 			{
 				y = d.default_pos.y - d.default_pos.h;
 				vel.y = 0;
 			}
-			else if (y > d.default_pos.y)
+			else if(y > d.default_pos.y)
 			{
 				y = d.default_pos.y;
 				vel.y = 0;
@@ -524,68 +524,68 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 		if(d.default_pos.y != d.another_pos.y)
 		{
 			// Using velocity to determine new pos
-			y += vel.y * ( deltaTicks * PHYSICS_SPEED );
+			y += vel.y * (deltaTicks * PHYSICS_SPEED);
 			// Limiting speed
 			if(abs(vel.y) > d.speed)
 				vel.y = d.speed * (vel.y < 0 ? -1 : 1);
 			// Do stuff when approaching top end point
 			if(abs(y - (d.default_pos.y)) < TILESIZE)
-				vel.y += d.deaccel.y * ( deltaTicks * PHYSICS_SPEED );
+				vel.y += d.deaccel.y * (deltaTicks * PHYSICS_SPEED);
 			// Platform reached top end point
 			if(y < d.default_pos.y)
 			{
 				// Let it go the other direction
 				vel.y = d.minspeed;
-				y = d.default_pos.y+1;
+				y = d.default_pos.y + 1;
 			}
 			else
 			{
 				// Do stuff when approaching bottom end point
 				if(abs(y - d.another_pos.y) < TILESIZE)
-					vel.y -= d.deaccel.y * ( deltaTicks * PHYSICS_SPEED );
+					vel.y -= d.deaccel.y * (deltaTicks * PHYSICS_SPEED);
 				// Platform reached bottom end point
 				if(y > d.another_pos.y)
 				{
 					// Let it go the other direction
 					vel.y = -d.minspeed;
-					y = d.another_pos.y-1;
+					y = d.another_pos.y - 1;
 				}
 			}
 			// Don't stop me now
-			if (abs(vel.y) < d.minspeed)
+			if(abs(vel.y) < d.minspeed)
 				vel.y = d.minspeed * (vel.y > 0 ? 1 : -1);
 		}
 		else // Left-right platform
 		{
 			// Using velocity to determine new pos
-			x += vel.x * ( deltaTicks * PHYSICS_SPEED );
+			x += vel.x * (deltaTicks * PHYSICS_SPEED);
 			// Limiting speed
-			if (abs(vel.x) > d.speed)
+			if(abs(vel.x) > d.speed)
 				vel.x = d.speed * (vel.x < 0 ? -1 : 1);
 			// Do stuff when approaching left end point
 			if(abs(x - (d.default_pos.x)) < TILESIZE)
-				vel.x += d.deaccel.x * ( deltaTicks * PHYSICS_SPEED );
+				vel.x += d.deaccel.x * (deltaTicks * PHYSICS_SPEED);
 			// Platform reached left end point
 			if(x < d.default_pos.x)
 			{
 				// Let it go the other direction
 				vel.x = d.minspeed;
-				x = d.default_pos.x+1;
+				x = d.default_pos.x + 1;
 			}
 			else
 			{
 				// Do stuff when approaching bottom end point
 				if(abs(x - d.another_pos.x) < TILESIZE)
-					vel.x -= d.deaccel.x * ( deltaTicks * PHYSICS_SPEED );
+					vel.x -= d.deaccel.x * (deltaTicks * PHYSICS_SPEED);
 				// Platform reached right end point
 				if(x > d.another_pos.x)
 				{
 					vel.x = -d.minspeed;
-					x = d.another_pos.x-1;
+					x = d.another_pos.x - 1;
 				}
 			}
 			// Don't stop me now
-			if (abs(vel.x) < d.minspeed)
+			if(abs(vel.x) < d.minspeed)
 				vel.x = d.minspeed * (vel.x > 0 ? 1 : -1);
 		}
 	}
@@ -613,10 +613,10 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 	else
 		b.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
 
-	if (b.statusTimer <= 0)
+	if(b.statusTimer <= 0)
 	{
 		b.statusTimer = 0;
-		if (b.origin == WEAPON_GRENADE || b.origin == WEAPON_LIGHTNING)
+		if(b.origin == WEAPON_GRENADE || b.origin == WEAPON_LIGHTNING)
 		{
 			complete = true;
 		}
@@ -638,9 +638,9 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 			complete = true;
 		}
 	}
-	if (wasHit.second != nullptr && wasHit.second->isSolid)
+	if(wasHit.second != nullptr && wasHit.second->isSolid)
 	{
-		if (wasHit.second->destructable && b.origin == WEAPON_ROCKETL) wasHit.second->~Machinery();
+		if(wasHit.second->destructable && b.origin == WEAPON_ROCKETL) wasHit.second->~Machinery();
 		complete = true;
 	}
 
@@ -648,25 +648,25 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 	int tileY = ConvertToTileCoord(y - b.hitbox->GetRect().h / 2, 0);
 
 	PHYSICS_TYPES type = GetTileTypeAtTiledPos(tileX, tileY);
-	if (tileX >= level->width_in_tiles || tileX < 0 || tileY >= level->height_in_tiles || tileY < 0)
+	if(tileX >= level->width_in_tiles || tileX < 0 || tileY >= level->height_in_tiles || tileY < 0)
 		complete = true;
-	else if (IsSolid(type))
+	else if(IsSolid(type))
 	{
 		PrintLog(LOG_SUPERDEBUG, "I hit block at %d %d", tileX, tileY);
 
-		if (b.origin == WEAPON_GRENADE)
+		if(b.origin == WEAPON_GRENADE)
 		{
 			// find out where we bounced from and reverse that
 			int checktileX = (int)(ceil(tileX + (b.direction ? -1 : 1) - 0.5));
 			int checktileY = (int)(ceil(tileY + (b.GetVelocity().y < 0 ? 1 : -1)));
 
-			if (!IsSolid(GetTileTypeAtTiledPos(checktileX, tileY)))
+			if(!IsSolid(GetTileTypeAtTiledPos(checktileX, tileY)))
 			{
 				b.SwitchDirection();
 				x += b.direction ? -1 : 1;
 				vel.x *= -0.5;
 			}
-			if (!IsSolid(GetTileTypeAtTiledPos(tileX, checktileY)))
+			if(!IsSolid(GetTileTypeAtTiledPos(tileX, checktileY)))
 			{
 				y += b.GetVelocity().y < 0 ? 1 : -1;
 				vel.y *= -0.5;
@@ -688,15 +688,15 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 		}
 	}
 
-	if (x >= level->width_in_pix || y >= level->height_in_pix || x < 0 || y < 0)
+	if(x >= level->width_in_pix || y >= level->height_in_pix || x < 0 || y < 0)
 	{
 		complete = true;
 	}
 
-	if (complete && b.origin != WEAPON_FLAME)
+	if(complete && b.origin != WEAPON_FLAME)
 	{
 		Effect *effect;
-		switch (b.origin)
+		switch(b.origin)
 		{
 			case WEAPON_ROCKETL:
 			case WEAPON_GRENADE:
@@ -725,14 +725,14 @@ bool ApplyPhysics(Lightning &l, Uint32 deltaTicks)
 	else
 		l.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
 
-	if (l.statusTimer <= 0)
+	if(l.statusTimer <= 0)
 	{
 		l.statusTimer = 0;
 		l.Remove();
 		return false;
 	}
-	
-	for( auto &j : creatures)
+
+	for(auto &j : creatures)
 	{
 		if(j == nullptr)
 			continue;
@@ -768,7 +768,7 @@ void ResolveBottom(Creature &p)
 		SDL_Rect tileBottom = GetTileRect(i, feet);
 		SDL_Rect tileTop = GetTileRect(i, feet - 1);
 		if(collisionFound || feet < 1) break;
-		if(GetTileTypeAtTiledPos(i, feet-1) == PHYSICS_LADDER_TOP)
+		if(GetTileTypeAtTiledPos(i, feet - 1) == PHYSICS_LADDER_TOP)
 		{
 			PrintLog(LOG_SUPERDEBUG, "Tile intersection: Ladder top");
 			if(!p.hasState(STATE_ONLADDER))
@@ -783,7 +783,7 @@ void ResolveBottom(Creature &p)
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(i, feet);
 		if(IsSolid(type))
 		{
-			y = tileBottom.y - 0.001;	
+			y = tileBottom.y - 0.001;
 			//PrintLog(LOG_SUPERDEBUG, "Intersecting block bottom at %d. Returning back to y = %lf", tileBottom.y, y);
 			p.setState(STATE_ONGROUND);
 			break;
@@ -802,7 +802,7 @@ void ResolveBottom(Creature &p)
 					break;
 				}
 			}
-		}	
+		}
 	}
 	if(p.hasState(STATE_ONMACHINERY))
 	{
@@ -811,7 +811,7 @@ void ResolveBottom(Creature &p)
 		else
 			p.setState(STATE_ONGROUND);
 	}
-	
+
 	p.SetY(y);
 	// Refreshing with new data
 	p.SetVelocity(vel.x, vel.y);
@@ -871,13 +871,13 @@ void ResolveRight(Creature &p)
 {
 	double x, y;
 	int minx, maxx;
-		
+
 	SDL_Rect pr; // Player rectangle
 	PrecisionRect ppr;
 	Velocity vel; // Player velocity
 
 	vel = p.GetVelocity();
-		
+
 	// Checking for left/right collisions
 
 	// Converting to coordinates in tiles array
@@ -887,7 +887,7 @@ void ResolveRight(Creature &p)
 	x = p.xNew;
 	minx = ConvertToTileCoord(x, false);
 	maxx = ConvertToTileCoord(x + ppr.w, false);
-		
+
 	int feet = ConvertToTileCoord(y, false);
 	int head = ConvertToTileCoord(p.hitbox->GetRect().y, false);
 
@@ -908,16 +908,16 @@ void ResolveRight(Creature &p)
 		{
 			case PHYSICS_EXITBLOCK:
 			{
-				if (!p.IsAI()) // only the player
+				if(!p.IsAI()) // only the player
 				{
-					 OnLevelExit(); // EXIT LEVEL
-					 return;
+					OnLevelExit(); // EXIT LEVEL
+					return;
 				}
 				break;
 			}
 		}
 	}
-	
+
 	p.SetPos(x, y);
 	// Modify velocity after all collision resolutions
 	p.SetVelocity(vel.x, vel.y);
@@ -927,24 +927,24 @@ void ResolveLeft(Creature &p)
 {
 	double x, y;
 	int minx, maxx;
-		
+
 	SDL_Rect result; // Will store instersection rect
 	SDL_Rect pr; // Player rectangle
 	PrecisionRect ppr;
 	Velocity vel; // Player velocity
 
 	vel = p.GetVelocity();
-		
+
 	// Converting to coordinates in tiles array
 	ppr = p.hitbox->GetPRect();
 	y = p.GetY();
 	x = p.xNew;
 	minx = ConvertToTileCoord(x, false);
 	maxx = ConvertToTileCoord(x + ppr.w, false);
-		
+
 	int feet = ConvertToTileCoord(y, false);
 	int head = ConvertToTileCoord(p.hitbox->GetRect().y, false);
-		
+
 	// Left
 	bool break_flag = false;
 	for(int j = head; j <= feet; j++) // FOCUS FOCUS FOCUS FOCUS FOCUS FOCUS FOCUS FOCUS 
@@ -963,7 +963,7 @@ void ResolveLeft(Creature &p)
 		{
 			case PHYSICS_EXITBLOCK:
 			{
-				if (!p.IsAI()) // only the player
+				if(!p.IsAI()) // only the player
 				{
 					OnLevelExit(); // EXIT LEVEL
 					return;
@@ -996,12 +996,12 @@ void ResolveLeft(Creature &p)
 
 void DetectAndResolveMapCollisions(Creature &p)
 {
-	if (p.yNew >= p.GetY())
+	if(p.yNew >= p.GetY())
 		ResolveBottom(p);
 	else
 		ResolveTop(p);
 
-	if (p.xNew >= p.GetX())
+	if(p.xNew >= p.GetX())
 		ResolveRight(p);
 	else
 		ResolveLeft(p);
@@ -1022,15 +1022,15 @@ bool HasCollisionWithEntity(Creature &p, Machinery &m, SDL_Rect &result)
 	bool foundSpecialInteraction = false;
 	SDL_Rect *prect = &p.hitbox->GetRect();
 	SDL_Rect *dyrect = &m.hitbox->GetRect();
-	if (SDL_IntersectRect(prect, dyrect, &result))
+	if(SDL_IntersectRect(prect, dyrect, &result))
 	{
-		if (m.isSolid || m.automatic)
+		if(m.isSolid || m.automatic)
 		{
 			return true;
-		
-	//	if (result.h > 0 && result.h < result.w && !dy->automatic && !dy->enabled && dy->GetVelocity().y > 0) 
-	//		dy->Activate(); // Door is closing on something, open it back up
-	//	return true;
+
+			//	if (result.h > 0 && result.h < result.w && !dy->automatic && !dy->enabled && dy->GetVelocity().y > 0) 
+			//		dy->Activate(); // Door is closing on something, open it back up
+			//	return true;
 		}
 		else
 		{
@@ -1038,24 +1038,24 @@ bool HasCollisionWithEntity(Creature &p, Machinery &m, SDL_Rect &result)
 			foundSpecialInteraction = true;
 		}
 	}
-	if (!foundSpecialInteraction) p.interactTarget = -1;
+	if(!foundSpecialInteraction) p.interactTarget = -1;
 	return false;
 }
 
 void UpdateStatus(Creature &p, Uint32 deltaTicks)
 {
-	if (p.REMOVE_ME)
+	if(p.REMOVE_ME)
 		return;
 
-	if (p.status != STATUS_NORMAL)
+	if(p.status != STATUS_NORMAL)
 	{
-		if (p.statusTimer > 0)
+		if(p.statusTimer > 0)
 		{
-			p.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);				
+			p.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
 			if(p.statusTimer <= 0) // time to switch to another status!
 			{
 				p.statusTimer = 0;
-				switch (p.status)
+				switch(p.status)
 				{
 					case STATUS_STUN:
 						p.SetInvulnerability(1 * 1000);
@@ -1078,7 +1078,7 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 	}
 
 	// Player timers
-	
+
 	if(p.jumptime > 0)
 	{
 		p.jumptime -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
@@ -1087,7 +1087,7 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 			p.jumptime = 0;
 		}
 	}
-	
+
 	if(p.shottime > 0)
 	{
 		p.shottime -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
@@ -1107,10 +1107,10 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 		}
 	}
 
-	for (auto j = p.hitFrom.begin(); j != p.hitFrom.end();)
+	for(auto j = p.hitFrom.begin(); j != p.hitFrom.end();)
 	{
 		j->immunity--;
-		if (j->immunity <= 0)
+		if(j->immunity <= 0)
 			j = p.hitFrom.erase(j);
 		else
 			++j;
@@ -1146,7 +1146,7 @@ std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity)
 {
 	Creature* c = NULL;
 	Machinery* m = NULL;
-	for( auto &j : creatures)
+	for(auto &j : creatures)
 	{
 		if(j == nullptr)
 			continue;
@@ -1158,7 +1158,7 @@ std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity)
 	}
 	if(entity->hitbox->HasCollision(player->hitbox))
 		c = player;
-	for( auto &ma : machinery )
+	for(auto &ma : machinery)
 	{
 		if(entity->hitbox->HasCollision(ma->hitbox))
 		{
@@ -1166,12 +1166,12 @@ std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity)
 			break;
 		}
 	}
-	return std::pair<Creature*, Machinery*> (c, m);
+	return std::pair<Creature*, Machinery*>(c, m);
 }
 
 void OnHitboxCollision(Creature &c, Creature &e, Uint32 deltaTicks)
 {
-	if (c.status == STATUS_NORMAL && e.status != STATUS_DYING)
+	if(c.status == STATUS_NORMAL && e.status != STATUS_DYING)
 	{
 		c.removeState(STATE_ONLADDER);
 		PlaySound("player_hit");

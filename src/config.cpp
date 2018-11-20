@@ -36,13 +36,13 @@ void InitConfig()
 	LoadDefaultBindings();
 	LoadConfig();
 
-	if (playerLives < 1 || playerLives > MAX_LIVES) playerLives = 3;
+	if(playerLives < 1 || playerLives > MAX_LIVES) playerLives = 3;
 }
 
 void LoadDefaultBindings()
 {
 	// reserve memory for binds
-	for (int i = 0; i < NUM_BINDS; i++)
+	for(int i = 0; i < NUM_BINDS; i++)
 		bindList.push_back(0);
 	SetBinding(SDLK_UP, BIND_UP);
 	SetBinding(SDLK_DOWN, BIND_DOWN);
@@ -81,8 +81,8 @@ void LoadConfig()
 	{
 		PrintLog(LOG_IMPORTANT, "Can't load config.ini");
 		return;
-	}	
-	
+	}
+
 	for(auto &i : configNames)
 	{
 		std::string keyName = reader.Get("Keys", i.first, "");
@@ -109,7 +109,7 @@ void SaveConfig()
 		return;
 	}
 	file << "[Keys]" << std::endl;
-	for (int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+	for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 	{
 		file << GetBindingName(i) << "=" << GetDeviceBindName(bindList[i]) << std::endl;
 	}
@@ -127,9 +127,9 @@ int GetBindingFromCode(int code)
 {
 	int bind = 0;
 	bool found = false;
-	for (auto i : bindList)
+	for(auto i : bindList)
 	{
-		if (i == code)
+		if(i == code)
 		{
 			found = true;
 			break;
@@ -146,7 +146,7 @@ int GetBindingCode(int bind)
 
 const char *GetBindingName(int bind)
 {
-	switch (bind)
+	switch(bind)
 	{
 		case 0:
 			return "UP";
@@ -168,29 +168,29 @@ const char *GetBindingName(int bind)
 			return "BACK";
 		default:
 			return "";
-		break;
+			break;
 	}
 }
 
 const char *GetFullscreenMode(int code)
 {
-	switch (code)
+	switch(code)
 	{
-		case 0:
-			return "Off";
-		case 1:
-			return "On";
-		case 2:
-			return "Borderless";
-		default:
-			return "";
+	case 0:
+		return "Off";
+	case 1:
+		return "On";
+	case 2:
+		return "Borderless";
+	default:
+		return "";
 	}
 }
 
 std::string GetDeviceBindName(int code)
 {
 	std::string str;
-	if (code < 15)
+	if(code < 15)
 		str = "Joy " + std::to_string(code);
 	else
 		str.append(SDL_GetKeyName(code));

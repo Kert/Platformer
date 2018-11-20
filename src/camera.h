@@ -34,6 +34,6 @@ class Camera
 		void SetOffsetX(int x);
 		void SetOffsetY(int y);
 		bool IsAttachedTo(Entity *e);
-}; 
+};
 
 #endif

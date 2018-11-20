@@ -20,7 +20,7 @@ Camera::Camera()
 
 Camera::~Camera()
 {
-	
+
 }
 
 Camera::Camera(double x, double y, double w, double h)
@@ -46,11 +46,11 @@ SDL_Rect Camera::GetRect()
 
 PrecisionRect Camera::GetPRect()
 {
-	return { x, y, h, w };
+	return{ x, y, h, w };
 }
 
 void Camera::SetRect(SDL_Rect &r)
-{	
+{
 	h = r.h;
 	w = r.w;
 	x = r.x;
@@ -68,7 +68,7 @@ void Camera::Attach(Entity &p)
 
 void Camera::Detach()
 {
-	at = nullptr;	
+	at = nullptr;
 }
 
 void Camera::SetOffsetX(int x)
@@ -112,7 +112,7 @@ void Camera::Update()
 		//diff = val - y;
 		//if (abs(diff) > 1)
 		//	y = y + factorY * (diff); // linear interpolation
-		
+
 		std::vector<SDL_Rect> activeBounds;
 		for(auto i : level->CameraBounds)
 		{
@@ -133,7 +133,7 @@ void Camera::Update()
 				x = i.x;
 			if(x + WIDTH / RENDER_SCALE > i.x + i.w)
 				x = i.x + i.w - WIDTH / RENDER_SCALE;
-			
+
 			y = playerY - HEIGHT / RENDER_SCALE / 2;
 			if(y < i.y)
 				y = i.y;
@@ -207,16 +207,16 @@ void Camera::Update()
 			if(x + WIDTH / RENDER_SCALE > i.x + i.w)
 				x = i.x + i.w - WIDTH / RENDER_SCALE;
 		}
-		
+
 
 		//Keep the camera in bounds.
-		if(x < 0 )
+		if(x < 0)
 		{
 			x = 0;
 		}
 		if(y < 0)
 		{
-	 		y = 0;
+			y = 0;
 		}
 		if(x > map_width - w)
 		{

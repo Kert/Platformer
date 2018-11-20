@@ -27,11 +27,11 @@ extern int BindingKey;
 extern GAME_OVER_REASONS gameOverReason;
 int fullscreenMode;
 
-Timer timer100 { 100 }, timerRain{ 200 };
+Timer timer100{ 100 }, timerRain{ 200 };
 
-std::vector<Timer*> TimersGraphics { &timer100, &timerRain };
+std::vector<Timer*> TimersGraphics{ &timer100, &timerRain };
 
-extern int playerLives; 
+extern int playerLives;
 extern int currentLives;
 
 extern std::vector<Bullet*> bullets;
@@ -41,7 +41,7 @@ extern std::vector<Pickup*> pickups;
 extern std::vector<Machinery*> machinery;
 extern std::vector<Lightning*> lightnings;
 
-int map_width; 
+int map_width;
 int map_height;
 
 SDL_Renderer *renderer = NULL;
@@ -119,12 +119,11 @@ SDL_Texture** TextureManager::GetTexture(std::string filename)
 		PrintLog(LOG_DEBUG, "Loading %s ", filename.c_str());
 		LoadTexture(filename);
 	}
-	
 	return &textures[filename];
 }
 
 void TextureManager::Clear()
-{	
+{
 	for(auto i : textures)
 		SDL_DestroyTexture(i.second);
 	textures.clear();
@@ -162,7 +161,7 @@ bool MenuRenderSetup()
 
 void InitPlayerTexture()
 {
-  if(player_texture)
+	if(player_texture)
 		SDL_DestroyTexture(player_texture);
 	player_texture = SDL_CreateTextureFromSurface(renderer, player_surf);
 }
@@ -170,16 +169,16 @@ void InitPlayerTexture()
 void ChangePlayerColor(PLAYER_BODY_PARTS bodyPart, SDL_Color color)
 {
 	player_surf->format->palette->colors[bodyPart] = color;
-  InitPlayerTexture();
+	InitPlayerTexture();
 }
 
 int GraphicsSetup()
 {
-	if (graphicsLoaded) return 0;
+	if(graphicsLoaded) return 0;
 
 	// Initialize SDL_TTF for font rendering
-	if( TTF_Init() == -1 )
-        return 0;    
+	if(TTF_Init() == -1)
+		return 0;
 
 	debug_font = TTF_OpenFont("assets/misc/verdana.ttf", 12);
 	menu_font = TTF_OpenFont("assets/misc/verdana.ttf", 28);
@@ -195,33 +194,32 @@ int GraphicsSetup()
 	SDL_SetWindowIcon(win, icon);
 	SDL_FreeSurface(icon);
 
-	if (fullscreenMode < 0 || fullscreenMode > FULLSCREEN_MODES) fullscreenMode = 0;
+	if(fullscreenMode < 0 || fullscreenMode > FULLSCREEN_MODES) fullscreenMode = 0;
 
 	UpdateWindowMode();
 
 	// Allows drawing half-transparent rectangles
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	
+
 	pov_surface = SDL_CreateRGBSurface(0, WIDTH / RENDER_SCALE, HEIGHT / RENDER_SCALE, 32,
-                                        0x00FF0000,
-                                        0x0000FF00,
-                                        0x000000FF,
-                                        0xFF000000);
+		0x00FF0000,
+		0x0000FF00,
+		0x000000FF,
+		0xFF000000);
 
 	InterfaceSetup();
-	
+
 	fading_surface = SDL_CreateRGBSurface(0, 1, 1, 32,
-                                        0x00FF0000,
-                                        0x0000FF00,
-                                        0x000000FF,
-                                        0xFF000000);
+		0x00FF0000,
+		0x0000FF00,
+		0x000000FF,
+		0xFF000000);
 
 	player_surf = IMG_Load("assets/sprites/mong.png");
 
 	lightningSegment = IMG_Load("assets/textures/millhilightning.png");
 	
-
-	if (loadDebugStuff)
+	if(loadDebugStuff)
 		CreateMapWindow();
 	graphicsLoaded = true;
 	return 1;
@@ -230,7 +228,7 @@ int GraphicsSetup()
 void UpdateWindowMode()
 {
 	SDL_WindowFlags flag;
-	switch (fullscreenMode)
+	switch(fullscreenMode)
 	{
 		case 0:
 			flag = (SDL_WindowFlags)0;
@@ -269,13 +267,13 @@ void ResetLevelGraphics()
 }
 
 void DrawFPS(Uint32 dt)
-{	
+{
 	static int oldfps = 0;
 	int diff;
 	int newfps;
 	newfps = (int)(1000 / (dt + 0.01));
 	diff = newfps - oldfps;
-	if (abs(diff) > 1)
+	if(abs(diff) > 1)
 		oldfps = oldfps + (int)(0.5 * diff);
 	RenderText(10, 10, "fps: " + std::to_string(newfps), debug_font, debug_color);
 }
@@ -288,20 +286,20 @@ void BlitTileAt(Tile* tile, int x, int y)
 
 	rect.x = tile->tex_x;
 	rect.y = tile->tex_y;
-	rect.w=TILESIZE; rect.h=TILESIZE;
+	rect.w = TILESIZE; rect.h = TILESIZE;
 
 	rect2.x = x * TILESIZE;
 	rect2.y = y * TILESIZE;
-	rect2.w = TILESIZE; rect2.h=TILESIZE;
+	rect2.w = TILESIZE; rect2.h = TILESIZE;
 
 	//PrintLog(LOG_SUPERDEBUG, "x= %d y= %d ", rect2.x, rect2.y);
 
-	SDL_BlitScaled(tile->src_tex,&rect,pov_surface,&rect2);
+	SDL_BlitScaled(tile->src_tex, &rect, pov_surface, &rect2);
 }
 
 void BlitObserveTileAt(Tile* tile, int x, int y)
 {
-	if (tile == NULL) return;
+	if(tile == NULL) return;
 	SDL_Rect rect;
 	SDL_Rect rect2;
 
@@ -329,23 +327,23 @@ void BlitObservableTiles()
 	h = ConvertToTileCoord(prect.h, false);
 
 	// range checks
-	if (x < 0) x = 0;
-	if (y < 0) y = 0;
-	if (x >= level->width_in_tiles) x = level->width_in_tiles - 1;
-	if (y >= level->height_in_tiles) x = level->height_in_tiles - 1;
+	if(x < 0) x = 0;
+	if(y < 0) y = 0;
+	if(x >= level->width_in_tiles) x = level->width_in_tiles - 1;
+	if(y >= level->height_in_tiles) x = level->height_in_tiles - 1;
 
 	// clear with background color
-	SDL_FillRect(pov_surface, NULL, SDL_MapRGBA(pov_surface->format, level->bgColor.r,level->bgColor.g,level->bgColor.b,255));
+	SDL_FillRect(pov_surface, NULL, SDL_MapRGBA(pov_surface->format, level->bgColor.r, level->bgColor.g, level->bgColor.b, 255));
 	int a = SDL_GetTicks();
 	// counters for current tile pos to blit to
 	int p, q;
 	p = (int)(x * TILESIZE - prect.x);
-	for (int i = x; i <= x + w; i++)
+	for(int i = x; i <= x + w; i++)
 	{
 		q = (int)(y * TILESIZE - prect.y);
-		for (int j = y; j <= y + h; j++)
+		for(int j = y; j <= y + h; j++)
 		{
-			if (i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
+			if(i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
 			{
 				BlitObserveTileAt(tilemap_bg[i][j], p, q);
 				BlitObserveTileAt(tilemap_fg[i][j], p, q);
@@ -357,7 +355,7 @@ void BlitObservableTiles()
 	int b = SDL_GetTicks();
 	//PrintLog(LOG_DEBUG, "%d time passed", b - a);
 	// transfer pixedata from surface to texture
-	
+
 	SDL_Texture *pov_texture = SDL_CreateTextureFromSurface(renderer, pov_surface);
 	SDL_RenderCopy(renderer, pov_texture, NULL, NULL);
 	SDL_DestroyTexture(pov_texture);
@@ -369,7 +367,7 @@ void GraphicsUpdate()
 	{
 		t->Run();
 	}
-	
+
 	UpdateTileAnimations();
 
 	if(RENDER_ONLY_OBSERVABLE)
@@ -377,7 +375,7 @@ void GraphicsUpdate()
 	else
 	{
 		// background color
-		SDL_SetRenderDrawColor(renderer, level->bgColor.r,level->bgColor.g,level->bgColor.b,255);
+		SDL_SetRenderDrawColor(renderer, level->bgColor.r, level->bgColor.g, level->bgColor.b, 255);
 		SDL_RenderFillRect(renderer, NULL);
 
 		// show level map
@@ -385,50 +383,50 @@ void GraphicsUpdate()
 		void *pixels;
 		int pitch;
 		SDL_LockTexture(level_fgLayer_tex, NULL, &pixels, &pitch);
-		memcpy(pixels, surface_fg->pixels, surface_fg->pitch * surface_fg->h );
+		memcpy(pixels, surface_fg->pixels, surface_fg->pitch * surface_fg->h);
 		SDL_UnlockTexture(level_fgLayer_tex);
 		SDL_RenderCopy(renderer, level_fgLayer_tex, &camera->GetRect(), NULL);
 	}
-	
+
 	// Renders everything in entities collections
-	for (auto &dy : machinery )
+	for(auto &dy : machinery)
 		Render(*dy);
-	for (auto &p : pickups)
+	for(auto &p : pickups)
 	{
 		UpdateAnimation(*p);
 		Render(*p);
 	}
-	for (auto &d : creatures)
+	for(auto &d : creatures)
 	{
 		UpdateAnimation(*d);
 		Render(*d);
 	}
-  for (auto &l : lightnings)
+	for(auto &l : lightnings)
 	{
 		//UpdateAnimation(*l);
 		Render(*l);
 	}
 	UpdateAnimation(*player);
 	Render(*player);
-	for (auto &b : bullets)
+	for(auto &b : bullets)
 	{
 		UpdateAnimation(*b);
 		Render(*b);
 	}
-	for (auto &e : effects)
+	for(auto &e : effects)
 	{
 		UpdateAnimation(*e);
 		Render(*e);
 	}
-    
+
 	RenderInterface();
-	
+
 	int healthFrame = ((100 - player->health) / 25);
 	ChangeInterfaceFrame(healthFrame, INTERFACE_LIFE);
 
-	if (loadDebugStuff) ShowDebugInfo(*player);
+	if(loadDebugStuff) ShowDebugInfo(*player);
 
-	if (loadDebugStuff)
+	if(loadDebugStuff)
 	{
 		// background color
 		SDL_SetRenderDrawColor(maprenderer, 210, 226, 254, 255);
@@ -438,7 +436,7 @@ void GraphicsUpdate()
 		r.w = OVERVIEW_WIDTH;
 		r.h = OVERVIEW_HEIGHT;
 		r.x = r.y = 0;
-		if (OVERVIEW_WIDTH <= OVERVIEW_HEIGHT)
+		if(OVERVIEW_WIDTH <= OVERVIEW_HEIGHT)
 		{
 			r.h = level->height_in_pix;
 			if(level->width_in_pix / OVERVIEW_WIDTH)
@@ -476,19 +474,19 @@ void BlitTile(Tile *tile, TILEMAP_LAYERS layer)
 
 void BlitLevelTiles()
 {
-	for ( auto i : tilemap_bg )
+	for(auto i : tilemap_bg)
 	{
-		for( auto j : i)
+		for(auto j : i)
 		{
-			if (j != NULL)
+			if(j != NULL)
 				BlitTile(j, LAYER_BACKGROUND);
 		}
 	}
-	for (auto p : tilemap_fg)
+	for(auto p : tilemap_fg)
 	{
-		for (auto q : p)
+		for(auto q : p)
 		{
-			if (q != NULL)
+			if(q != NULL)
 				BlitTile(q, LAYER_FOREGROUND);
 		}
 	}
@@ -519,19 +517,19 @@ void GraphicsExit()
 	SDL_FreeSurface(surface_fg);
 	SDL_FreeSurface(surface_level_textures);
 	SDL_FreeSurface(debug_message);
-	SDL_DestroyTexture(player_texture); 
+	SDL_DestroyTexture(player_texture);
 	SDL_DestroyTexture(level_bgLayer_tex);
 	SDL_DestroyTexture(level_fgLayer_tex);
 	textureManager.Clear();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);
-		
+
 	// close SDL_ttf
 	TTF_CloseFont(debug_font);
 	TTF_CloseFont(menu_font);
 	TTF_CloseFont(game_font);
 	TTF_CloseFont(minor_font);
-    TTF_Quit();
+	TTF_Quit();
 }
 
 void DrawHitbox(Entity &e)
@@ -555,14 +553,14 @@ void Render(Entity &e)
 	realpos.h = (int)e.sprite->GetTextureCoords().h;
 	realpos.w = (int)e.sprite->GetTextureCoords().w;
 
-	if (e.status == STATUS_INVULN && e.statusTimer % 200 > 100 && e.blinkDamaged) return;
+	if(e.status == STATUS_INVULN && e.statusTimer % 200 > 100 && e.blinkDamaged) return;
 
 	SDL_RendererFlip flip = SDL_FLIP_NONE;
 	if(e.direction == DIRECTION_LEFT)
 		flip = SDL_FLIP_HORIZONTAL;
 	SDL_RenderCopyEx(renderer, e.sprite->GetSpriteSheet(), &e.sprite->GetTextureCoords(), &realpos, NULL, NULL, flip);
 
-	if (loadDebugStuff)
+	if(loadDebugStuff)
 		DrawHitbox(e);
 }
 
@@ -580,45 +578,45 @@ void UpdateAnimation(Effect &e)
 bool had_shot_while_jumping = false;
 void UpdateAnimation(Player &p)
 {
-  if(p.hasState(STATE_CHARGING))
-  {
-    if(p.charge_time == 0 && timer100.completed)
-      p.ToggleChargedColor();
-  }
-
-  if(p.sprite->shootingAnimTimer > 0)
+	if(p.hasState(STATE_CHARGING))
 	{
-    p.sprite->shootingAnimTimer -= 1;
-    if(p.sprite->shootingAnimTimer <= 0)
-      p.sprite->shootingAnimTimer = 0;
-    else
-    {
-      if(p.hasState(STATE_HANGING))
-        p.sprite->SetAnimation(ANIMATION_SHOOTING_HANGING);
-      else
-      {
-        if(p.hasState(STATE_ONGROUND))
-	      {
-		      if(p.GetVelocity().x != 0)// && p.accel.x != 0)
-			      p.sprite->SetAnimation(ANIMATION_SHOOTING_RUNNING);
-		      else
-			      p.sprite->SetAnimation(ANIMATION_SHOOTING_STANDING);
-	      }
-	      else
-	      {
-		      if(p.GetVelocity().y > 0)
-			      p.sprite->SetAnimation(ANIMATION_SHOOTING_FALLING);
-		      else
-          {
-			      p.sprite->SetAnimation(ANIMATION_SHOOTING_JUMPING);
-            had_shot_while_jumping = true;
-          }
-	      }
-      }
-		  p.sprite->Animate();
-      return;
-    }
-  }
+		if(p.charge_time == 0 && timer100.completed)
+			p.ToggleChargedColor();
+	}
+
+	if(p.sprite->shootingAnimTimer > 0)
+	{
+		p.sprite->shootingAnimTimer -= 1;
+		if(p.sprite->shootingAnimTimer <= 0)
+			p.sprite->shootingAnimTimer = 0;
+		else
+		{
+			if(p.hasState(STATE_HANGING))
+				p.sprite->SetAnimation(ANIMATION_SHOOTING_HANGING);
+			else
+			{
+				if(p.hasState(STATE_ONGROUND))
+				{
+					if(p.GetVelocity().x != 0)// && p.accel.x != 0)
+						p.sprite->SetAnimation(ANIMATION_SHOOTING_RUNNING);
+					else
+						p.sprite->SetAnimation(ANIMATION_SHOOTING_STANDING);
+				}
+				else
+				{
+					if(p.GetVelocity().y > 0)
+						p.sprite->SetAnimation(ANIMATION_SHOOTING_FALLING);
+					else
+					{
+						p.sprite->SetAnimation(ANIMATION_SHOOTING_JUMPING);
+						had_shot_while_jumping = true;
+					}
+				}
+			}
+			p.sprite->Animate();
+			return;
+		}
+	}
 
 	if(p.hasState(STATE_SLIDING))
 	{
@@ -641,7 +639,7 @@ void UpdateAnimation(Player &p)
 
 	if(p.hasState(STATE_ONLADDER))
 	{
-		if (p.GetVelocity().y > 0 || p.GetVelocity().y < 0)
+		if(p.GetVelocity().y > 0 || p.GetVelocity().y < 0)
 		{
 			p.sprite->SetAnimation(ANIMATION_CLIMBING);
 			p.sprite->Animate();
@@ -667,31 +665,31 @@ void UpdateAnimation(Player &p)
 		if(p.GetVelocity().y > 0)
 		{
 			p.sprite->SetAnimation(ANIMATION_FALLING);
-      had_shot_while_jumping = false;
+			had_shot_while_jumping = false;
 		}
 		else
 		{
 			if(!had_shot_while_jumping)
-        p.sprite->SetAnimation(ANIMATION_JUMPING);
+				p.sprite->SetAnimation(ANIMATION_JUMPING);
 		}
 		p.sprite->Animate();
 	}
-		/*
-			if(p.hasState(STATE_LOOKINGUP))
-			{
-				p.sprite->SetAnimation(6);
-			}
-			else
-			{
-				p.sprite->SetAnimation(1);
-			}
-		}
-		if(p.hasState(STATE_DUCKING))
+	/*
+		if(p.hasState(STATE_LOOKINGUP))
 		{
-			p.sprite->SetAnimation(13);
-		}*/
+			p.sprite->SetAnimation(6);
+		}
+		else
+		{
+			p.sprite->SetAnimation(1);
+		}
+	}
+	if(p.hasState(STATE_DUCKING))
+	{
+		p.sprite->SetAnimation(13);
+	}*/
 
-	
+
 
 	/*			if (p.status == STATUS_STUN && p.GetVelocity().y >= 0)
 				{
@@ -723,7 +721,7 @@ void UpdateAnimation(Player &p)
 
 void UpdateAnimation(Creature &c)
 {
-	if (c.status == STATUS_DYING)
+	if(c.status == STATUS_DYING)
 	{
 		// placeholder for death animation later
 		//p.sprite->UseAnimation(1);
@@ -774,11 +772,11 @@ void ShowDebugInfo(Player &p)
 	int tx, ty;
 	tx = ConvertToTileCoord(x, false);
 	ty = ConvertToTileCoord(y, false);
-	sprintf(debug_str,"nearladder = %d onground = %d attached = %d PlayerX = %d | %d. PlayerY = %d | %d VelX: %d VelY: %d HP: %d",
-		player->ammo[WEAPON_FIREBALL], p.hasState(STATE_ONGROUND), p.hasState(STATE_ONMACHINERY), x, tx, y, ty, 
+	sprintf(debug_str, "nearladder = %d onground = %d attached = %d PlayerX = %d | %d. PlayerY = %d | %d VelX: %d VelY: %d HP: %d",
+		player->ammo[WEAPON_FIREBALL], p.hasState(STATE_ONGROUND), p.hasState(STATE_ONMACHINERY), x, tx, y, ty,
 		(int)p.GetVelocity().x, (int)p.GetVelocity().y, p.health);
-	debug_message = TTF_RenderText_Solid( debug_font, debug_str, debug_color );
-	
+	debug_message = TTF_RenderText_Solid(debug_font, debug_str, debug_color);
+
 	SDL_Texture* debug_texture = SDL_CreateTextureFromSurface(renderer, debug_message);
 	SDL_Rect temp;
 	SDL_GetClipRect(debug_message, &temp);
@@ -802,13 +800,13 @@ void UpdateTransition()
 	r.y = 0;
 	SDL_SetRenderDrawColor(renderer, 204, 231, 255, 255);
 	SDL_RenderFillRect(renderer, NULL);
-	
-	if (TransitionID == TRANSITION_TITLE)
+
+	if(TransitionID == TRANSITION_TITLE)
 	{
 		SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/title.png"), NULL, &r);
 	}
-	else if (TransitionID == TRANSITION_LEVELSTART)
-	{	
+	else if(TransitionID == TRANSITION_LEVELSTART)
+	{
 		//if (!level->loaded)
 		if(level == nullptr)
 		{
@@ -829,14 +827,14 @@ void UpdateTransition()
 			RenderText(100, 200, str, game_font, selected_color);
 			sprintf(str, "Lives left: %d", currentLives);
 			RenderText(100, 250, str, game_font, selected_color);
-	
+
 			text = "Loaded! Press a key to start.";
 			int w, h;
 			TTF_SizeText(menu_font, text, &w, &h);
 			RenderText((WIDTH - w) / 2, 400, text, menu_font, menu_color);
 		}
 	}
-	else if (TransitionID == TRANSITION_LEVELCLEAR)
+	else if(TransitionID == TRANSITION_LEVELCLEAR)
 	{
 		text = "Level clear!";
 		int w, h;
@@ -868,7 +866,7 @@ void UpdateTransition()
 		RenderText(w, h - 50, str, menu_font, menu_color);
 	}
 	// Render menuitems too
-	if (TransitionID == TRANSITION_LEVELLOSE)
+	if(TransitionID == TRANSITION_LEVELLOSE)
 	{
 		RenderMenuItems(CurrentMenu);
 	}
@@ -900,7 +898,7 @@ void RenderMenu()
 	SDL_SetRenderDrawColor(renderer, 204, 231, 255, 255);
 	SDL_RenderFillRect(renderer, NULL);
 
-	if (CurrentMenu == MENU_MAIN)
+	if(CurrentMenu == MENU_MAIN)
 	{
 		RenderLogo();
 		SDL_Color color_credits = { 0, 0, 0 };
@@ -909,18 +907,18 @@ void RenderMenu()
 		RenderText(490, 540, "Kert & MillhioreF © 2017", minor_font, color_credits);
 	}
 	RenderMenuItems(CurrentMenu);
-	if (CurrentMenu == MENU_OPTIONS)
+	if(CurrentMenu == MENU_OPTIONS)
 	{
 		RenderMenuItems(MENU_SELECTION_LIVES);
 		RenderMenuItems(MENU_SELECTION_FULLSCREEN);
 	}
-	if (CurrentMenu == MENU_BINDS)
+	if(CurrentMenu == MENU_BINDS)
 	{
 		unsigned off = 40, step = 50, i = 0;
-		if (menus.size() <= MENU_BINDS)
+		if(menus.size() <= MENU_BINDS)
 		{
 			Menu *menu = new Menu();
-			for (i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+			for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 			{
 				menu->AddMenuItem(new MenuItem(100, off + step*i, GetBindingName(i), menu_font, menu_color, selected_color));
 			}
@@ -928,16 +926,16 @@ void RenderMenu()
 			menu->AddMenuItem(new MenuItem(150, off + step*i, "Back", menu_font, menu_color, selected_color));
 			menus.push_back(menu);
 		}
-		for (i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+		for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 		{
 			RenderText(600, off + step*i, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color);
 		}
 	}
-	if (CurrentMenu == MENU_BIND)
+	if(CurrentMenu == MENU_BIND)
 	{
 		// Binding key names will be most certainly updates so we delete the menu
 		// It will be recreated because it won't exist. With new key names too
-		while (menus.size() > MENU_BINDS)
+		while(menus.size() > MENU_BINDS)
 		{
 			delete menus.back();
 			menus.pop_back();
@@ -952,7 +950,7 @@ void RenderMenu()
 void RenderMenuItems(MENUS id)
 {
 	Menu *menu;
-	if ((int)menus.size() <= id)
+	if((int)menus.size() <= id)
 		return;
 	menu = menus.at(id);
 	const char *text;
@@ -962,9 +960,9 @@ void RenderMenuItems(MENUS id)
 	SDL_Rect r;
 
 	SDL_Color color;
-	for (int i = 0; i < menu->GetItemCount(); i++)
+	for(int i = 0; i < menu->GetItemCount(); i++)
 	{
-		if (i == SelectedItem && id == CurrentMenu)
+		if(i == SelectedItem && id == CurrentMenu)
 			color = menu->GetItemInfo(i)->selectedColor;
 		else
 			color = menu->GetItemInfo(i)->standardColor;
@@ -978,7 +976,7 @@ void RenderMenuItems(MENUS id)
 		TTF_SizeText(menu->GetItemInfo(i)->font, text, &r.w, &r.h);
 		r.x = menu->GetItemInfo(i)->pos.x;
 		r.y = menu->GetItemInfo(i)->pos.y;
-		if (CurrentMenu == MENU_PAUSE)
+		if(CurrentMenu == MENU_PAUSE)
 			r = { (r.x - (r.w / 2)) / RENDER_SCALE, (r.y - (r.h / 2)) / RENDER_SCALE, r.w / RENDER_SCALE, r.h / RENDER_SCALE };
 		tex = SDL_CreateTextureFromSurface(renderer, clearText);
 		SDL_RenderCopy(renderer, tex, NULL, &r);
@@ -1021,7 +1019,7 @@ void FlushWindow()
 {
 	// clear the screen
 	SDL_RenderClear(renderer);
-	if (loadDebugStuff)
+	if(loadDebugStuff)
 	{
 		SDL_RenderClear(maprenderer);
 	}
@@ -1030,7 +1028,7 @@ void FlushWindow()
 void UpdateWindow()
 {
 	SDL_RenderPresent(renderer);
-	if (loadDebugStuff)
+	if(loadDebugStuff)
 	{
 		SDL_RenderPresent(maprenderer);
 	}
@@ -1055,22 +1053,22 @@ extern std::vector<CustomTile> tileset;
 
 void UpdateTileAnimations()
 {
-	for (auto &c : tileset)
+	for(auto &c : tileset)
 	{
-		if (c.animationData.sequence.size())
+		if(c.animationData.sequence.size())
 		{
 			int numFrames = c.animationData.sequence.size();
 			int currentFrame = c.animationData.currentFrame;
 			int duration = c.animationData.sequence[currentFrame].duration;
 			Uint32 ticks = SDL_GetTicks();
 			Uint32 delta = ticks - c.animationData.timer;
-			if (delta > (unsigned)duration)
+			if(delta > (unsigned)duration)
 			{
 				c.animationData.currentFrame++;
-				if (c.animationData.currentFrame >= numFrames)
+				if(c.animationData.currentFrame >= numFrames)
 					c.animationData.currentFrame = 0;
 				c.animationData.timer = SDL_GetTicks();
-				
+
 				c.animated_x_offset = tileset[c.animationData.sequence[currentFrame].id].x_offset;
 				c.animated_y_offset = tileset[c.animationData.sequence[currentFrame].id].y_offset;
 			}
@@ -1103,27 +1101,27 @@ SDL_Texture* GenerateLightningTexture(std::vector<SDL_Point> &points)
 {
 	int width = points.back().x;
 	SDL_Surface *lightning = SDL_CreateRGBSurface(0, width, 3 + 20, 32,
-                            0x00FF0000,
-                            0x0000FF00,
-                            0x000000FF,
-                            0xFF000000);
+		0x00FF0000,
+		0x0000FF00,
+		0x000000FF,
+		0xFF000000);
 	SDL_Rect src;
 	SDL_GetClipRect(lightningSegment, &src);
 	for(int i = 0; i < (int)points.size(); i++)
 	{
 		SDL_Point *p = &points[i];
 		SDL_Rect clone = src;
-		if (p->y > 512)
+		if(p->y > 512)
 		{
 			p->y -= 512;
 			clone.h = 1;
 		}
-		else if (p->y > 256)
+		else if(p->y > 256)
 		{
 			p->y -= 256;
 			clone.h = 2;
 		}
-		SDL_Rect dest = {p->x, p->y - 1, 1, 3};
+		SDL_Rect dest = { p->x, p->y - 1, 1, 3 };
 		SDL_BlitSurface(lightningSegment, &clone, lightning, &dest);
 	}
 	SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, lightning);

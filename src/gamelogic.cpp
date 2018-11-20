@@ -14,7 +14,7 @@
 #include "utils.h"
 
 int min, sec;
-int timeLimit = 300; 
+int timeLimit = 300;
 Timer gameTimer{ 1000 };
 
 int playerLives;
@@ -49,14 +49,14 @@ void StartGame()
 
 void GameLogic()
 {
-	if (player->status == STATUS_DYING)
+	if(player->status == STATUS_DYING)
 		GameOver(GAME_OVER_REASON_DIED);
 
 	gameTimer.Run();
 	if(gameTimer.completed)
 	{
 		PrintLog(LOG_DEBUG, "%2d:%2d", min, sec);
-		AddTime();		
+		AddTime();
 	}
 
 	LevelLogic();
@@ -84,7 +84,7 @@ void AddTime()
 		GameOver(GAME_OVER_REASON_TIME);
 	}
 	const char *c = "";
-	if (sec % 2 == 0)
+	if(sec % 2 == 0)
 		c = InfoFormat(min, sec);
 	//else
 	//	c = InfoFormat("LOLI");
@@ -102,9 +102,9 @@ void GameOver(GAME_OVER_REASONS reason)
 {
 	gameOverReason = reason;
 	StopMusic();
-	if (reason == GAME_OVER_REASON_WIN)
+	if(reason == GAME_OVER_REASON_WIN)
 	{
-		SetCurrentTransition(TRANSITION_LEVELCLEAR); 
+		SetCurrentTransition(TRANSITION_LEVELCLEAR);
 		ChangeGamestate(STATE_TRANSITION);
 	}
 	else
@@ -137,12 +137,12 @@ void DoFading()
 			RemoveFading();
 		}
 	}
-	else if (FadingState == FADING_STATE_BLACKNBACK)
+	else if(FadingState == FADING_STATE_BLACKNBACK)
 	{
-		if (FadingVal <= FadingEnd)
+		if(FadingVal <= FadingEnd)
 		{
 			FadingVal += FadingSpeed;
-			if (FadingVal > FadingEnd)
+			if(FadingVal > FadingEnd)
 			{
 				FadingVal = 255;
 				FadingEnd = 0;
@@ -170,7 +170,7 @@ void InitFading(FADING_STATES state, int start, int end, int speed)
 	FadingStart = start;
 	FadingEnd = end;
 	FadingSpeed = speed;
-	if (state == FADING_STATE_BLACKNBACK)
+	if(state == FADING_STATE_BLACKNBACK)
 	{
 		FadingStart = 0;
 		FadingEnd = 255;
@@ -186,23 +186,23 @@ void InitFading(FADING_STATES state, int start, int end, int speed, GAMESTATES t
 
 void SetGamestate(int state)
 {
-	if (state == STATE_MENU)
-		if (MenuRenderSetup()) gameLoaded = false;
-	if (state == STATE_GAME)
-		if (GameRenderSetup()) menuLoaded = false;
-	if (state == STATE_TRANSITION)
+	if(state == STATE_MENU)
+		if(MenuRenderSetup()) gameLoaded = false;
+	if(state == STATE_GAME)
+		if(GameRenderSetup()) menuLoaded = false;
+	if(state == STATE_TRANSITION)
 	{
 		MenuRenderSetup();
-		if (TransitionID == TRANSITION_LEVELLOSE)
+		if(TransitionID == TRANSITION_LEVELLOSE)
 		{
 			StopMusic();
 			currentLives -= 1;
-			if (currentLives < 1)
+			if(currentLives < 1)
 				SetCurrentMenu(MENU_PLAYER_FAILED_NO_ESCAPE);
 			else
 				SetCurrentMenu(MENU_PLAYER_FAILED);
 		}
-		else if (TransitionID == TRANSITION_LEVELCLEAR)
+		else if(TransitionID == TRANSITION_LEVELCLEAR)
 		{
 			PlaySound("level_clear");
 			UpdateTransition(); // don't make player wait for the level to unload to see his astonishing victory
@@ -210,7 +210,7 @@ void SetGamestate(int state)
 			level = nullptr;
 		}
 	}
-	if (state == STATE_PAUSED)
+	if(state == STATE_PAUSED)
 	{
 		SetCurrentMenu(MENU_PAUSE);
 		PauseMusic();
@@ -222,25 +222,25 @@ void ChangeGamestate(int state)
 {
 	int oldstate = GameState;
 
-	if (oldstate == STATE_PAUSED && state != STATE_GAME)
+	if(oldstate == STATE_PAUSED && state != STATE_GAME)
 		RemoveFading();
 
-	if (oldstate == STATE_GAME && state == STATE_PAUSED)
+	if(oldstate == STATE_GAME && state == STATE_PAUSED)
 	{
 		InitFading(FADING_STATE_IN, 0, 150, 5);
-		SetGamestate(STATE_PAUSED);	
+		SetGamestate(STATE_PAUSED);
 	}
 	else if(oldstate == STATE_PAUSED && state == STATE_GAME)
 	{
 		InitFading(FADING_STATE_OUT, 150, 0, 8);
 		SetGamestate(STATE_GAME);
 	}
-	else if (oldstate == STATE_TRANSITION && state == STATE_GAME)
+	else if(oldstate == STATE_TRANSITION && state == STATE_GAME)
 	{
 		StartGame();
 		InitFading(FADING_STATE_BLACKNBACK, 150, 0, 3, STATE_GAME);
 	}
-	else if (oldstate == STATE_GAME && state == STATE_TRANSITION)
+	else if(oldstate == STATE_GAME && state == STATE_TRANSITION)
 	{
 		InitFading(FADING_STATE_BLACKNBACK, 150, 0, 3, STATE_TRANSITION);
 	}

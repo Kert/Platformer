@@ -13,9 +13,9 @@
 //#define ALLOW_BORDERLESS
 
 #ifdef ALLOW_BORDERLESS
-	#define FULLSCREEN_MODES 2
+#define FULLSCREEN_MODES 2
 #else
-	#define FULLSCREEN_MODES 1
+#define FULLSCREEN_MODES 1
 #endif
 
 void DoMenuAction(int code, int bind);
@@ -49,7 +49,7 @@ class MenuItem
 		TTF_Font *font;
 		SDL_Color standardColor;
 		SDL_Color selectedColor;
-		
+
 	public:
 		MenuItem(int x, int y, std::string text, TTF_Font *font, SDL_Color standardColor, SDL_Color selectedColor);
 		MenuItem(SDL_Point pos, std::string text, TTF_Font *font, SDL_Color standardColor, SDL_Color selectedColor);

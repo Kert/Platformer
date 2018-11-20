@@ -74,7 +74,7 @@ class Entity
 		bool attachToScreen;
 		int attachScreenX;
 		int attachScreenY;
-		
+
 		bool REMOVE_ME = false;
 
 	public:
@@ -96,7 +96,7 @@ class Entity
 
 class StaticEntity : public Entity
 {
-	
+
 };
 
 class DynamicEntity : public Entity
@@ -193,7 +193,7 @@ struct LightningBranch
 };
 
 class Creature : public DynamicEntity
-{	
+{
 	public:
 		int health;
 		int jumptime; // Time in ms
@@ -230,7 +230,7 @@ class Creature : public DynamicEntity
 		void Shoot();
 		void Die();
 		bool IsAI();
-		 // specify one of AI classes as type, like AI_Chaser
+		// specify one of AI classes as type, like AI_Chaser
 		template<typename T>
 		void SetAI()
 		{
@@ -273,7 +273,7 @@ class Player : public Creature
 		EntityState* state_;
 		bool chargedColored = false;
 
-    public:
+	public:
 		Player();
 		~Player();
 		void SwitchWeapon();
@@ -300,7 +300,6 @@ class Pickup : public StaticEntity
 		void OnPickup();
 		void Remove();
 		~Pickup();
-
 };
 
 class Effect : public StaticEntity
@@ -348,12 +347,12 @@ class Platform : public Machinery
 
 class Lava_Floor : public Machinery
 {
-public:
-	Lava_Floor(int x, int y);
+	public:
+		Lava_Floor(int x, int y);
 
-	void Activate();
-	void Remove();
-	~Lava_Floor();
+		void Activate();
+		void Remove();
+		~Lava_Floor();
 };
 
 enum ENTITY_LISTS

@@ -22,58 +22,58 @@ extern SDL_Color pause_color;
 
 void DoMenuAction(int code, int bind)
 {
-	if (CurrentMenu == MENU_BIND) // special case for keybind screen
+	if(CurrentMenu == MENU_BIND) // special case for keybind screen
 	{
-		if (bind != BIND_ESCAPE)
+		if(bind != BIND_ESCAPE)
 			SetBinding(code, BindingKey);
 		SetCurrentMenu(MENU_BINDS);
 	}
 	else
 	{
-		switch (bind)
+		switch(bind)
 		{
 			case BIND_UP: case BIND_DOWN: case BIND_LEFT: case BIND_RIGHT:
 			case BIND_ARROWUP: case BIND_ARROWDOWN: case BIND_ARROWL: case BIND_ARROWR:
 				NavigateMenu(bind);
 				break;
 			case BIND_JUMP: case BIND_OK: case BIND_ENTER:
-				if (CurrentMenu == MENU_MAIN)
+				if(CurrentMenu == MENU_MAIN)
 				{
-					if (SelectedItem == 0)
+					if(SelectedItem == 0)
 					{
-						SetCurrentTransition(TRANSITION_LEVELSTART); 
+						SetCurrentTransition(TRANSITION_LEVELSTART);
 						ChangeGamestate(STATE_TRANSITION);
-						 // force the loading screen to draw for one frame before we start loading
+						// force the loading screen to draw for one frame before we start loading
 						UpdateTransition();
 						UpdateWindow();
 						level = new Level();
 					}
-					if (SelectedItem == 1)
+					if(SelectedItem == 1)
 					{
 						SetCurrentMenu(MENU_OPTIONS);
 					}
-					if (SelectedItem == 2)
+					if(SelectedItem == 2)
 						ENDGAME = true;
 				}
-				else if (CurrentMenu == MENU_OPTIONS)
+				else if(CurrentMenu == MENU_OPTIONS)
 				{
-					if (SelectedItem == 2)
+					if(SelectedItem == 2)
 						SetCurrentMenu(MENU_BINDS);
-					if (SelectedItem == 3)
+					if(SelectedItem == 3)
 					{
 						SetCurrentMenu(MENU_MAIN);
 					}
 				}
-				else if (CurrentMenu == MENU_BINDS)
+				else if(CurrentMenu == MENU_BINDS)
 				{
-					if (SelectedItem < (menus.at(CurrentMenu)->GetItemCount() - 2))
+					if(SelectedItem < (menus.at(CurrentMenu)->GetItemCount() - 2))
 					{
 						BindingKey = SelectedItem; // the enums match up, so we can do this mini-optimization :D
 						SetCurrentMenu(MENU_BIND);
 					}
 					else
 					{
-						if (SelectedItem == (menus.at(CurrentMenu)->GetItemCount() - 2))
+						if(SelectedItem == (menus.at(CurrentMenu)->GetItemCount() - 2))
 							LoadDefaultBindings();
 						SetCurrentMenu(MENU_OPTIONS);
 					}
@@ -85,39 +85,39 @@ void DoMenuAction(int code, int bind)
 
 void NavigateMenu(int bind)
 {
-	switch (bind)
+	switch(bind)
 	{
 		case BIND_LEFT: case BIND_ARROWL:
-			if (CurrentMenu == MENU_OPTIONS)
+			if(CurrentMenu == MENU_OPTIONS)
 			{
-				if (SelectedItem == 0)
+				if(SelectedItem == 0)
 				{
-					menus.at(MENU_SELECTION_LIVES)->selected <= 0 ? menus.at(MENU_SELECTION_LIVES)->selected = (menus.at(MENU_SELECTION_LIVES)->GetItemCount()-1) : menus.at(MENU_SELECTION_LIVES)->selected--;
+					menus.at(MENU_SELECTION_LIVES)->selected <= 0 ? menus.at(MENU_SELECTION_LIVES)->selected = (menus.at(MENU_SELECTION_LIVES)->GetItemCount() - 1) : menus.at(MENU_SELECTION_LIVES)->selected--;
 				}
-				else if (SelectedItem == 1)
+				else if(SelectedItem == 1)
 				{
-					menus.at(MENU_SELECTION_FULLSCREEN)->selected <= 0 ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount()-1) : menus.at(MENU_SELECTION_FULLSCREEN)->selected--;
+					menus.at(MENU_SELECTION_FULLSCREEN)->selected <= 0 ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) : menus.at(MENU_SELECTION_FULLSCREEN)->selected--;
 				}
 			}
 			break;
 		case BIND_RIGHT: case BIND_ARROWR:
-			if (CurrentMenu == MENU_OPTIONS)
+			if(CurrentMenu == MENU_OPTIONS)
 			{
-				if (SelectedItem == 0)
+				if(SelectedItem == 0)
 				{
-					menus.at(MENU_SELECTION_LIVES)->selected >= (menus.at(MENU_SELECTION_LIVES)->GetItemCount()-1) ? menus.at(MENU_SELECTION_LIVES)->selected = 0 : menus.at(MENU_SELECTION_LIVES)->selected++;
+					menus.at(MENU_SELECTION_LIVES)->selected >= (menus.at(MENU_SELECTION_LIVES)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_LIVES)->selected = 0 : menus.at(MENU_SELECTION_LIVES)->selected++;
 				}
-				else if (SelectedItem == 1)
+				else if(SelectedItem == 1)
 				{
-					menus.at(MENU_SELECTION_FULLSCREEN)->selected >= (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount()-1) ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = 0 : menus.at(MENU_SELECTION_FULLSCREEN)->selected++;
+					menus.at(MENU_SELECTION_FULLSCREEN)->selected >= (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = 0 : menus.at(MENU_SELECTION_FULLSCREEN)->selected++;
 				}
 			}
 			break;
 		case BIND_UP: case BIND_ARROWUP:
-			SelectedItem <= 0 ? SelectedItem = (menus.at(CurrentMenu)->GetItemCount()-1) : SelectedItem--;
+			SelectedItem <= 0 ? SelectedItem = (menus.at(CurrentMenu)->GetItemCount() - 1) : SelectedItem--;
 			break;
 		case BIND_DOWN: case BIND_ARROWDOWN:
-			SelectedItem >= (menus.at(CurrentMenu)->GetItemCount()-1) ? SelectedItem = 0 : SelectedItem++;
+			SelectedItem >= (menus.at(CurrentMenu)->GetItemCount() - 1) ? SelectedItem = 0 : SelectedItem++;
 			break;
 	}
 }
@@ -151,7 +151,7 @@ Menu::Menu()
 
 Menu::~Menu()
 {
-	while (items.size())
+	while(items.size())
 	{
 		delete items.back();
 		items.pop_back();
@@ -175,7 +175,7 @@ void LoadMenus()
 	menu->AddMenuItem(new MenuItem(315, 300, "Options", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(315, 380, "Exit", menu_font, menu_color, selected_color));
 	menus.push_back(menu);
-	
+
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(315, 150, "Lives: ", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(315, 230, "Fullscreen:", menu_font, menu_color, selected_color));
@@ -189,7 +189,7 @@ void LoadMenus()
 	menus.push_back(menu);
 
 	menu = new Menu();
-	for (int i = 0; i < MAX_LIVES; i++)
+	for(int i = 0; i < MAX_LIVES; i++)
 	{
 		menu->AddMenuItem(new MenuItem(420 + 30 * i, 150, std::to_string(i + 1), menu_font, menu_color, selected_color));
 	}
@@ -204,7 +204,7 @@ void LoadMenus()
 #endif
 	menu->IsHorizontal = true;
 	menus.push_back(menu);
-	
+
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(WIDTH / 2, HEIGHT / 2 + 50, "Retry Level", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(WIDTH / 2, HEIGHT / 2 + 100, "New Level", menu_font, menu_color, selected_color));
@@ -243,12 +243,12 @@ void SetCurrentMenu(MENUS menu)
 		SaveConfig();
 		if(menu == MENU_MAIN)
 			SelectedItem = 1;
-	}				
+	}
 }
 
 void MenusCleanup()
 {
-	while (menus.size())
+	while(menus.size())
 	{
 		delete menus.back();
 		menus.pop_back();

@@ -27,7 +27,7 @@ void LoadTileSet()
 	int width, height;
 	width = surface_level_textures->w / TILESIZE;
 	height = surface_level_textures->h / TILESIZE;
-	for (int i = 0; i < width * height; i++)
+	for(int i = 0; i < width * height; i++)
 	{
 		// Calculating tile ID
 		int rem = i % width; // remainder
@@ -38,15 +38,15 @@ void LoadTileSet()
 
 void AddDataToTileSet(int type, int x_offset, int y_offset)
 {
-	CustomTile c = {type, x_offset, y_offset};
+	CustomTile c = { type, x_offset, y_offset };
 	tileset.push_back(c);
 }
 
 void DeleteAllTiles()
 {
-	for (auto &i : tilemap_bg)
+	for(auto &i : tilemap_bg)
 	{
-		for (auto &j : i)
+		for(auto &j : i)
 		{
 			if(j)
 			{
@@ -55,9 +55,9 @@ void DeleteAllTiles()
 			}
 		}
 	}
-	for (auto &i : tilemap_fg)
+	for(auto &i : tilemap_fg)
 	{
-		for (auto &j : i)
+		for(auto &j : i)
 		{
 			if(j)
 			{
@@ -76,7 +76,7 @@ void LoadTileTypesFromFile(std::string filename)
 	std::string line;
 
 	int i = 0;
-	while (std::getline(infile, line))
+	while(std::getline(infile, line))
 	{
 		std::stringstream iss(line);
 		size_t pos = 0;
@@ -92,7 +92,7 @@ void LoadTileTypesFromFile(std::string filename)
 			str >> val;
 			tileset[i].type = val;
 			i++;
-			if (pos == std::string::npos)
+			if(pos == std::string::npos)
 				line.erase(0, line.size());
 			else
 				line.erase(0, pos + delimiter.size());
@@ -105,7 +105,7 @@ Tile::Tile(int x, int y, CustomTile *data, bool replace, TILEMAP_LAYERS layer)
 	this->x = x;
 	this->y = y;
 
-	if (x >= (int)tilemap_bg.size() || y >= (int)tilemap_bg[0].size())
+	if(x >= (int)tilemap_bg.size() || y >= (int)tilemap_bg[0].size())
 	{
 		PrintLog(LOG_IMPORTANT, "Attempted to place a tile outside of level boundaries: %d %d", x, y);
 		delete this;
@@ -122,36 +122,36 @@ Tile::Tile(int x, int y, CustomTile *data, bool replace, TILEMAP_LAYERS layer)
 
 		if(tiles[x][y] != PHYSICS_UNOCCUPIED)
 		{
-			if (!replace)
+			if(!replace)
 			{
 				delete this;
 				return;
 			}
 			else
 			{
-				if (layer == LAYER_BACKGROUND)
+				if(layer == LAYER_BACKGROUND)
 					delete tilemap_bg[x][y];
-				else if (layer == LAYER_FOREGROUND)
+				else if(layer == LAYER_FOREGROUND)
 					delete tilemap_fg[x][y];
-				else if (layer == LAYER_SPECIAL)
+				else if(layer == LAYER_SPECIAL)
 					delete tilemap_fg[x][y];
 				tiles[x][y] = PHYSICS_UNOCCUPIED;
 			}
 		}
 
 		tiles[x][y] = type;
-		if (layer == LAYER_BACKGROUND)
+		if(layer == LAYER_BACKGROUND)
 			tilemap_bg[x][y] = this;
-		else if (layer == LAYER_FOREGROUND)
+		else if(layer == LAYER_FOREGROUND)
 			tilemap_fg[x][y] = this;
-		else if (layer == LAYER_FOREGROUND)
+		else if(layer == LAYER_FOREGROUND)
 			tilemap_fg[x][y] = this;
 	}
 }
 
 Tile::Tile(int x, int y, CustomTile *data, char type, bool replace, TILEMAP_LAYERS layer)
 {
-	if (x >= (int)tilemap_bg.size() || y >= (int)tilemap_bg[0].size())
+	if(x >= (int)tilemap_bg.size() || y >= (int)tilemap_bg[0].size())
 	{
 		PrintLog(LOG_IMPORTANT, "Attempted to place a tile outside of level boundaries: %d %d", x, y);
 		delete this;
@@ -169,31 +169,31 @@ Tile::Tile(int x, int y, CustomTile *data, char type, bool replace, TILEMAP_LAYE
 
 		customTile = data;
 
-		if (tiles[x][y] != PHYSICS_UNOCCUPIED)
+		if(tiles[x][y] != PHYSICS_UNOCCUPIED)
 		{
-			if (!replace)
+			if(!replace)
 			{
 				delete this;
 				return;
 			}
 			else
 			{
-				if (layer == LAYER_BACKGROUND)
+				if(layer == LAYER_BACKGROUND)
 					delete tilemap_bg[x][y];
-				else if (layer == LAYER_FOREGROUND)
+				else if(layer == LAYER_FOREGROUND)
 					delete tilemap_fg[x][y];
-				else if (layer == LAYER_SPECIAL)
+				else if(layer == LAYER_SPECIAL)
 					delete tilemap_fg[x][y];
 				tiles[x][y] = PHYSICS_UNOCCUPIED;
 			}
 		}
 
 		tiles[x][y] = type;
-		if (layer == LAYER_BACKGROUND)
+		if(layer == LAYER_BACKGROUND)
 			tilemap_bg[x][y] = this;
-		else if (layer == LAYER_FOREGROUND)
+		else if(layer == LAYER_FOREGROUND)
 			tilemap_fg[x][y] = this;
-		else if (layer == LAYER_SPECIAL)
+		else if(layer == LAYER_SPECIAL)
 			tilemap_fg[x][y] = this;
 	}
 }

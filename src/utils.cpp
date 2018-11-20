@@ -31,12 +31,12 @@ void RandomGenerator::SetSeed(int seed)
 void RandomGenerator::ExportSeed()
 {
 	logfile = SDL_RWFromFile("log.txt", "w+");
-	if (logfile == NULL)
+	if(logfile == NULL)
 	{
 		PrintLog(LOG_IMPORTANT, "File saving failed wtf");
 		return;
 	}
-	
+
 	std::string seedString = "Last seed: " + IntToString(seed);
 	const char *seed = StringToChars(seedString);
 
@@ -85,8 +85,8 @@ int ConvertToTileCoord(double z, bool mode)
 	else
 		result = (int)floor(z / (double)TILESIZE);
 
-	if (result < 0) result = 0;
-	if (result >= level->width_in_tiles) result = level->width_in_tiles - 1;
+	if(result < 0) result = 0;
+	if(result >= level->width_in_tiles) result = level->width_in_tiles - 1;
 	return result;
 }
 
@@ -131,7 +131,7 @@ const char* AddLeadingZeroes(int var, int length)
 {
 	std::string temp = IntToString(var);
 
-	while ((int)temp.length() < length)
+	while((int)temp.length() < length)
 	{
 		temp = "0" + temp;
 	}
@@ -145,13 +145,13 @@ const char* StringToChars(std::string temp)
 {
 	char* c = new char[temp.size() + 1];
 	std::vector<char> ch;
-	for (int i = 0; i < (int)temp.size(); i++)
+	for(int i = 0; i < (int)temp.size(); i++)
 	{
 		ch.push_back(' ');
 	}
 	std::copy(temp.begin(), temp.end(), ch.begin());
 	int at = 0;
-	for (auto f : ch)
+	for(auto f : ch)
 	{
 		c[at] = f;
 		at++;
@@ -183,7 +183,7 @@ const char* ConstCharConcat(const char* first, const char* second)
 
 void PrintLog(int logLevel, const char *fmt, ...)
 {
-	if (logLevel <= LOGDETAIL)
+	if(logLevel <= LOGDETAIL)
 	{
 		char buffer[1024];
 		va_list list;
@@ -199,20 +199,20 @@ bool GetFolderFileList(std::string folder, std::vector<std::string> &fileList)
 	DIR *pDir;
 	struct dirent *pDirent;
 	pDir = opendir(folder.c_str());
-	if (pDir == NULL)
+	if(pDir == NULL)
 	{
 		PrintLog(LOG_DEBUG, "Cannot open directory %s", folder);
 		return 0;
 	}
 
-	while ((pDirent = readdir(pDir)) != NULL)
+	while((pDirent = readdir(pDir)) != NULL)
 	{
-		if (!strcmp(pDirent->d_name, ".") || !strcmp(pDirent->d_name, ".."))
+		if(!strcmp(pDirent->d_name, ".") || !strcmp(pDirent->d_name, ".."))
 			continue;
 
 		std::string dir(folder + '\\' + pDirent->d_name);
 		DIR *pDir2 = opendir(dir.c_str());
-		if (pDir2 == NULL)
+		if(pDir2 == NULL)
 			fileList.push_back(pDirent->d_name);
 	}
 	closedir(pDir);

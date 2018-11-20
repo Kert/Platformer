@@ -31,14 +31,14 @@ extern Level *level;
 
 enum
 {
-	 KEYSTATE_UNPRESSED,
-	 KEYSTATE_PRESSED
+	KEYSTATE_UNPRESSED,
+	KEYSTATE_PRESSED
 };
 
 void InitInput()
 {
 	// Check for joysticks
-	if (SDL_NumJoysticks() < 1)
+	if(SDL_NumJoysticks() < 1)
 	{
 		PrintLog(LOG_INFO, "Warning: No joysticks connected!");
 	}
@@ -47,7 +47,7 @@ void InitInput()
 		// Load joystick
 		// For now use only 1 joystick, first found
 		gamepad = SDL_JoystickOpen(0);
-		if (gamepad == NULL)
+		if(gamepad == NULL)
 		{
 			PrintLog(LOG_IMPORTANT, "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError());
 		}
@@ -66,12 +66,12 @@ bool OnBindPress(int bind)
 {
 	if(FadingState == FADING_STATE_BLACKNBACK)
 		return true;
-	if (GameState == STATE_GAME)
+	if(GameState == STATE_GAME)
 	{
 		player->HandleInput(bind, 0);
-			
+
 		// end inputs affected by player state
-		switch (bind)
+		switch(bind)
 		{
 			case BIND_RIGHT:
 				break;
@@ -88,24 +88,24 @@ bool OnBindPress(int bind)
 				break;
 		}
 	}
-	else if (GameState == STATE_PAUSED)
+	else if(GameState == STATE_PAUSED)
 	{
-		switch (bind)
+		switch(bind)
 		{
 			case BIND_RIGHT: case BIND_ARROWR:
-				break; 
+				break;
 			case BIND_LEFT: case BIND_ARROWL:
 				break;
 			case BIND_UP: case BIND_DOWN: case BIND_ARROWUP: case BIND_ARROWDOWN:
 				NavigateMenu(bind);
 				break;
 			case BIND_JUMP: case BIND_OK: case BIND_ENTER:
-				if (SelectedItem == 0)
+				if(SelectedItem == 0)
 				{
 					ChangeGamestate(STATE_GAME);
 					ResumeMusic();
 				}
-				else if (SelectedItem == 1)
+				else if(SelectedItem == 1)
 				{
 					delete level;
 					level = nullptr;
@@ -116,13 +116,13 @@ bool OnBindPress(int bind)
 				break;
 		}
 	}
-	else if (GameState == STATE_MENU)
+	else if(GameState == STATE_MENU)
 	{
 		return false;
 	}
-	else if (GameState == STATE_TRANSITION)
+	else if(GameState == STATE_TRANSITION)
 	{
-		switch (bind)
+		switch(bind)
 		{
 			case BIND_RIGHT:
 				break;
@@ -133,7 +133,7 @@ bool OnBindPress(int bind)
 				break;
 			case BIND_JUMP: case BIND_OK: case BIND_ENTER:
 				ProgressTransition();
-				break;			
+				break;
 		}
 	}
 	return true;
@@ -141,7 +141,7 @@ bool OnBindPress(int bind)
 
 void OnBindUnpress(int bind)
 {
-	if (GameState == STATE_GAME)
+	if(GameState == STATE_GAME)
 	{
 		player->HandleInput(bind, 2);
 	}
@@ -149,7 +149,7 @@ void OnBindUnpress(int bind)
 
 void OnBindHold(int bind)
 {
-	if (GameState == STATE_GAME)
+	if(GameState == STATE_GAME)
 	{
 		player->HandleInput(bind, 1);
 	}
@@ -161,38 +161,38 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 		return;
 	int bind = GetBindingFromCode(key);
 
-	if (GameState == STATE_GAME)
+	if(GameState == STATE_GAME)
 	{
 		// debug!!
-		if (loadDebugStuff || mkeys[SDLK_LSHIFT] || mkeys[SDLK_RSHIFT])
+		if(loadDebugStuff || mkeys[SDLK_LSHIFT] || mkeys[SDLK_RSHIFT])
 		{
-			if (key == SDLK_KP_4 || key == SDLK_j)
+			if(key == SDLK_KP_4 || key == SDLK_j)
 			{
 				int x, y;
 				player->GetPos(x, y);
 				player->SetPos(x - 32, y);
 			}
-			else if (key == SDLK_KP_6 || key == SDLK_l)
+			else if(key == SDLK_KP_6 || key == SDLK_l)
 			{
 				int x, y;
 				player->GetPos(x, y);
 				player->SetPos(x + 32, y);
 			}
-			else if (key == SDLK_KP_2 || key == SDLK_k)
+			else if(key == SDLK_KP_2 || key == SDLK_k)
 			{
 				int x, y;
 				player->GetPos(x, y);
 				player->SetPos(x, y + 32);
 			}
-			else if (key == SDLK_KP_8 || key == SDLK_i)
+			else if(key == SDLK_KP_8 || key == SDLK_i)
 			{
 				int x, y;
 				player->GetPos(x, y);
 				player->SetPos(x, y - 32);
 			}
-			else if (key == SDLK_7)
+			else if(key == SDLK_7)
 			{
-				if (player->status != STATUS_INVULN)
+				if(player->status != STATUS_INVULN)
 				{
 					player->status = STATUS_INVULN;
 					player->statusTimer = INT_MAX;
@@ -203,7 +203,7 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 					player->statusTimer = 0;
 				}
 			}
-			else if (key == SDLK_8)
+			else if(key == SDLK_8)
 			{
 				int x, y;
 				player->GetPos(x, y);
@@ -211,9 +211,9 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 				Creature *a = new Creature("Dale");
 				a->SetPos(x + 50, y);
 			}
-			else if (key == SDLK_9)
+			else if(key == SDLK_9)
 				TestMemory();
-			else if (key == SDLK_0)
+			else if(key == SDLK_0)
 				level->Reload();
 			else if(key == SDLK_HOME)
 			{
@@ -226,11 +226,11 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 			}
 		}
 	}
-	else if (GameState == STATE_MENU)
+	else if(GameState == STATE_MENU)
 	{
 		DoMenuAction(key, bind);
 	}
-	else if (GameState == STATE_TRANSITION)
+	else if(GameState == STATE_TRANSITION)
 	{
 		ProgressTransition();
 	}
@@ -239,11 +239,11 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 int GetCodeFromInputEvent(SDL_Keycode key, Uint8 jbutton)
 {
 	int code;
-	if (key != -1)
+	if(key != -1)
 	{
 		// Enter is a default hardcoded binding, but its code matches a joy button
 		// This makes sure there are no conflicts relating to that
-		if (key == SDLK_RETURN) key = SDLK_RETURN2;
+		if(key == SDLK_RETURN) key = SDLK_RETURN2;
 
 		code = key;
 	}
@@ -258,12 +258,12 @@ void OnKeyPress(SDL_Keycode key, Uint8 jbutton)
 	int code = GetCodeFromInputEvent(key, jbutton);
 	int bind = GetBindingFromCode(code);
 
-	if (bind != -1)
+	if(bind != -1)
 		inputHandled = OnBindPress(bind);
 
 	//inputEvents.push_back(bind, KEYSTATE_PRESSED);
-	
-	if (!inputHandled)
+
+	if(!inputHandled)
 		OnHardcodedKeyPress(code);
 }
 
@@ -290,11 +290,11 @@ void OnKeyHold(SDL_Keycode key, Uint8 jbutton)
 void ProcessInput()
 {
 	SDL_Event e;
-	while (SDL_PollEvent(&e))
-    {
-		if (!e.key.repeat)
+	while(SDL_PollEvent(&e))
+	{
+		if(!e.key.repeat)
 		{
-			switch (e.type)
+			switch(e.type)
 			{
 				case SDL_EventType::SDL_KEYDOWN:
 					mkeys[e.key.keysym.sym] = KEYSTATE_PRESSED;
@@ -303,10 +303,10 @@ void ProcessInput()
 				case SDL_EventType::SDL_KEYUP:
 					mkeys[e.key.keysym.sym] = KEYSTATE_UNPRESSED;
 					OnKeyUnpress(e.key.keysym.sym, 255);
-					break; 
+					break;
 			}
 		}
-		switch (e.type)
+		switch(e.type)
 		{
 			case SDL_EventType::SDL_JOYBUTTONDOWN:
 				jbuttons[e.jbutton.button] = KEYSTATE_PRESSED;
@@ -317,17 +317,17 @@ void ProcessInput()
 				OnKeyUnpress(-1, e.jbutton.button);
 				break;
 		}
-		if (e.window.event == SDL_WINDOWEVENT_CLOSE)
+		if(e.window.event == SDL_WINDOWEVENT_CLOSE)
 			ENDGAME = true;
 	}
-	for ( auto key : mkeys)
+	for(auto key : mkeys)
 	{
-		if (key.second == KEYSTATE_PRESSED)
+		if(key.second == KEYSTATE_PRESSED)
 			OnKeyHold(key.first, 255);
 	}
-	for (auto jbutton : jbuttons)
+	for(auto jbutton : jbuttons)
 	{
-		if (jbutton.second == KEYSTATE_PRESSED)
+		if(jbutton.second == KEYSTATE_PRESSED)
 			OnKeyHold(-1, jbutton.first);
 	}
 }

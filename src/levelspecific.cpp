@@ -16,16 +16,16 @@ bool bossBattleActivated = false;
 void LevelLogic()
 {
 	bossStartTimer.Run();
-	if (bossStartTimer.completed)
+	if(bossStartTimer.completed)
 	{
 		bossBattleActivated = true;
 	}
-	if (bossBattleActivated)
+	if(bossBattleActivated)
 	{
 		bossLevelTimer.Run();
 		anvilTimer.Run();
 		fireTimer.Run();
-		if (anvilTimer.completed)
+		if(anvilTimer.completed)
 		{
 			Creature* cr = new Creature("Anvil");
 			cr->SetAI<AI_Anvil>();
@@ -38,7 +38,7 @@ void LevelLogic()
 			Effect* eff = new Effect(EFFECT_ROCKETL_HIT);
 			eff->SetPos(xPos - eff->hitbox->GetRect().w / 4, yPos + 3 * TILESIZE);
 		}
-		if (fireTimer.completed)
+		if(fireTimer.completed)
 		{
 			Creature* fr = new Creature("Jumpingfire");
 			fr->SetAI<AI_Jumpingfire>();
@@ -46,11 +46,11 @@ void LevelLogic()
 			fr->AI->SetDistanceToReachY(50 * TILESIZE);
 			fr->SetPos(level->CameraBounds[2].x + TILESIZE * ai_rg->Generate(1, 15), level->CameraBounds[2].y + level->CameraBounds[2].h + 2 * TILESIZE);
 		}
-		if (bossLevelTimer.completed)
+		if(bossLevelTimer.completed)
 		{
 			lava->Activate();
 			camera->Detach();
-			if (level->CameraBounds[2].h > 15 * TILESIZE)
+			if(level->CameraBounds[2].h > 15 * TILESIZE)
 				level->CameraBounds[2].h--;
 			SDL_Rect rect;
 			rect.x = level->CameraBounds[2].x;

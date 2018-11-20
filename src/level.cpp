@@ -51,7 +51,7 @@ Level::Level()
 void Level::Init()
 {
 	loaded = false;
-	
+
 	rg->Reseed();
 	rg->SaveSeed();
 
@@ -59,7 +59,7 @@ void Level::Init()
 	LoadNonRandomElements();
 	LoadEnemies();
 	LoadEntities();
-	
+
 	map_width = width_in_pix = width_in_tiles * TILESIZE;
 	map_height = height_in_pix = height_in_tiles * TILESIZE;
 
@@ -67,7 +67,7 @@ void Level::Init()
 	deathZones.push_back({ 0, height_in_pix + 50, width_in_pix, 50 });
 
 	SetupLevelGraphics(map_width, map_height);
-	
+
 	loaded = true;
 }
 
@@ -91,7 +91,7 @@ void Level::LoadLevelFromFile(std::string filename)
 
 	TiXmlNode* tileset_data = node->FirstChild("tileset");
 	std::string tileset_name;
-	for (TiXmlElement* img = tileset_data->FirstChildElement("image"); img != NULL; img = img->NextSiblingElement("image"))
+	for(TiXmlElement* img = tileset_data->FirstChildElement("image"); img != NULL; img = img->NextSiblingElement("image"))
 	{
 		tileset_filepath = img->Attribute("source");
 		std::vector<std::string> tokens;
@@ -104,38 +104,38 @@ void Level::LoadLevelFromFile(std::string filename)
 	}
 
 	// Loading tileset types and animations
-	for (TiXmlElement* tile = tileset_data->FirstChildElement("tile"); tile != NULL; tile = tile->NextSiblingElement("tile"))
+	for(TiXmlElement* tile = tileset_data->FirstChildElement("tile"); tile != NULL; tile = tile->NextSiblingElement("tile"))
 	{
 		int type = PHYSICS_AIR;
 		int id = SDL_atoi(tile->Attribute("id"));
 		const char *tmp = tile->Attribute("type");
-		if (tmp != nullptr)
+		if(tmp != nullptr)
 		{
 			std::string	type_string = tmp;
-			if (type_string == "block" || type_string == std::to_string(PHYSICS_BLOCK))
+			if(type_string == "block" || type_string == std::to_string(PHYSICS_BLOCK))
 				type = PHYSICS_BLOCK;
-			else if (type_string == "hook" || type_string == std::to_string(PHYSICS_HOOK))
+			else if(type_string == "hook" || type_string == std::to_string(PHYSICS_HOOK))
 				type = PHYSICS_HOOK;
-			else if (type_string == "platform" || type_string == std::to_string(PHYSICS_PLATFORM))
+			else if(type_string == "platform" || type_string == std::to_string(PHYSICS_PLATFORM))
 				type = PHYSICS_PLATFORM;
-			else if (type_string == "exit" || type_string == std::to_string(PHYSICS_EXITBLOCK))
+			else if(type_string == "exit" || type_string == std::to_string(PHYSICS_EXITBLOCK))
 				type = PHYSICS_EXITBLOCK;
-			else if (type_string == "rain" || type_string == std::to_string(PHYSICS_RAIN))
+			else if(type_string == "rain" || type_string == std::to_string(PHYSICS_RAIN))
 				type = PHYSICS_RAIN;
-			else if (type_string == "iceblock" || type_string == std::to_string(PHYSICS_ICEBLOCK))
+			else if(type_string == "iceblock" || type_string == std::to_string(PHYSICS_ICEBLOCK))
 				type = PHYSICS_ICEBLOCK;
-			else if (type_string == "ice" || type_string == std::to_string(PHYSICS_ICE))
+			else if(type_string == "ice" || type_string == std::to_string(PHYSICS_ICE))
 				type = PHYSICS_ICE;
-			else if (type_string == "water" || type_string == std::to_string(PHYSICS_WATER))
+			else if(type_string == "water" || type_string == std::to_string(PHYSICS_WATER))
 				type = PHYSICS_WATER;
-			else if (type_string == "watertop" || type_string == std::to_string(PHYSICS_WATERTOP))
+			else if(type_string == "watertop" || type_string == std::to_string(PHYSICS_WATERTOP))
 				type = PHYSICS_WATERTOP;
 			tileset[id].type = type;
 		}
 		TiXmlElement* anim = tile->FirstChildElement("animation");
-		if (anim == NULL)
+		if(anim == NULL)
 			continue;
-		for (TiXmlElement* frame = anim->FirstChildElement("frame"); frame != NULL; frame = frame->NextSiblingElement("frame"))
+		for(TiXmlElement* frame = anim->FirstChildElement("frame"); frame != NULL; frame = frame->NextSiblingElement("frame"))
 		{
 			int tileid = SDL_atoi(frame->Attribute("tileid"));
 			int duration = SDL_atoi(frame->Attribute("duration"));
@@ -144,28 +144,28 @@ void Level::LoadLevelFromFile(std::string filename)
 	}
 
 	int layerNum = 0;
-	for (TiXmlElement* curLayer = node->FirstChildElement("layer"); curLayer != NULL; curLayer = curLayer->NextSiblingElement("layer"))
+	for(TiXmlElement* curLayer = node->FirstChildElement("layer"); curLayer != NULL; curLayer = curLayer->NextSiblingElement("layer"))
 	{
 		int tileColumn = 0;
 		int tileRow = 0;
 		TiXmlElement* curData = curLayer->FirstChildElement("data");
-		for (TiXmlElement* curTile = curData->FirstChildElement("tile"); curTile != NULL; curTile = curTile->NextSiblingElement("tile"))
+		for(TiXmlElement* curTile = curData->FirstChildElement("tile"); curTile != NULL; curTile = curTile->NextSiblingElement("tile"))
 		{
 			int type = SDL_atoi(curTile->Attribute("gid"));
-			if (type)
+			if(type)
 			{
 				TILEMAP_LAYERS l;
-				if (!layerNum)
+				if(!layerNum)
 					l = LAYER_BACKGROUND;
-				else if (layerNum == LAYER_FOREGROUND)
+				else if(layerNum == LAYER_FOREGROUND)
 					l = LAYER_FOREGROUND;
-				else if (layerNum = LAYER_SPECIAL)
+				else if(layerNum = LAYER_SPECIAL)
 					l = LAYER_FOREGROUND;
 				TileCoord t = { tileColumn, tileRow, l };
 				new Tile(tileColumn, tileRow, &tileset[type - 1], true, l);
 			}
 			tileColumn++;
-			if (tileColumn >= this->width_in_tiles)
+			if(tileColumn >= this->width_in_tiles)
 			{
 				tileRow++;
 				tileColumn = 0;
@@ -175,10 +175,10 @@ void Level::LoadLevelFromFile(std::string filename)
 	}
 
 	TiXmlNode* objects = node->FirstChild("objectgroup");
-	for (TiXmlElement* obj = objects->FirstChildElement("object"); obj != NULL; obj = obj->NextSiblingElement("object"))
+	for(TiXmlElement* obj = objects->FirstChildElement("object"); obj != NULL; obj = obj->NextSiblingElement("object"))
 	{
 		std::string type = obj->Attribute("type");
-		if (type == "cam")
+		if(type == "cam")
 		{
 			SDL_Rect r;
 			r.h = SDL_atoi(obj->Attribute("height"));
@@ -187,7 +187,7 @@ void Level::LoadLevelFromFile(std::string filename)
 			r.y = SDL_atoi(obj->Attribute("y"));
 			CameraBounds.push_back(r);
 		}
-		if (type == "deathzone")
+		if(type == "deathzone")
 		{
 			SDL_Rect r;
 			r.h = SDL_atoi(obj->Attribute("height"));
@@ -196,10 +196,10 @@ void Level::LoadLevelFromFile(std::string filename)
 			r.y = SDL_atoi(obj->Attribute("y"));
 			deathZones.push_back(r);
 		}
-		if (type == "spawn")
+		if(type == "spawn")
 		{
 			std::string name = obj->Attribute("name");
-			if (name == "player")
+			if(name == "player")
 			{
 				SDL_Point p;
 				p.x = SDL_atoi(obj->Attribute("x"));
@@ -212,42 +212,42 @@ void Level::LoadLevelFromFile(std::string filename)
 				int y = SDL_atoi(obj->Attribute("y"));
 
 				TiXmlElement* prop = obj->FirstChildElement();
-				if (!prop)
+				if(!prop)
 					continue;
 
 				std::string AItype;
 				int distanceToReachX = 200;
 				int distanceToReachY = 200;
 				std::string facing = "left";
-				for (TiXmlElement* curProp = prop->FirstChildElement("property"); curProp != NULL; curProp = curProp->NextSiblingElement("property"))
+				for(TiXmlElement* curProp = prop->FirstChildElement("property"); curProp != NULL; curProp = curProp->NextSiblingElement("property"))
 				{
 					std::string propName = curProp->Attribute("name");
-					if (propName == "ai")
+					if(propName == "ai")
 						AItype = curProp->Attribute("value");
-					else if (propName == "distanceToReachX")
+					else if(propName == "distanceToReachX")
 						distanceToReachX = SDL_atoi(curProp->Attribute("value"));
-					else if (propName == "distanceToReachY")
+					else if(propName == "distanceToReachY")
 						distanceToReachY = SDL_atoi(curProp->Attribute("value"));
-					else if (propName == "facing")
+					else if(propName == "facing")
 						facing = curProp->Attribute("value");
 				}
 				levelEnemies.push_back(EnemyData{ x, y, name, AItype, distanceToReachX, distanceToReachY, facing });
 			}
 		}
-		if (type == "platform")
+		if(type == "platform")
 		{
 			QueuedEntity q;
 			int x = SDL_atoi(obj->Attribute("x"));
 			int y = SDL_atoi(obj->Attribute("y"));
 			int h = SDL_atoi(obj->Attribute("height"));
 			int w = SDL_atoi(obj->Attribute("width"));
-			if (h > w)
+			if(h > w)
 				q = { SPAWN_PLATFORM, x, y + TILESIZE, x, y + h };
 			else
 				q = { SPAWN_PLATFORM, x, y, x + w - TILESIZE * 2, y };
 			entitySpawns.push_back(q);
 		}
-		if (type == "lava_floor")
+		if(type == "lava_floor")
 		{
 			QueuedEntity q;
 			int x = SDL_atoi(obj->Attribute("x"));
@@ -255,17 +255,17 @@ void Level::LoadLevelFromFile(std::string filename)
 			q = { SPAWN_LAVA_FLOOR, x, y - TILESIZE, NULL, NULL };
 			entitySpawns.push_back(q);
 		}
-		if (type == "pickup")
+		if(type == "pickup")
 		{
 			std::string name = obj->Attribute("name");
 			int x = SDL_atoi(obj->Attribute("x"));
 			int y = SDL_atoi(obj->Attribute("y")) + TILESIZE;
 			Pickup *pi;
-			if (name == "health")
+			if(name == "health")
 				pi = new Pickup(PICKUP_HEALTH);
-			else if (name == "lightning")
+			else if(name == "lightning")
 				pi = new Pickup(PICKUP_LIGHTNING);
-			else if (name == "fireball")
+			else if(name == "fireball")
 				pi = new Pickup(PICKUP_FIREBALL);
 			else
 			{
@@ -311,7 +311,7 @@ void Level::UnloadEntities()
 
 void Level::LoadEnemies()
 {
-	for (auto &e : levelEnemies)
+	for(auto &e : levelEnemies)
 	{
 		Creature *c;
 		c = new Creature(e.type);
@@ -335,9 +335,9 @@ void Level::LoadEnemies()
 			c->SetAI<AI_Liner>();
 		else if(e.AItype == "Sentinel")
 			c->SetAI<AI_Sentinel>();
-		else if (e.AItype == "Anvil")
+		else if(e.AItype == "Anvil")
 			c->SetAI<AI_Anvil>();
-		else if (e.AItype == "Jumpingfire")
+		else if(e.AItype == "Jumpingfire")
 			c->SetAI<AI_Jumpingfire>();
 		else
 		{
@@ -360,25 +360,25 @@ void Level::LoadEnemies()
 
 void Level::LoadEntities()
 {
-	for (auto e : entitySpawns)
+	for(auto e : entitySpawns)
 	{
-		if (e.entityType == SPAWN_DOOR)
+		if(e.entityType == SPAWN_DOOR)
 		{
-			if (e.data < 2)
+			if(e.data < 2)
 			{
 				Door *d = new Door(e.x, e.y, e.data > 0);
 			}
 		}
-		else if (e.entityType == SPAWN_PICKUP)
+		else if(e.entityType == SPAWN_PICKUP)
 		{
 			Pickup *p = new Pickup((PICKUP_TYPES)e.data);
 			p->SetPos(e.x, e.y);
 		}
-		else if (e.entityType == SPAWN_PLATFORM)
+		else if(e.entityType == SPAWN_PLATFORM)
 		{
 			new Platform(e.x, e.y, e.data, e.data2);
 		}
-		else if (e.entityType == SPAWN_LAVA_FLOOR)
+		else if(e.entityType == SPAWN_LAVA_FLOOR)
 		{
 			lava = new Lava_Floor(e.x, e.y);
 		}

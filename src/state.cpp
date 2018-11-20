@@ -15,20 +15,20 @@ EntityState* EntityState::HandleInput(Player &p, int input, int type)
 		{
 			switch(input)
 			{
-				case BIND_FIRE:			
-					if (p.shottime == 0)
+				case BIND_FIRE:
+					if(p.shottime == 0)
 					{
 						p.shottime = p.fireDelay[p.weapon];
-						if (p.ammo[p.weapon] && p.weapon == WEAPON_GRENADE)
+						if(p.ammo[p.weapon] && p.weapon == WEAPON_GRENADE)
 						{
 							p.ammo[p.weapon]--;
 							ProcessShot(p.weapon, *pl);
 						}
-						if (p.weapon == WEAPON_LIGHTNING)
+						if(p.weapon == WEAPON_LIGHTNING)
 						{
 							ProcessShot(p.weapon, *pl);
 						}
-						if (p.ammo[p.weapon] && p.weapon == WEAPON_FIREBALL)
+						if(p.ammo[p.weapon] && p.weapon == WEAPON_FIREBALL)
 						{
 							p.ammo[p.weapon]--;
 							p.setState(STATE_CHARGING);
@@ -88,7 +88,6 @@ EntityState* EntityState::HandleInput(Player &p, int input, int type)
 							}
 						}
 					}
-          
 					pl->charge_time = 0;
 					pl->removeState(STATE_CHARGING);
 					break;
@@ -137,11 +136,11 @@ EntityState* NormalState::HandleInput(Player &p, int input, int type)
 					break;
 				case BIND_UP:
 				{
-					if (p.interactTarget > -1)
+					if(p.interactTarget > -1)
 					{
-						for (auto &dy : machinery)
+						for(auto &dy : machinery)
 						{
-							if (p.interactTarget == dy->pairID && dy->isSolid == true)
+							if(p.interactTarget == dy->pairID && dy->isSolid == true)
 								dy->Activate();
 						}
 					}
@@ -234,16 +233,16 @@ EntityState* OnLadderState::HandleInput(Player &p, int input, int type)
 		}
 		case 1: // hold
 		{
-			switch (input)
+			switch(input)
 			{
 				case BIND_UP:
 					p.SetVelocity(0, -p.climb_vel);
-					if (!p.nearladder)
+					if(!p.nearladder)
 						return new NormalState();
 					break;
 				case BIND_DOWN:
 					p.SetVelocity(0, p.climb_vel);
-					if (!p.nearladder || p.hasState(STATE_ONGROUND))
+					if(!p.nearladder || p.hasState(STATE_ONGROUND))
 						return new NormalState();
 					break;
 				default:
@@ -253,7 +252,7 @@ EntityState* OnLadderState::HandleInput(Player &p, int input, int type)
 		}
 		case 2:
 		{
-			switch (input)
+			switch(input)
 			{
 				case BIND_UP: case BIND_DOWN:
 					p.SetVelocity(0, 0);
@@ -391,7 +390,7 @@ void HangingState::Enter(Player &p)
 
 HangingState::~HangingState()
 {
-	
+
 }
 
 EntityState* HangingState::HandleInput(Player &p, int input, int type)
@@ -508,7 +507,7 @@ EntityState* SlidingState::HandleInput(Player &p, int input, int type)
 							EntityState::HandleInput(p, input, type);
 						}
 						break;
-					}	
+					}
 					if(p.GetVelocity().x < 0)
 						return new NormalState();
 					break;

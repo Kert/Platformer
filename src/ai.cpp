@@ -39,8 +39,8 @@ void BaseAI::RunAI()
 	}
 	else if(me->GetDistanceToEntity(target) > distanceToLoss)
 	{
-    if(oneTimeToggle)
-      return;
+		if(oneTimeToggle)
+			return;
 		if(distanceReached)
 		{
 			PrintLog(LOG_SUPERDEBUG, "Distance lost");

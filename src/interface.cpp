@@ -20,7 +20,7 @@ TTF_Font *font = NULL;
 
 void InterfaceSetup()
 {
-	font = TTF_OpenFont( "assets/misc/verdana.ttf", 44 / RENDER_SCALE );
+	font = TTF_OpenFont("assets/misc/verdana.ttf", 44 / RENDER_SCALE);
 	BuildInterface(32, 32, 20, 20, "assets/sprites/lifebar.png", 0, INTERFACE_LIFE);
 	BuildInterface(32, 32, 20, 20, "assets/sprites/abilities.png", 0, INTERFACE_ABILITY);
 	//BuildInterface(TEXT_HEIGHT, SCORE_WIDTH, SCORE_OFFSET_X, SCORE_OFFSET_Y, "000000", -1, INTERFACE_SCORE);
@@ -87,21 +87,21 @@ void BuildInterface(int h, int w, int x, int y, const char* content, int frame, 
 	f.w = w;
 	f.x = (w * frame) / RENDER_SCALE;
 	f.y = 0;
-	
+
 	SDL_Rect r;
 	r.h = h;
 	r.w = w;
 	r.x = x;
 	r.y = y;
-	
-	if (frame == -1) // null frame, treat as text
+
+	if(frame == -1) // null frame, treat as text
 	{
 		interface[part].text = content;
 		interface[part].tex = NULL;
 	}
 	else
 		interface[part].tex = IMG_LoadTexture(renderer, content);
-		
+
 	interface[part].frame = f;
 	interface[part].location = r;
 }
@@ -109,7 +109,7 @@ void BuildInterface(int h, int w, int x, int y, const char* content, int frame, 
 void RenderInterface()
 {
 	SDL_Color interface_color = { 50, 180, 0 };
-	for (auto iter : interface)
+	for(auto iter : interface)
 	{
 		if(iter.second.tex == NULL)
 			RenderText(iter.second.location.x, iter.second.location.y, iter.second.text, font, interface_color);
@@ -120,7 +120,7 @@ void RenderInterface()
 
 void InterfaceCleanup()
 {
-	for (auto i : interface)
+	for(auto i : interface)
 		SDL_DestroyTexture(i.second.tex);
 	std::map<int, InterfacePiece>().swap(interface); // forcibly deallocate memory
 }

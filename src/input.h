@@ -5,7 +5,7 @@
 
 int GetCodeFromInputEvent(SDL_Keycode key, Uint8 jbutton);
 
-bool OnBindPress(int bind); 
+bool OnBindPress(int bind);
 void OnBindHold(int bind);
 void OnBindUnpress(int bind);
 

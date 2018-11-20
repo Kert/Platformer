@@ -32,18 +32,18 @@ void Sprite::SetAnimation(ANIMATION_TYPE type)
 	// fallbacks if animation isn't defined
 	if(type == ANIMATION_FALLING && !AnimationExists(ANIMATION_FALLING))
 		type = ANIMATION_JUMPING;
-  if(!AnimationExists(type))
-    type = ANIMATION_STANDING;
-	
-	if (last_anim != type)
+	if(!AnimationExists(type))
+		type = ANIMATION_STANDING;
+
+	if(last_anim != type)
 	{
-    current_anim = type;
+		current_anim = type;
 		PrintLog(LOG_INFO, "Set animation to %i. Old was %i", type, last_anim);
 		animation.at(type).SetCurrentFrame(1);
 		this->Animate();
-    last_anim = type;
+		last_anim = type;
 	}
-	
+
 }
 
 bool Sprite::AnimationExists(ANIMATION_TYPE type)
@@ -53,7 +53,7 @@ bool Sprite::AnimationExists(ANIMATION_TYPE type)
 
 void Sprite::Animate()
 {
-	if (current_anim != ANIMATION_NONE)
+	if(current_anim != ANIMATION_NONE)
 		animation.at(current_anim).Animate(rect.x, rect.y);
 }
 

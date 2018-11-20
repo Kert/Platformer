@@ -178,29 +178,29 @@ class AI_Sentinel: public BaseAI
 
 class AI_Anvil : public BaseAI
 {
-public:
-	AI_Anvil(Creature *c) : BaseAI(c) {
-		distanceToReach = 1;
-	};
+	public:
+		AI_Anvil(Creature *c) : BaseAI(c) {
+			distanceToReach = 1;
+		};
 
-private:
-	void OnDistanceReached();
+	private:
+		void OnDistanceReached();
 };
 
 class AI_Jumpingfire : public BaseAI
 {
 	bool activated = false;
 	int startingY;
-public:
-	AI_Jumpingfire(Creature *c) : BaseAI(c) {
-		distanceToReach = 200;
-		timeToTrigger = std::vector<int>{ 0 };
-		timerTime = std::vector<int>{ 0 };
-	};
+	public:
+		AI_Jumpingfire(Creature *c) : BaseAI(c) {
+			distanceToReach = 200;
+			timeToTrigger = std::vector<int>{ 0 };
+			timerTime = std::vector<int>{ 0 };
+		};
 
-private:
-	void OnDistanceReached();
-	void OnTimerTimeup(int id);
+	private:
+		void OnDistanceReached();
+		void OnTimerTimeup(int id);
 };
 
 #endif

@@ -35,9 +35,9 @@ void PlayMusic(char* musicName)
 	strcpy(musicFile, "assets/music/");
 	strcat(musicFile, musicName);
 	strcat(musicFile, ".ogg");
-	
+
 	activeMusic = Mix_LoadMUS(musicFile);
-	if (!activeMusic) {
+	if(!activeMusic) {
 		PrintLog(LOG_IMPORTANT, "Mix_LoadMUS: %s\n", Mix_GetError());
 	}
 	else
@@ -50,7 +50,7 @@ void PlayMusic(char* musicName)
 
 void ProcessMusic()
 {
-	if (restartMusic)
+	if(restartMusic)
 	{
 		Mix_PlayMusic(activeMusic, 1);
 		restartMusic = false;
@@ -87,7 +87,7 @@ void SoundCleanup()
 		Mix_FreeChunk(i.second);
 	}
 	// Close sound mixer
-	while (Mix_Init(0))
+	while(Mix_Init(0))
 		Mix_Quit();
 	Mix_CloseAudio();
 }

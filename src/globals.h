@@ -14,12 +14,12 @@ enum LOG_LEVELS
 #define LOGDETAIL LOG_DEBUG
 
 #ifdef _RELEASE
-	#undef LOGDETAIL
+#undef LOGDETAIL
 #endif
 
 #ifndef LOGDETAIL
-	#define SDL_Log(_1, ...)
-	#define LOGDETAIL -1
+#define SDL_Log(_1, ...)
+#define LOGDETAIL -1
 #endif
 
 enum GAMESTATES
@@ -130,8 +130,8 @@ enum PICKUP_TYPES
 
 struct TileFrame
 {
-		int id;
-		int duration;
+	int id;
+	int duration;
 };
 
 struct TileAnimationData

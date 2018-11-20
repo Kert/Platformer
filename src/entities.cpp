@@ -74,7 +74,7 @@ void ReadCreatureData()
 		}
 
 		CreatureGraphicsData cr;
-		
+
 		std::string textureName = rea.Get("Sprite", "TextureName", "dummy.png");
 		cr.sprite.SetSpriteTexture(textureManager.GetTexture(textureName));
 
@@ -101,7 +101,7 @@ void ReadCreatureData()
 			{"Jumping", ANIMATION_JUMPING},
 			{"Falling", ANIMATION_FALLING}
 		};
-	
+
 		for(auto i : animTable)
 		{
 			std::string animString = rea.Get("Animations", i.first, "");
@@ -125,7 +125,7 @@ void ReadCreatureData()
 		creatureGraphicsData[fileName] = cr;
 	}
 }
-	
+
 
 Player::Player()
 {
@@ -144,9 +144,9 @@ Player::Player()
 	ResetWeapons();
 
 	ammo[WEAPON_FIREBALL] = 3;
-    //Initialize the velocity
+	//Initialize the velocity
 	SetVelocity(0, 0);
-	
+
 	state = 0;
 
 	hitbox = new Hitbox(0, 0, 30, 10);
@@ -163,30 +163,30 @@ Player::Player()
 	sprite->AddAnimation(ANIMATION_HANGING, 96, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
 	sprite->AddAnimation(ANIMATION_SLIDING, 0, 33, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
 	sprite->AddAnimation(ANIMATION_SHOOTING_HANGING, 64, 68, 2, 32, 80, ANIM_LOOP_TYPES::LOOP_NONE); // hang shoot
-  sprite->AddAnimation(ANIMATION_SHOOTING_STANDING, 0, 68, 2, 32, 64, ANIM_LOOP_TYPES::LOOP_NONE);
-  sprite->AddAnimation(ANIMATION_SHOOTING_JUMPING, 32, 33, 1, 0, 64, ANIM_LOOP_TYPES::LOOP_NONE);
-  sprite->AddAnimation(ANIMATION_SHOOTING_FALLING, 64, 33, 1, 0, 64, ANIM_LOOP_TYPES::LOOP_NONE);
-  sprite->AddAnimation(ANIMATION_SHOOTING_RUNNING, 128, 34, 4, 32, 150, ANIM_LOOP_TYPES::LOOP_NORMAL);
+	sprite->AddAnimation(ANIMATION_SHOOTING_STANDING, 0, 68, 2, 32, 64, ANIM_LOOP_TYPES::LOOP_NONE);
+	sprite->AddAnimation(ANIMATION_SHOOTING_JUMPING, 32, 33, 1, 0, 64, ANIM_LOOP_TYPES::LOOP_NONE);
+	sprite->AddAnimation(ANIMATION_SHOOTING_FALLING, 64, 33, 1, 0, 64, ANIM_LOOP_TYPES::LOOP_NONE);
+	sprite->AddAnimation(ANIMATION_SHOOTING_RUNNING, 128, 34, 4, 32, 150, ANIM_LOOP_TYPES::LOOP_NORMAL);
 	state_ = new NormalState();
 	state_->Initialize(*this);
-  InitPlayerTexture();
+	InitPlayerTexture();
 }
 
 void Player::SwitchWeapon()
 {
 	bool switchDone = false;
 	WEAPONS newWeap = weapon;
-	while (!switchDone) // cycling through all the weapons until reaching the next one the player owns
+	while(!switchDone) // cycling through all the weapons until reaching the next one the player owns
 	{
 		newWeap = (WEAPONS)((newWeap + 1) % NUMWEAPONS);
-		if (ownedWeapons[newWeap]) switchDone = true;
+		if(ownedWeapons[newWeap]) switchDone = true;
 	}
 	this->SwitchWeapon(newWeap);
 }
 
 void Player::SwitchWeapon(WEAPONS newWeap)
 {
-	if (ownedWeapons[newWeap]) weapon = newWeap;
+	if(ownedWeapons[newWeap]) weapon = newWeap;
 	switch(weapon)
 	{
 		case WEAPON_FIREBALL:
@@ -211,7 +211,7 @@ void Player::GiveWeapon(WEAPONS weap)
 {
 	ownedWeapons[weap] = true;
 
-	switch (weap)
+	switch(weap)
 	{
 		case WEAPON_ROCKETL:
 			ammo[weap] += 10;
@@ -229,23 +229,23 @@ void Player::GiveWeapon(WEAPONS weap)
 // required to initialize weapon array, putting in a function so we can maybe recycle it later?
 void Player::ResetWeapons()
 {
-	for (int i = 0; i < NUMWEAPONS; i++)
+	for(int i = 0; i < NUMWEAPONS; i++)
 	{
 		ownedWeapons[i] = false;
 		ammo[i] = 0;
 	}
 
-	fireDelay[WEAPON_ROCKETL] =	(int)( 0.7 * 1000 );
-	fireDelay[WEAPON_FLAME] =	(int)( 0.1 * 1000 );
+	fireDelay[WEAPON_ROCKETL] = (int)(0.7 * 1000);
+	fireDelay[WEAPON_FLAME] = (int)(0.1 * 1000);
 	//fireDelay[WEAPON_FLAME] = (int)(0.07 * 1000 );
-	fireDelay[WEAPON_GRENADE] = (int)( 1.0 * 1000 );
+	fireDelay[WEAPON_GRENADE] = (int)(1.0 * 1000);
 	fireDelay[WEAPON_LIGHTNING] = (int)(0.5 * 3000);
-	fireDelay[WEAPON_FIREBALL] = (int)( 0.1 * 1000 );
+	fireDelay[WEAPON_FIREBALL] = (int)(0.1 * 1000);
 }
 
 bool Player::CanMoveWhileFiring()
 {
-	if (hasState(STATE_SHOTLOCKED) && weapon >= WEAPON_FLAME)
+	if(hasState(STATE_SHOTLOCKED) && weapon >= WEAPON_FLAME)
 	{
 		// TODO: velocity x 0 here
 		return false;
@@ -263,8 +263,8 @@ void Player::ToggleChargedColor()
 }
 
 void Player::DisableChargedColor()
-{  
-  switch(weapon)
+{
+	switch(weapon)
 	{
 		case WEAPON_FIREBALL:
 		{
@@ -284,7 +284,7 @@ void Player::DisableChargedColor()
 void Creature::ToggleDucking(bool enable)
 {
 	PrintLog(LOG_INFO, "ducking toggled");
-	if (enable)
+	if(enable)
 	{
 		this->setState(STATE_DUCKING);
 		hitbox->SetRect({ 0, 0, 16, 16 });
@@ -343,7 +343,7 @@ int DynamicEntity::getState()
 
 void DynamicEntity::setState(int state)
 {
-	if (!this->hasState(state))
+	if(!this->hasState(state))
 	{
 		//PrintLog(LOG_INFO, "NEW STATE %d", state);
 		this->state += state;
@@ -352,7 +352,7 @@ void DynamicEntity::setState(int state)
 
 void DynamicEntity::removeState(int state)
 {
-	if (this->hasState(state)) this->state -= state;
+	if(this->hasState(state)) this->state -= state;
 }
 
 bool DynamicEntity::hasState(int state)
@@ -362,20 +362,20 @@ bool DynamicEntity::hasState(int state)
 
 void Player::SetState(int state)
 {
-	if (state_ != nullptr)
+	if(state_ != nullptr)
 		delete state_;
 	switch(state)
 	{
 		case PLAYER_STATES::PLAYER_STATE_HANGING:
-			state_ = new HangingState();	
-			break;	
+			state_ = new HangingState();
+			break;
 	}
 	state_->Initialize(*this);
 }
 
 void Player::SetState(EntityState *newState)
 {
-	if (state_ != nullptr)
+	if(state_ != nullptr)
 		delete state_;
 	state_ = newState;
 	state_->Initialize(*this);
@@ -383,7 +383,7 @@ void Player::SetState(EntityState *newState)
 
 void Player::HandleInput(int input, int type)
 {
-	if (player->status == STATUS_STUN)
+	if(player->status == STATUS_STUN)
 		return;
 
 	EntityState *newState = this->state_->HandleInput(*this, input, type);
@@ -418,7 +418,6 @@ void Entity::SetDirection(DIRECTIONS direction)
 void Creature::Walk()
 {
 	Walk(direction);
-
 }
 
 void Creature::Walk(DIRECTIONS direction)
@@ -428,12 +427,12 @@ void Creature::Walk(DIRECTIONS direction)
 	if(!this->hasState(STATE_ONLADDER))
 		this->direction = direction;
 
-	if (this->hasState(STATE_ONGROUND) && !this->hasState(STATE_ONLADDER)) {
+	if(this->hasState(STATE_ONGROUND) && !this->hasState(STATE_ONLADDER)) {
 		this->accel.x = 1 * (direction ? 1 : -1);
 		if(IsOnIce(*this))
 			this->accel.x = 0.35 * (direction ? 1 : -1);
 	}
-	else if (!this->hasState(STATE_ONGROUND))
+	else if(!this->hasState(STATE_ONGROUND))
 		this->accel.x = 0.7 * (direction ? 1 : -1);
 
 	this->SetVelocity(vel.x, vel.y);
@@ -444,10 +443,9 @@ void Creature::Jump()
 	// from
 	// void JumpingState::Enter(Player &p)
 	
-		
 	if(!this->hasState(STATE_ONGROUND))
 	{
-		if (this->hasState(STATE_HANGING))
+		if(this->hasState(STATE_HANGING))
 			this->removeState(STATE_HANGING);
 		else
 			return;
@@ -493,8 +491,8 @@ Creature::Creature(std::string type)
 
 	direction = DIRECTION_RIGHT;
 
-    SetVelocity(0, 0);
-	
+	SetVelocity(0, 0);
+
 	std::string graphicsName = creatureData[type].graphicsName;
 	hitbox = new Hitbox(creatureGraphicsData[graphicsName].hitbox);
 	sprite = new Sprite(creatureGraphicsData[graphicsName].sprite);
@@ -560,17 +558,17 @@ int Entity::AssignEntityID(int vectorID)
 {
 	bool taken = false;
 
-	switch (vectorID)
+	switch(vectorID)
 	{
 		case LIST_BULLETS:
-			for (int i = 0; i < (int)bullets.size(); i++)
+			for(int i = 0; i < (int)bullets.size(); i++)
 			{
-				for (Bullet* j : bullets)
+				for(Bullet* j : bullets)
 				{
-					if (j->entityID == i)
+					if(j->entityID == i)
 						taken = true;
 				}
-				if (!taken)
+				if(!taken)
 					return i;
 				else
 					taken = false;
@@ -578,14 +576,14 @@ int Entity::AssignEntityID(int vectorID)
 			return static_cast<int>(bullets.size());
 
 		case LIST_CREATURES:
-			for (int i = 0; i < (int)creatures.size(); i++)
+			for(int i = 0; i < (int)creatures.size(); i++)
 			{
-				for (Creature* j : creatures)
+				for(Creature* j : creatures)
 				{
-					if (j->entityID == i)
+					if(j->entityID == i)
 						taken = true;
 				}
-				if (!taken)
+				if(!taken)
 					return i;
 				else
 					taken = false;
@@ -593,14 +591,14 @@ int Entity::AssignEntityID(int vectorID)
 			return static_cast<int>(creatures.size());
 
 		case LIST_MACHINERY:
-			for (int i = 0; i < (int)machinery.size(); i++)
+			for(int i = 0; i < (int)machinery.size(); i++)
 			{
-				for (Machinery* j : machinery)
+				for(Machinery* j : machinery)
 				{
-					if (j->entityID == i)
+					if(j->entityID == i)
 						taken = true;
 				}
-				if (!taken)
+				if(!taken)
 					return i;
 				else
 					taken = false;
@@ -608,14 +606,14 @@ int Entity::AssignEntityID(int vectorID)
 			return static_cast<int>(machinery.size());
 
 		case LIST_PICKUPS:
-			for (int i = 0; i < (int)pickups.size(); i++)
+			for(int i = 0; i < (int)pickups.size(); i++)
 			{
-				for (Pickup* j : pickups)
+				for(Pickup* j : pickups)
 				{
-					if (j->entityID == i)
+					if(j->entityID == i)
 						taken = true;
 				}
-				if (!taken)
+				if(!taken)
 					return i;
 				else
 					taken = false;
@@ -623,14 +621,14 @@ int Entity::AssignEntityID(int vectorID)
 			return static_cast<int>(pickups.size());
 
 		case LIST_EFFECTS:
-			for (int i = 0; i < (int)effects.size(); i++)
+			for(int i = 0; i < (int)effects.size(); i++)
 			{
-				for (Effect* j : effects)
+				for(Effect* j : effects)
 				{
-					if (j->entityID == i)
+					if(j->entityID == i)
 						taken = true;
 				}
-				if (!taken)
+				if(!taken)
 					return i;
 				else
 					taken = false;
@@ -671,8 +669,8 @@ Hitbox::Hitbox(double x, double y, double h, double w)
 
 bool Hitbox::HasCollision(Hitbox *hitbox)
 {
-	return !(this->x > hitbox->x+hitbox->w || this->x + this->w < hitbox->x ||
-		this->y > hitbox->y+hitbox->h || this->y+this->h < hitbox->y);
+	return !(this->x > hitbox->x + hitbox->w || this->x + this->w < hitbox->x ||
+		this->y > hitbox->y + hitbox->h || this->y + this->h < hitbox->y);
 }
 
 SDL_Rect Hitbox::GetRect()
@@ -717,12 +715,12 @@ void Hitbox::SetRect(SDL_Rect rect)
 
 void Pickup::OnPickup()
 {
-	if (this->type != PICKUP_NOTHING)
+	if(this->type != PICKUP_NOTHING)
 	{
 		this->status = STATUS_DYING;
 		this->statusTimer = this->deathLength;
-		
-		switch (this->type)
+
+		switch(this->type)
 		{
 			case PICKUP_AMMO:
 				// TODO: Find who picked up
@@ -732,7 +730,7 @@ void Pickup::OnPickup()
 				break;
 			case PICKUP_HEALTH:
 				player->health += 50;
-				if (player->health > 100) player->health = 100;
+				if(player->health > 100) player->health = 100;
 				break;
 			case PICKUP_LIGHTNING:
 				player->GiveWeapon(WEAPON_LIGHTNING);
@@ -752,7 +750,7 @@ void Pickup::OnPickup()
 // default dummy constructor yay
 Pickup::Pickup()
 {
-	
+
 }
 
 Pickup::Pickup(PICKUP_TYPES spawnType)
@@ -763,14 +761,14 @@ Pickup::Pickup(PICKUP_TYPES spawnType)
 	type = spawnType;
 
 	SDL_Point offset;
-	switch (spawnType)
+	switch(spawnType)
 	{
 		case PICKUP_AMMO:
-			offset = { 16, 0};
+			offset = { 16, 0 };
 			break;
 		case PICKUP_HEALTH:
 			offset = { 0 + 8, 0 };
-			break; 
+			break;
 		case PICKUP_LIGHTNING:
 			offset = { 64 + 8, 0 };
 			break;
@@ -814,12 +812,12 @@ void Bullet::Remove()
 
 Player::~Player()
 {
-	
+
 }
 
 DynamicEntity::~DynamicEntity()
 {
-	if (camera && camera->IsAttachedTo(this))
+	if(camera && camera->IsAttachedTo(this))
 		camera->Detach();
 	delete hitbox;
 	delete sprite;
@@ -919,7 +917,7 @@ Bullet::Bullet(WEAPONS firedFrom, DynamicEntity &shooter)
 
 	std::pair<double, double> angles = GetAngleSinCos(shooter);
 
-	switch (firedFrom)
+	switch(firedFrom)
 	{
 		case WEAPON_ROCKETL:
 			hitbox = new Hitbox(0, 0, 4, 7);
@@ -950,7 +948,7 @@ Bullet::Bullet(WEAPONS firedFrom, DynamicEntity &shooter)
 			sprite = new Sprite(textureManager.GetTexture("assets/sprites/rocketlbullet.png"), 0, 0, 7, 7);
 			sprite->SetSpriteOffset(0, -16);
 			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 7, 105, ANIM_LOOP_TYPES::LOOP_NORMAL);
-			if (shooter.hasState(STATE_ONLADDER))
+			if(shooter.hasState(STATE_ONLADDER))
 				SetVelocity(0, 0);
 			else
 				SetVelocity(150 * (direction ? 1 : -1), -200);
@@ -996,13 +994,13 @@ Bullet::~Bullet()
 
 void Creature::ProcessBulletHit(Bullet *b)
 {
-	if (b->piercing)
+	if(b->piercing)
 	{
-		for (auto &j : hitFrom)
+		for(auto &j : hitFrom)
 		{
-			if (j.id == b->entityID) return;
+			if(j.id == b->entityID) return;
 		}
-		
+
 		// creature hasn't been hit by this bullet yet, mark creature as hit
 		DamageSource d;
 		d.id = b->entityID;
@@ -1074,7 +1072,7 @@ void Machinery::Activate()
 {
 	// only contains door logic for now
 	// TODO: call door open and close functions somehow (I don't think they're being used yet)
-	if (enabled)
+	if(enabled)
 	{
 		SetVelocity(0, 200);
 		PlaySound("door_close");
@@ -1095,11 +1093,11 @@ Door::Door(int x, int y, bool spawnButtons)
 
 	default_pos.x = x;
 	default_pos.y = y;
-	default_pos.h = 16*3;
+	default_pos.h = 16 * 3;
 	default_pos.w = 16;
 	hitbox = new Hitbox(0, 0, default_pos.h, default_pos.w);
 	sprite = new Sprite(textureManager.GetTexture("assets/textures/tiles1.png"), 10 * 16, 9 * 16, default_pos.h, default_pos.w);
-	if (spawnButtons)
+	if(spawnButtons)
 	{
 		pairID = doorPairs;
 		leftButton = new Button(x - 32, y + 16, pairID);
@@ -1205,11 +1203,11 @@ Platform::Platform(int x, int y, int x2, int y2)
 	default_pos.x = x;
 	default_pos.y = y;
 	default_pos.h = 16;
-	default_pos.w = 16*2;
+	default_pos.w = 16 * 2;
 	another_pos.x = x2;
 	another_pos.y = y2;
 	another_pos.h = 16;
-	another_pos.w = 16*2;
+	another_pos.w = 16 * 2;
 	hitbox = new Hitbox(0, 0, default_pos.h, default_pos.w);
 	sprite = new Sprite(textureManager.GetTexture("assets/textures/tiles1.png"), 6 * 16, 11 * 16, default_pos.h, default_pos.w);
 	sprite->SetSpriteOffset(0, -default_pos.h);
@@ -1242,7 +1240,7 @@ Platform::~Platform()
 // otherwise known as "destroy all the machinery in the level"
 void TestMemory()
 {
-	for (int i = 0; i < 100; i++)
+	for(int i = 0; i < 100; i++)
 	{
 		Door *d = new Door(i, i, false);
 		delete d;
@@ -1250,19 +1248,19 @@ void TestMemory()
 
 	PrintLog(LOG_INFO, "Hmm");
 
-	for (int i = 0; i < 100; i++)
+	for(int i = 0; i < 100; i++)
 	{
 		Door *d = new Door(i, i, false);
 		delete d;
 	}
 
-	for (int t = machinery.size() - 1; t >= 0; t--)
+	for(int t = machinery.size() - 1; t >= 0; t--)
 	{
 		delete machinery.at(t);
 	}
 
 	PrintLog(LOG_INFO, "HMm");
-	for (int i = 0; i < 100; i++)
+	for(int i = 0; i < 100; i++)
 	{
 		Door *d = new Door(i, i, false);
 		delete d;
@@ -1270,7 +1268,7 @@ void TestMemory()
 
 	PrintLog(LOG_INFO, "HmM");
 
-	for (int t = machinery.size() - 1; t >= 0; t--)
+	for(int t = machinery.size() - 1; t >= 0; t--)
 	{
 		delete (Door*)machinery.at(t);
 	}
@@ -1278,27 +1276,27 @@ void TestMemory()
 
 void DeleteAllEntities()
 {
-	for (int t = creatures.size() - 1; t >= 0; t--)
+	for(int t = creatures.size() - 1; t >= 0; t--)
 		creatures.at(t)->Remove();
 	creatures.clear();
 
-	for (int t = bullets.size() - 1; t >= 0; t--)
+	for(int t = bullets.size() - 1; t >= 0; t--)
 		bullets.at(t)->Remove();
 	bullets.clear();
 
-	for (int t = machinery.size() - 1; t >= 0; t--)
+	for(int t = machinery.size() - 1; t >= 0; t--)
 		machinery.at(t)->Remove();
 	machinery.clear();
 
-	for (int t = pickups.size() - 1; t >= 0; t--)
+	for(int t = pickups.size() - 1; t >= 0; t--)
 		delete pickups.at(t);
 	pickups.clear();
 
-	for (int t = effects.size() - 1; t >= 0; t--)
+	for(int t = effects.size() - 1; t >= 0; t--)
 		delete effects.at(t);
 	effects.clear();
 
-	for (int t = lightnings.size() - 1; t >= 0; t--)
+	for(int t = lightnings.size() - 1; t >= 0; t--)
 		delete lightnings.at(t);
 	lightnings.clear();
 }
@@ -1373,22 +1371,22 @@ std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 	branches.push_back(LightningBranch{ 0, 0, 0, false, 20, 150 });
 	int i = 0;
 
-	while (isAlive)
+	while(isAlive)
 	{
 		isAlive = false;
-		for (auto &l : branches)
+		for(auto &l : branches)
 		{
-			if (l.lifetime < 1) continue;
+			if(l.lifetime < 1) continue;
 
-			if (ai_rg->Generate(1, 10) == 1 && (int)branches.size() < maxBranches && l.timeUntilBranchable < 0)
+			if(ai_rg->Generate(1, 10) == 1 && (int)branches.size() < maxBranches && l.timeUntilBranchable < 0)
 				l.forkPending = true;
 
-			if (l.forkEscape > 0)
+			if(l.forkEscape > 0)
 			{
 				l.going = -1;
 				l.forkEscape--;
 			}
-			else if (l.forkEscape < 0)
+			else if(l.forkEscape < 0)
 			{
 				l.going = 1;
 				l.forkEscape++;
@@ -1396,9 +1394,9 @@ std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 			else
 			{
 				int rand = ai_rg->Generate(1, 8);
-				if (rand < 4) l.going = -1;
-				if (rand >= 4 && rand <= 5) l.going = 0;
-				if (rand > 5) l.going = 1;
+				if(rand < 4) l.going = -1;
+				if(rand >= 4 && rand <= 5) l.going = 0;
+				if(rand > 5) l.going = 1;
 			}
 
 			l.offset += l.going;
@@ -1414,7 +1412,7 @@ std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 			SDL_Point curPos;
 			curPos = { from.x + i, from.y + l.offset };
 
-			switch (GetTileTypeAtPos(curPos))
+			switch(GetTileTypeAtPos(curPos))
 			{
 				case PHYSICS_BLOCK: case PHYSICS_ICE: case PHYSICS_ICEBLOCK: case PHYSICS_OB:
 				{
@@ -1432,16 +1430,16 @@ std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 				}
 			}
 
-			if (l.lifetime > 0) isAlive = true;
+			if(l.lifetime > 0) isAlive = true;
 		}
 
 		int branchFrom = -1;
 		int way = ai_rg->Generate(1, 2) == 1 ? 2 : -2;
-		for (auto &l : branches)
+		for(auto &l : branches)
 		{
-			if (l.forkPending)
+			if(l.forkPending)
 			{
-				if (abs(l.offset) > maxSpread - 2)
+				if(abs(l.offset) > maxSpread - 2)
 				{
 					l.forkPending = false;
 					continue;
@@ -1452,10 +1450,10 @@ std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 				l.forkPending = false;
 			}
 		}
-		if (branchFrom > -1)
-			branches.push_back(LightningBranch{branches.at(branchFrom).offset,0,way,false,30,std::min(branches.at(0).lifetime + 10,30)});
+		if(branchFrom > -1)
+			branches.push_back(LightningBranch{ branches.at(branchFrom).offset,0,way,false,30,std::min(branches.at(0).lifetime + 10,30) });
 
-		if (!direction)
+		if(!direction)
 			i--;
 		else
 			i++;
@@ -1482,9 +1480,9 @@ Lightning::Lightning(DynamicEntity &shooter)
 	// currently magic size numbers
 	hitbox = new Hitbox(0, 0, 22, 150);
 
-	SDL_Point posFrom = {(int)shooter.GetX() + 15, (int)shooter.GetY() - 20};
+	SDL_Point posFrom = { (int)shooter.GetX() + 15, (int)shooter.GetY() - 20 };
 	if(!direction)
-		posFrom = {(int)shooter.GetX(), (int)shooter.GetY() - 20};
+		posFrom = { (int)shooter.GetX(), (int)shooter.GetY() - 20 };
 
 	std::vector<SDL_Point> points = CalcLightningPoints(posFrom, shooter.direction);
 	tex = GenerateLightningTexture(points);
@@ -1503,10 +1501,10 @@ Lightning::Lightning(DynamicEntity &shooter)
 	else
 		x = shooter.GetX() + 15;
 	this->SetPos(x, y);
-	
+
 	// dummy I guess
 	sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 0, 90, ANIM_LOOP_TYPES::LOOP_NONE);
-	
+
 	SetVelocity(0, 0);
 	status = STATUS_INVULN;
 	lifetime = (int)(1 * 500);

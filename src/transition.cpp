@@ -15,14 +15,14 @@ extern Level *level;
 
 void ProgressTransition()
 {
-	switch (TransitionID)
+	switch(TransitionID)
 	{
 		case TRANSITION_TITLE:
 			ChangeGamestate(STATE_MENU);
 			SetCurrentMenu(MENU_MAIN);
 			break;
 		case TRANSITION_LEVELSTART:
-			if (level->loaded)
+			if(level->loaded)
 			{
 				ChangeGamestate(STATE_GAME);
 			}
@@ -39,21 +39,21 @@ void ProgressTransition()
 		case TRANSITION_LEVELLOSE:
 		{
 			int offset = currentLives < 1 ? 1 : 0;
-			if (SelectedItem + offset == 0)
+			if(SelectedItem + offset == 0)
 			{
 				level->Reload();
 				SetCurrentTransition(TRANSITION_LEVELSTART);
 			}
-			else if (SelectedItem + offset == 1)
+			else if(SelectedItem + offset == 1)
 			{
 				SetCurrentTransition(TRANSITION_LEVELSTART);
-				if (offset == 1) currentLives = playerLives;
+				if(offset == 1) currentLives = playerLives;
 				// force the loading screen to draw for one frame before we start loading
 				UpdateTransition();
 				UpdateWindow();
 				level->Reload();
 			}
-			else if (SelectedItem + offset == 2)
+			else if(SelectedItem + offset == 2)
 			{
 				delete level;
 				level = nullptr;

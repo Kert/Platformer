@@ -84,7 +84,7 @@ void LogicUpdate(Uint32 dt)
 		AddTime();
 	}
 
-	LevelLogic();
+	//LevelLogic();
 
 	player->HandleStateIdle();
 	ApplyPhysics(*player, dt);

@@ -135,7 +135,7 @@ void LogicUpdate(Uint32 dt)
 		if(i->AI)
 			i->AI->RunAI();
 		ApplyPhysics(*i, dt);
-		UpdateStatus(*i, 8);
+		UpdateStatus(*i, dt);
 		if(i->REMOVE_ME)
 			delete i;
 	}

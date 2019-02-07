@@ -1067,7 +1067,7 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 						p.status = STATUS_NORMAL;
 						break;
 					case STATUS_DYING:
-						p.REMOVE_ME = true;
+						//p.REMOVE_ME = true;
 						//p.Remove(); //<-- todo: I think this can be implemented now
 						return;
 					default:

@@ -47604,7 +47604,7 @@
   <object id="5" type="cam" x="32" y="0" width="1552" height="240"/>
   <object id="6" type="cam" x="2432" y="0" width="256" height="1200"/>
   <object id="7" type="cam" x="1024" y="544" width="256" height="656"/>
-  <object id="11" name="player" type="spawn" x="1152" y="1104"/>
+  <object id="11" name="player" type="spawn" x="320" y="720"/>
   <object id="13" name="Dale" type="spawn" x="2256" y="144">
    <properties>
     <property name="ai" value="Sentinel"/>

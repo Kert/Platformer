@@ -7,7 +7,7 @@ Sprite::Sprite(SDL_Texture **tex, SDL_Rect rect)
 {
 	this->rect = rect;
 	sprite_sheet = tex;
-	current_anim = ANIMATION_NONE;
+	current_anim = last_anim = ANIMATION_NONE;
 	SetSpriteOffset(0, 0);
 }
 
@@ -18,7 +18,7 @@ Sprite::Sprite(SDL_Texture **tex, int x, int y, int h, int w)
 	this->rect.h = h;
 	this->rect.w = w;
 	sprite_sheet = tex;
-	current_anim = ANIMATION_NONE;
+	current_anim = last_anim = ANIMATION_NONE;
 	SetSpriteOffset(0, 0);
 }
 

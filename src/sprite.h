@@ -22,7 +22,11 @@ class Sprite
 	public:
 		int shootingAnimTimer = 0;
 		//Initializes the variables
-		Sprite() {};
+		Sprite() {
+			current_anim = last_anim = ANIMATION_NONE;
+			offset_x = offset_y = 0;
+			shootingAnimTimer = 0;
+		};
 		~Sprite();
 
 		Sprite(SDL_Texture **tex, SDL_Rect rect);

@@ -18,9 +18,11 @@ std::map<int, InterfacePiece> interface;
 
 TTF_Font *font = NULL;
 
+extern double RENDER_SCALE;
+
 void InterfaceSetup()
 {
-	font = TTF_OpenFont("assets/misc/verdana.ttf", 44 / RENDER_SCALE);
+	font = TTF_OpenFont("assets/misc/verdana.ttf", 14);
 	BuildInterface(32, 32, 20, 20, "assets/sprites/lifebar.png", 0, INTERFACE_LIFE);
 	BuildInterface(32, 32, 20, 20, "assets/sprites/abilities.png", 0, INTERFACE_ABILITY);
 	//BuildInterface(TEXT_HEIGHT, SCORE_WIDTH, SCORE_OFFSET_X, SCORE_OFFSET_Y, "000000", -1, INTERFACE_SCORE);

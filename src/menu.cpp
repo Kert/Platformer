@@ -20,6 +20,9 @@ extern SDL_Color menu_color;
 extern SDL_Color selected_color;
 extern SDL_Color pause_color;
 
+extern int WINDOW_WIDTH;
+extern int WINDOW_HEIGHT;
+
 void DoMenuAction(int code, int bind)
 {
 	if(CurrentMenu == MENU_BIND) // special case for keybind screen
@@ -57,9 +60,13 @@ void DoMenuAction(int code, int bind)
 				}
 				else if(CurrentMenu == MENU_OPTIONS)
 				{
-					if(SelectedItem == 2)
-						SetCurrentMenu(MENU_BINDS);
+					if(SelectedItem == 1)
+					{
+						SetDisplayMode(menus.at(MENU_SELECTION_SCREEN_MODE)->selected);
+					}
 					if(SelectedItem == 3)
+						SetCurrentMenu(MENU_BINDS);
+					if(SelectedItem == 4)
 					{
 						SetCurrentMenu(MENU_MAIN);
 					}
@@ -96,6 +103,10 @@ void NavigateMenu(int bind)
 				}
 				else if(SelectedItem == 1)
 				{
+					menus.at(MENU_SELECTION_SCREEN_MODE)->selected >= (menus.at(MENU_SELECTION_SCREEN_MODE)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_SCREEN_MODE)->selected = 0 : menus.at(MENU_SELECTION_SCREEN_MODE)->selected++;
+				}
+				else if(SelectedItem == 2)
+				{
 					menus.at(MENU_SELECTION_FULLSCREEN)->selected <= 0 ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) : menus.at(MENU_SELECTION_FULLSCREEN)->selected--;
 				}
 			}
@@ -108,6 +119,10 @@ void NavigateMenu(int bind)
 					menus.at(MENU_SELECTION_LIVES)->selected >= (menus.at(MENU_SELECTION_LIVES)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_LIVES)->selected = 0 : menus.at(MENU_SELECTION_LIVES)->selected++;
 				}
 				else if(SelectedItem == 1)
+				{
+					menus.at(MENU_SELECTION_SCREEN_MODE)->selected <= 0 ? menus.at(MENU_SELECTION_SCREEN_MODE)->selected = (menus.at(MENU_SELECTION_SCREEN_MODE)->GetItemCount() - 1) : menus.at(MENU_SELECTION_SCREEN_MODE)->selected--;
+				}
+				else if(SelectedItem == 2)
 				{
 					menus.at(MENU_SELECTION_FULLSCREEN)->selected >= (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = 0 : menus.at(MENU_SELECTION_FULLSCREEN)->selected++;
 				}
@@ -177,28 +192,34 @@ void LoadMenus()
 	menus.push_back(menu);
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(315, 150, "Lives: ", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(315, 230, "Fullscreen:", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(315, 310, "Keybinds", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(315, 390, "Back", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 150, "Lives: ", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 230, "Screen Mode:", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 310, "Fullscreen:", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 390, "Keybinds", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 470, "Back", menu_font, menu_color, selected_color));
 	menus.push_back(menu);
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(WIDTH / 2, (HEIGHT / 2) - 100, "Resume", game_font, pause_color, selected_color));
-	menu->AddMenuItem(new MenuItem(WIDTH / 2, (HEIGHT / 2), "Quit", game_font, pause_color, selected_color));
+	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, (WINDOW_HEIGHT / 2) - 100, "Resume", game_font, pause_color, selected_color));
+	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, (WINDOW_HEIGHT / 2), "Quit", game_font, pause_color, selected_color));
 	menus.push_back(menu);
 
 	menu = new Menu();
 	for(int i = 0; i < MAX_LIVES; i++)
 	{
-		menu->AddMenuItem(new MenuItem(420 + 30 * i, 150, std::to_string(i + 1), menu_font, menu_color, selected_color));
+		menu->AddMenuItem(new MenuItem(300 + 30 * i, 150, std::to_string(i + 1), menu_font, menu_color, selected_color));
 	}
 	menu->IsHorizontal = true;
 	menus.push_back(menu);
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(500, 230, "Off", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(570, 230, "On", menu_font, menu_color, selected_color));
+	menu->IsHorizontal = true;
+	menu->IsSwitchable = true;
+	menus.push_back(menu);
+
+	menu = new Menu();
+	menu->AddMenuItem(new MenuItem(300, 310, "Off", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(370, 310, "On", menu_font, menu_color, selected_color));
 #ifdef ALLOW_BORDERLESS
 	menu->AddMenuItem(new MenuItem(640, 230, "Borderless", menu_font, menu_color, selected_color));
 #endif
@@ -206,14 +227,14 @@ void LoadMenus()
 	menus.push_back(menu);
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(WIDTH / 2, HEIGHT / 2 + 50, "Retry Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(WIDTH / 2, HEIGHT / 2 + 100, "New Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(WIDTH / 2, HEIGHT / 2 + 150, "Back to Menu", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 50, "Retry Level", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 100, "New Level", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 150, "Back to Menu", menu_font, menu_color, selected_color));
 	menus.push_back(menu);
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(WIDTH / 2, HEIGHT / 2 + 100, "New Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(WIDTH / 2, HEIGHT / 2 + 150, "Back to Menu", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 100, "New Level", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 150, "Back to Menu", menu_font, menu_color, selected_color));
 	menus.push_back(menu);
 	// insert bind and bindings menu here
 
@@ -233,12 +254,14 @@ void SetCurrentMenu(MENUS menu)
 	if(menu == MENU_OPTIONS)
 	{
 		menus.at(MENU_SELECTION_LIVES)->selected = playerLives - 1;
+		menus.at(MENU_SELECTION_SCREEN_MODE)->selected = 0;
 		menus.at(MENU_SELECTION_FULLSCREEN)->selected = fullscreenMode;
 	}
 	if(oldmenu == MENU_OPTIONS)
 	{
 		playerLives = menus.at(MENU_SELECTION_LIVES)->selected + 1;
 		fullscreenMode = menus.at(MENU_SELECTION_FULLSCREEN)->selected;
+		// screen mode = menus.at(MENU_SELECTION_SCREEN_MODE)->selected;
 		UpdateWindowMode();
 		SaveConfig();
 		if(menu == MENU_MAIN)

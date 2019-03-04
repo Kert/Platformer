@@ -7,13 +7,8 @@
 #include "entities.h"
 #include "globals.h"
 
-#define WIDTH 768
-#define HEIGHT 720
-
 #define OVERVIEW_WIDTH 800
 #define OVERVIEW_HEIGHT 800
-
-#define RENDER_SCALE 3
 
 int GraphicsSetup();
 void ResetLevelGraphics();
@@ -50,6 +45,8 @@ SDL_Texture* GenerateLightningTexture(std::vector<SDL_Point> &points);
 void ChangePlayerColor(PLAYER_BODY_PARTS bodyPart, SDL_Color color);
 void SetupLevelGraphics(int map_width, int map_height);
 void InitPlayerTexture();
+int MakeDisplayModeMenus();
+int SetDisplayMode(int mode);
 
 class TextureManager
 {

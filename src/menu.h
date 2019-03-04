@@ -33,6 +33,7 @@ class Menu
 	public:
 		bool IsHorizontal = false;
 		int selected = 0;
+		bool IsSwitchable = false;
 	public:
 		Menu();
 		~Menu();

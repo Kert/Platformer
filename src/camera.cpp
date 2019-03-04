@@ -7,6 +7,9 @@ extern int map_width;
 extern int map_height;
 extern Level *level;
 
+extern int GAME_SCENE_WIDTH;
+extern int GAME_SCENE_HEIGHT;
+
 Camera::Camera()
 {
 	x = 0;
@@ -62,8 +65,8 @@ void Camera::Attach(Entity &p)
 	at = &p;
 	SetOffsetX(0);
 	SetOffsetY(0);
-	x = at->hitbox->GetPRect().x - WIDTH / RENDER_SCALE / 2;
-	y = at->hitbox->GetPRect().y - HEIGHT / RENDER_SCALE / 2;
+	x = at->hitbox->GetPRect().x - GAME_SCENE_WIDTH / 2;
+	y = at->hitbox->GetPRect().y - GAME_SCENE_HEIGHT / 2;
 }
 
 void Camera::Detach()
@@ -86,13 +89,13 @@ void Camera::Update()
 	if(at != nullptr)
 	{
 		//Center the camera over the player
-		//x = ( at->hitbox->GetPRect().x + at->hitbox->GetPRect().w / 2. ) - WIDTH / RENDER_SCALE / 2.;
-		//x = at->hitbox->GetPRect().x - WIDTH / RENDER_SCALE / 2.;
-		//y = at->hitbox->GetPRect().y - HEIGHT / RENDER_SCALE / 2.;// - 26 - 32 - HEIGHT / RENDER_SCALE / 2.;
+		//x = ( at->hitbox->GetPRect().x + at->hitbox->GetPRect().w / 2. ) - GAME_SCENE_WIDTH / 2.;
+		//x = at->hitbox->GetPRect().x - GAME_SCENE_WIDTH / 2.;
+		//y = at->hitbox->GetPRect().y - GAME_SCENE_HEIGHT / 2.;// - 26 - 32 - GAME_SCENE_HEIGHT / 2.;
 
 		//double val;
 		//double diff;
-		//val = (at->hitbox->GetRect().x + at->hitbox->GetRect().w / 2) - WIDTH / RENDER_SCALE / 2;
+		//val = (at->hitbox->GetRect().x + at->hitbox->GetRect().w / 2) - GAME_SCENE_WIDTH / 2;
 		//val += offsetX;
 		//diff = val - x;
 		//if (abs(diff) > 1)
@@ -107,7 +110,7 @@ void Camera::Update()
 		//		//x = x + 1.5 * pow(0.99999, tmp); // expo
 		//}
 		//	
-		//val = (at->hitbox->GetRect().y + at->hitbox->GetRect().h / 2) - HEIGHT / RENDER_SCALE / 2;
+		//val = (at->hitbox->GetRect().y + at->hitbox->GetRect().h / 2) - GAME_SCENE_HEIGHT / 2;
 		//val += offsetY;
 		//diff = val - y;
 		//if (abs(diff) > 1)
@@ -128,17 +131,17 @@ void Camera::Update()
 			SDL_Rect i = activeBounds[0];
 			currentBounds = i;
 
-			x = playerX - WIDTH / RENDER_SCALE / 2;
+			x = playerX - GAME_SCENE_WIDTH / 2;
 			if(x < i.x)
 				x = i.x;
-			if(x + WIDTH / RENDER_SCALE > i.x + i.w)
-				x = i.x + i.w - WIDTH / RENDER_SCALE;
+			if(x + GAME_SCENE_WIDTH > i.x + i.w)
+				x = i.x + i.w - GAME_SCENE_WIDTH;
 
-			y = playerY - HEIGHT / RENDER_SCALE / 2;
+			y = playerY - GAME_SCENE_HEIGHT / 2;
 			if(y < i.y)
 				y = i.y;
-			if(y + HEIGHT / RENDER_SCALE > i.y + i.h)
-				y = i.y + i.h - HEIGHT / RENDER_SCALE;
+			if(y + GAME_SCENE_HEIGHT > i.y + i.h)
+				y = i.y + i.h - GAME_SCENE_HEIGHT;
 		}
 		else if(activeBounds.size() > 1)
 		{
@@ -154,45 +157,45 @@ void Camera::Update()
 					SDL_IntersectRect(&cam, &i, &res);
 
 					// if player hitbox farther than currentCamX
-					if(at->hitbox->GetRect().x > (x + WIDTH / RENDER_SCALE / 2))
+					if(at->hitbox->GetRect().x > (x + GAME_SCENE_WIDTH / 2))
 					{
-						double newX = x + 1; //at->hitbox->GetRect().x - (x + WIDTH / RENDER_SCALE / 2);
-						if(newX <= i.x + i.w - WIDTH / RENDER_SCALE)
+						double newX = x + 1; //at->hitbox->GetRect().x - (x + GAME_SCENE_WIDTH / 2);
+						if(newX <= i.x + i.w - GAME_SCENE_WIDTH)
 							if(!vertical && SDL_RectEquals(&cam, &res))
 								//x = newX;
-								x = playerX - WIDTH / RENDER_SCALE / 2;
+								x = playerX - GAME_SCENE_WIDTH / 2;
 					}
 					// if player hitbox closer than currentCamX
-					else if(at->hitbox->GetRect().x < (x + WIDTH / RENDER_SCALE / 2))
+					else if(at->hitbox->GetRect().x < (x + GAME_SCENE_WIDTH / 2))
 					{
-						double newX = x - 1; // +at->hitbox->GetRect().x - (x + WIDTH / RENDER_SCALE / 2);
+						double newX = x - 1; // +at->hitbox->GetRect().x - (x + GAME_SCENE_WIDTH / 2);
 						if(newX >= i.x)
 							if(!vertical && SDL_RectEquals(&cam, &res))
 								//x = newX;
-								x = playerX - WIDTH / RENDER_SCALE / 2;
+								x = playerX - GAME_SCENE_WIDTH / 2;
 					}
 					// if player hitbox lower than currentCamY
-					if(at->hitbox->GetRect().y > (y + HEIGHT / RENDER_SCALE / 2))
+					if(at->hitbox->GetRect().y > (y + GAME_SCENE_HEIGHT / 2))
 					{
-						double newY = y + 1; // at->hitbox->GetRect().y - (y + HEIGHT / RENDER_SCALE / 2);
-						if(newY <= i.y + i.h - HEIGHT / RENDER_SCALE)
+						double newY = y + 1; // at->hitbox->GetRect().y - (y + GAME_SCENE_HEIGHT / 2);
+						if(newY <= i.y + i.h - GAME_SCENE_HEIGHT)
 							if(vertical && SDL_RectEquals(&cam, &res))
 							{
 								PrintLog(LOG_SUPERDEBUG, "2 MOVE LOWER BECAUSE HITBOX THERE!");
 								//y = newY;
-								y = playerY - HEIGHT / RENDER_SCALE / 2;
+								y = playerY - GAME_SCENE_HEIGHT / 2;
 							}
 					}
 					// if player hitbox higher than currentCamY
-					else if(at->hitbox->GetRect().y < (y + HEIGHT / RENDER_SCALE / 2))
+					else if(at->hitbox->GetRect().y < (y + GAME_SCENE_HEIGHT / 2))
 					{
-						double newY = y - 1; //at->hitbox->GetRect().y - (y + HEIGHT / RENDER_SCALE / 2);
+						double newY = y - 1; //at->hitbox->GetRect().y - (y + GAME_SCENE_HEIGHT / 2);
 						if(newY >= i.y)
 							if(vertical && SDL_RectEquals(&cam, &res))
 							{
 								PrintLog(LOG_SUPERDEBUG, "2 MOVE HIGHER BECAUSE HITBOX THERE!");
 								//y = newY;
-								y = playerY - HEIGHT / RENDER_SCALE / 2;
+								y = playerY - GAME_SCENE_HEIGHT / 2;
 							}
 					}
 				}
@@ -200,12 +203,12 @@ void Camera::Update()
 		}
 		else
 		{
-			x = playerX - WIDTH / RENDER_SCALE / 2;
+			x = playerX - GAME_SCENE_WIDTH / 2;
 			SDL_Rect i = currentBounds;
 			if(x < i.x)
 				x = i.x;
-			if(x + WIDTH / RENDER_SCALE > i.x + i.w)
-				x = i.x + i.w - WIDTH / RENDER_SCALE;
+			if(x + GAME_SCENE_WIDTH > i.x + i.w)
+				x = i.x + i.w - GAME_SCENE_WIDTH;
 		}
 
 

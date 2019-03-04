@@ -20,6 +20,9 @@ Level *level = nullptr;
 
 extern std::vector<CustomTile> tileset;
 
+extern int GAME_SCENE_WIDTH;
+extern int GAME_SCENE_HEIGHT;
+
 struct EnemyData
 {
 	int x;
@@ -51,7 +54,8 @@ void Level::Init()
 {
 	loaded = false;
 
-	LoadLevelFromFile("assets/levels/volcano_surroundings.tmx");
+	LoadLevelFromFile("assets/levels/test.tmx");
+	//LoadLevelFromFile("assets/levels/volcano_surroundings.tmx");
 	LoadNonRandomElements();
 	LoadEnemies();
 	LoadEntities();
@@ -374,10 +378,10 @@ void Level::LoadEntities()
 		{
 			new Platform(e.x, e.y, e.data, e.data2);
 		}
-		else if(e.entityType == SPAWN_LAVA_FLOOR)
+		/*else if(e.entityType == SPAWN_LAVA_FLOOR)
 		{
 			lava = new Lava_Floor(e.x, e.y);
-		}
+		}*/
 	}
 }
 
@@ -393,7 +397,7 @@ void Level::LoadNonRandomElements()
 	// Loading player here because game camera needs its position to work with
 	LoadPlayer();
 
-	camera = new Camera(0, 0, WIDTH / RENDER_SCALE, HEIGHT / RENDER_SCALE);
+	camera = new Camera(0, 0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT);
 	camera->Attach(*player);
 }
 

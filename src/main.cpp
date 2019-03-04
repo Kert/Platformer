@@ -49,6 +49,7 @@ int main(int argc, char* argv[])
 
 	// Load menus
 	LoadMenus();
+	MakeDisplayModeMenus();
 
 	// Load creature properties and their sprite data
 	ReadCreatureData();

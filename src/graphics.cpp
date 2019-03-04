@@ -1,4 +1,5 @@
 #include "graphics.h"
+#include <sstream>
 #include <SDL_image.h>
 #include "animation.h"
 #include "camera.h"
@@ -26,6 +27,7 @@ extern std::vector<Menu*> menus;
 extern int BindingKey;
 extern GAME_OVER_REASONS gameOverReason;
 int fullscreenMode;
+std::map<int, std::vector<SDL_DisplayMode>> displayModes;
 
 Timer timer100{ 100 }, timerRain{ 200 };
 
@@ -43,6 +45,24 @@ extern std::vector<Lightning*> lightnings;
 
 int map_width;
 int map_height;
+
+
+int const MAX_TILES_VERTICALLY = 18;
+
+int WINDOW_WIDTH = 768;
+int WINDOW_HEIGHT = 720;
+
+// SHOULD CALCULATE THIS
+double RENDER_SCALE = 1;
+
+// in tiles
+int GAME_SCENE_WIDTH = (WINDOW_WIDTH / RENDER_SCALE);
+int GAME_SCENE_HEIGHT = (WINDOW_HEIGHT / RENDER_SCALE);
+
+//int MAX_TILES_VERTICALLY = 18;
+//int ACTUAL_TILESIZE = resolution.y / MAX_TILES_VERTICALLY;
+//int RENDER_SCALE = ACTUAL_TILESIZE / TILESIZE;
+//int MAX_TILES_HORIZONTALLY = resolution.x / ACTUAL_TILESIZE;
 
 SDL_Renderer *renderer = NULL;
 SDL_Surface *player_surf = NULL;
@@ -75,6 +95,7 @@ extern std::vector< std::vector<Tile*> > tilemap_fg;
 SDL_Window *mapwin = NULL;
 SDL_Renderer *maprenderer = NULL;
 SDL_Texture *mapoverview_texture = NULL;
+SDL_Point windowResolution;
 
 extern int SelectedItem;
 extern int timeLimit;
@@ -187,7 +208,7 @@ int GraphicsSetup()
 
 	// create the window and renderer
 	// note that the renderer is accelerated
-	win = SDL_CreateWindow("Platformer", 100, 100, WIDTH, HEIGHT, NULL);
+	win = SDL_CreateWindow("Platformer", 100, 100, WINDOW_WIDTH, WINDOW_HEIGHT, NULL);
 	renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 
 	SDL_Surface *icon = IMG_Load("assets/misc/icon.png");
@@ -201,7 +222,7 @@ int GraphicsSetup()
 	// Allows drawing half-transparent rectangles
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-	pov_surface = SDL_CreateRGBSurface(0, WIDTH / RENDER_SCALE, HEIGHT / RENDER_SCALE, 32,
+	pov_surface = SDL_CreateRGBSurface(0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT, 32,
 		0x00FF0000,
 		0x0000FF00,
 		0x000000FF,
@@ -223,6 +244,76 @@ int GraphicsSetup()
 		CreateMapWindow();
 	graphicsLoaded = true;
 	return 1;
+}
+
+int MakeDisplayModeMenus()
+{
+	int display_count = 0, display_index = 0, mode_index = 0;
+    SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
+
+    if ((display_count = SDL_GetNumVideoDisplays()) < 1) {
+        SDL_Log("SDL_GetNumVideoDisplays returned: %i", display_count);
+        return 1;
+    }
+		
+	for(int j = 0; j < display_count; j++)
+	{
+		int numDisplayModes = SDL_GetNumDisplayModes(0);
+		for(int i = 0; i < numDisplayModes; i++)
+		{
+			if (SDL_GetDisplayMode(display_index, i, &mode) != 0)
+			{
+				PrintLog(LOG_IMPORTANT, "SDL_GetDisplayMode failed: %s", SDL_GetError());
+				return 1;
+			}
+			//if(SDL_BITSPERPIXEL(mode.format) == 24)
+				PrintLog(LOG_IMPORTANT, "SDL_GetDisplayMode: %i %i %i", SDL_BITSPERPIXEL(mode.format), mode.w, mode.h);
+				displayModes[j].push_back(mode);
+		}
+	}
+	
+	for(auto display : displayModes)
+	{
+		for(auto mode : display.second)
+		{
+			std::ostringstream modeName;
+			modeName << "Display " << display.first << ": " << mode.w << "x" << mode.h << "@" << mode.refresh_rate << "hz";
+			menus.at(MENU_SELECTION_SCREEN_MODE)->AddMenuItem(new MenuItem(300, 230, modeName.str(), menu_font, menu_color, selected_color));
+		}		
+	}
+}
+
+int SetDisplayMode(int mode)
+{
+	SDL_DisplayMode *displayMode = &displayModes[0][mode];
+
+	WINDOW_WIDTH = displayMode->w;
+	WINDOW_HEIGHT = displayMode->h;
+
+	SDL_SetWindowSize(win, WINDOW_WIDTH, WINDOW_HEIGHT);
+	//windowResolution.x = WINDOW_WIDTH;
+	//windowResolution.y = WINDOW_HEIGHT;
+	SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	
+	RENDER_SCALE = (double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE);
+
+	GAME_SCENE_WIDTH = ((double)WINDOW_WIDTH / RENDER_SCALE);
+	GAME_SCENE_HEIGHT = ((double)WINDOW_HEIGHT / RENDER_SCALE);
+
+	if(pov_surface)
+	{
+		SDL_FreeSurface(pov_surface);
+		pov_surface = SDL_CreateRGBSurface(0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT, 32,
+			0x00FF0000,
+			0x0000FF00,
+			0x000000FF,
+			0xFF000000);
+	}
+	
+	//SDL_RenderSetScale(renderer, RENDER_SCALE, RENDER_SCALE);
+	//SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
+	//SDL_SetWindowDisplayMode(win, displayMode);
+	return 0;
 }
 
 void UpdateWindowMode()
@@ -780,8 +871,8 @@ void ShowDebugInfo(Player &p)
 	SDL_Texture* debug_texture = SDL_CreateTextureFromSurface(renderer, debug_message);
 	SDL_Rect temp;
 	SDL_GetClipRect(debug_message, &temp);
-	temp.x = 8;
-	temp.y = (HEIGHT - 16) / RENDER_SCALE;
+	temp.x = 8;	
+	temp.y = GAME_SCENE_HEIGHT - 16;
 	temp.w /= RENDER_SCALE;
 	temp.h /= RENDER_SCALE;
 	//PrintNumToInterface(p.statusTimer, INTERFACE_SCORE, 0);
@@ -794,8 +885,8 @@ void UpdateTransition()
 	char *text = NULL;
 	SDL_Texture *tex = NULL;
 	SDL_Rect r;
-	r.w = WIDTH;
-	r.h = HEIGHT;
+	r.w = WINDOW_WIDTH;
+	r.h = WINDOW_HEIGHT;
 	r.x = 0;
 	r.y = 0;
 	SDL_SetRenderDrawColor(renderer, 204, 231, 255, 255);
@@ -813,7 +904,7 @@ void UpdateTransition()
 			int w, h;
 			text = "Generating level...";
 			TTF_SizeText(menu_font, text, &w, &h);
-			RenderText((WIDTH - w) / 2, (HEIGHT - h) / 2, text, menu_font, menu_color);
+			RenderText((WINDOW_WIDTH - w) / 2, (WINDOW_HEIGHT - h) / 2, text, menu_font, menu_color);
 		}
 		else
 		{
@@ -831,7 +922,7 @@ void UpdateTransition()
 			text = "Loaded! Press a key to start.";
 			int w, h;
 			TTF_SizeText(menu_font, text, &w, &h);
-			RenderText((WIDTH - w) / 2, 400, text, menu_font, menu_color);
+			RenderText((WINDOW_WIDTH - w) / 2, 400, text, menu_font, menu_color);
 		}
 	}
 	else if(TransitionID == TRANSITION_LEVELCLEAR)
@@ -839,7 +930,7 @@ void UpdateTransition()
 		text = "Level clear!";
 		int w, h;
 		TTF_SizeText(game_font, text, &w, &h);
-		RenderText((WIDTH - w) / 2, (HEIGHT - h) / 2, text, game_font, menu_color);
+		RenderText((WINDOW_WIDTH - w) / 2, (WINDOW_HEIGHT - h) / 2, text, game_font, menu_color);
 
 		// TODO: probably put scoring stuff here
 	}
@@ -857,8 +948,8 @@ void UpdateTransition()
 
 		int w, h;
 		TTF_SizeText(game_font, text, &w, &h);
-		w = (WIDTH - w) / 2;
-		h = (HEIGHT - h) / 2;
+		w = (WINDOW_WIDTH - w) / 2;
+		h = (WINDOW_HEIGHT - h) / 2;
 		RenderText(w, h - 100, text, menu_font, menu_color);
 
 		char str[32];
@@ -882,14 +973,14 @@ void RenderLogo()
 	SDL_Rect r;
 	r.w = 291;
 	r.h = 100;
-	r.x = (WIDTH - r.w) / 2;
+	r.x = (WINDOW_WIDTH - r.w) / 2;
 	r.y = 30;
 	SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/logo.png"), NULL, &r);
 }
 
 void ShowPauseOverlay()
 {
-	RenderText(WIDTH / 2, (HEIGHT / 2) - 100, "Pause", game_font, pause_color);
+	RenderText(WINDOW_WIDTH / 2, (WINDOW_HEIGHT / 2) - 100, "Pause", game_font, pause_color);
 	RenderMenuItems(CurrentMenu);
 }
 
@@ -910,6 +1001,7 @@ void RenderMenu()
 	if(CurrentMenu == MENU_OPTIONS)
 	{
 		RenderMenuItems(MENU_SELECTION_LIVES);
+		RenderMenuItems(MENU_SELECTION_SCREEN_MODE);
 		RenderMenuItems(MENU_SELECTION_FULLSCREEN);
 	}
 	if(CurrentMenu == MENU_BINDS)
@@ -960,27 +1052,31 @@ void RenderMenuItems(MENUS id)
 	SDL_Rect r;
 
 	SDL_Color color;
+
 	for(int i = 0; i < menu->GetItemCount(); i++)
 	{
-		if(i == SelectedItem && id == CurrentMenu)
+		if(i == SelectedItem && id == CurrentMenu || menu->IsSwitchable)
 			color = menu->GetItemInfo(i)->selectedColor;
 		else
 			color = menu->GetItemInfo(i)->standardColor;
 
 		if(menu->IsHorizontal && i == menu->selected)
-		{
 			color = menu->GetItemInfo(i)->selectedColor;
-		}
+		
 		text = menu->GetItemInfo(i)->text.c_str();
 		clearText = TTF_RenderText_Solid(menu->GetItemInfo(i)->font, text, color);
 		TTF_SizeText(menu->GetItemInfo(i)->font, text, &r.w, &r.h);
 		r.x = menu->GetItemInfo(i)->pos.x;
 		r.y = menu->GetItemInfo(i)->pos.y;
 		if(CurrentMenu == MENU_PAUSE)
-			r = { (r.x - (r.w / 2)) / RENDER_SCALE, (r.y - (r.h / 2)) / RENDER_SCALE, r.w / RENDER_SCALE, r.h / RENDER_SCALE };
-		tex = SDL_CreateTextureFromSurface(renderer, clearText);
-		SDL_RenderCopy(renderer, tex, NULL, &r);
-		SDL_DestroyTexture(tex);
+			r = { (r.x - (r.w / 2)) / (int)RENDER_SCALE, (r.y - (r.h / 2)) / (int)RENDER_SCALE, r.w / (int)RENDER_SCALE, r.h / (int)RENDER_SCALE };
+		
+		if (!menu->IsSwitchable || (menu->IsSwitchable && i == menu->selected))
+		{
+			tex = SDL_CreateTextureFromSurface(renderer, clearText);
+			SDL_RenderCopy(renderer, tex, NULL, &r);
+			SDL_DestroyTexture(tex);			
+		}
 		SDL_FreeSurface(clearText);
 	}
 }
@@ -995,8 +1091,6 @@ void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color)
 	TTF_SizeText(font, text.c_str(), &r.w, &r.h);
 	r.x = x;
 	r.y = y;
-	//if (CurrentMenu == MENU_PAUSE)
-	//	r = { (r.x - (r.w / 2)) / RENDER_SCALE, (r.y - (r.h / 2)) / RENDER_SCALE, r.w / RENDER_SCALE, r.h / RENDER_SCALE };
 	tex = SDL_CreateTextureFromSurface(renderer, clearText);
 	SDL_RenderCopy(renderer, tex, NULL, &r);
 	SDL_DestroyTexture(tex);

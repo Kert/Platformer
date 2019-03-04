@@ -292,7 +292,7 @@ void InputUpdate()
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
 	{
-		if(!e.key.repeat)
+		if(!e.key.repeat || (e.key.repeat && GameState == GAMESTATES::STATE_MENU))
 		{
 			switch(e.type)
 			{

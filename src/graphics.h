@@ -24,7 +24,7 @@ void DrawHitbox(Entity &e);
 
 void DrawFPS(Uint32 dt);
 void ShowDebugInfo(Player &p);
-void UpdateWindowMode();
+void UpdateDisplayMode();
 void UpdateTransition();
 void MenuUpdate();
 void RenderLogo();
@@ -45,8 +45,6 @@ SDL_Texture* GenerateLightningTexture(std::vector<SDL_Point> &points);
 void ChangePlayerColor(PLAYER_BODY_PARTS bodyPart, SDL_Color color);
 void SetupLevelGraphics(int map_width, int map_height);
 void InitPlayerTexture();
-int MakeDisplayModeMenus();
-int SetDisplayMode(int mode);
 
 class TextureManager
 {

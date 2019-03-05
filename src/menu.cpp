@@ -1,4 +1,5 @@
 #include "menu.h"
+#include <sstream>
 #include "gamelogic.h"
 #include "graphics.h"
 #include "level.h"
@@ -22,6 +23,12 @@ extern SDL_Color pause_color;
 
 extern int WINDOW_WIDTH;
 extern int WINDOW_HEIGHT;
+extern int displayIndex;
+extern SDL_DisplayMode displayMode;
+extern std::map<int, std::vector<SDL_DisplayMode>> displayModes;
+
+int RefreshDisplayModeMenus();
+int CreateDisplayMenu();
 
 void DoMenuAction(int code, int bind)
 {
@@ -61,15 +68,23 @@ void DoMenuAction(int code, int bind)
 				else if(CurrentMenu == MENU_OPTIONS)
 				{
 					if(SelectedItem == 1)
+						SetCurrentMenu(MENU_VIDEO_OPTIONS);
+					if(SelectedItem == 2)
+						SetCurrentMenu(MENU_BINDS);
+					if(SelectedItem == 3)
+						SetCurrentMenu(MENU_MAIN);
+				}
+				else if(CurrentMenu == MENU_VIDEO_OPTIONS)
+				{
+					if(SelectedItem == 0)
+						UpdateDisplayMode();
+					if(SelectedItem == 1)
 					{
-						SetDisplayMode(menus.at(MENU_SELECTION_SCREEN_MODE)->selected);
+						displayMode = displayModes[displayIndex][menus.at(MENU_SELECTION_DISPLAY_MODE)->selected];
+						UpdateDisplayMode();
 					}
 					if(SelectedItem == 3)
-						SetCurrentMenu(MENU_BINDS);
-					if(SelectedItem == 4)
-					{
-						SetCurrentMenu(MENU_MAIN);
-					}
+						SetCurrentMenu(MENU_OPTIONS);
 				}
 				else if(CurrentMenu == MENU_BINDS)
 				{
@@ -98,16 +113,24 @@ void NavigateMenu(int bind)
 			if(CurrentMenu == MENU_OPTIONS)
 			{
 				if(SelectedItem == 0)
-				{
 					menus.at(MENU_SELECTION_LIVES)->selected <= 0 ? menus.at(MENU_SELECTION_LIVES)->selected = (menus.at(MENU_SELECTION_LIVES)->GetItemCount() - 1) : menus.at(MENU_SELECTION_LIVES)->selected--;
+			}
+			if(CurrentMenu == MENU_VIDEO_OPTIONS)
+			{
+				if(SelectedItem == 0)
+				{
+					menus.at(MENU_SELECTION_DISPLAY)->selected >= (menus.at(MENU_SELECTION_DISPLAY)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_DISPLAY)->selected = 0 : menus.at(MENU_SELECTION_DISPLAY)->selected++;
+					displayIndex = menus.at(MENU_SELECTION_DISPLAY)->selected;
+					RefreshDisplayModeMenus();
 				}
 				else if(SelectedItem == 1)
-				{
-					menus.at(MENU_SELECTION_SCREEN_MODE)->selected >= (menus.at(MENU_SELECTION_SCREEN_MODE)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_SCREEN_MODE)->selected = 0 : menus.at(MENU_SELECTION_SCREEN_MODE)->selected++;
-				}
+					menus.at(MENU_SELECTION_DISPLAY_MODE)->selected >= (menus.at(MENU_SELECTION_DISPLAY_MODE)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_DISPLAY_MODE)->selected = 0 : menus.at(MENU_SELECTION_DISPLAY_MODE)->selected++;
 				else if(SelectedItem == 2)
 				{
 					menus.at(MENU_SELECTION_FULLSCREEN)->selected <= 0 ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) : menus.at(MENU_SELECTION_FULLSCREEN)->selected--;
+					fullscreenMode = menus.at(MENU_SELECTION_FULLSCREEN)->selected;
+					UpdateDisplayMode();
+					RefreshDisplayModeMenus();
 				}
 			}
 			break;
@@ -115,16 +138,24 @@ void NavigateMenu(int bind)
 			if(CurrentMenu == MENU_OPTIONS)
 			{
 				if(SelectedItem == 0)
-				{
 					menus.at(MENU_SELECTION_LIVES)->selected >= (menus.at(MENU_SELECTION_LIVES)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_LIVES)->selected = 0 : menus.at(MENU_SELECTION_LIVES)->selected++;
+			}
+			if(CurrentMenu == MENU_VIDEO_OPTIONS)
+			{
+				if(SelectedItem == 0)
+				{
+					menus.at(MENU_SELECTION_DISPLAY)->selected <= 0 ? menus.at(MENU_SELECTION_DISPLAY)->selected = (menus.at(MENU_SELECTION_DISPLAY)->GetItemCount() - 1) : menus.at(MENU_SELECTION_DISPLAY)->selected--;
+					displayIndex = menus.at(MENU_SELECTION_DISPLAY)->selected;
+					RefreshDisplayModeMenus();
 				}
 				else if(SelectedItem == 1)
-				{
-					menus.at(MENU_SELECTION_SCREEN_MODE)->selected <= 0 ? menus.at(MENU_SELECTION_SCREEN_MODE)->selected = (menus.at(MENU_SELECTION_SCREEN_MODE)->GetItemCount() - 1) : menus.at(MENU_SELECTION_SCREEN_MODE)->selected--;
-				}
+					menus.at(MENU_SELECTION_DISPLAY_MODE)->selected <= 0 ? menus.at(MENU_SELECTION_DISPLAY_MODE)->selected = (menus.at(MENU_SELECTION_DISPLAY_MODE)->GetItemCount() - 1) : menus.at(MENU_SELECTION_DISPLAY_MODE)->selected--;
 				else if(SelectedItem == 2)
 				{
 					menus.at(MENU_SELECTION_FULLSCREEN)->selected >= (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = 0 : menus.at(MENU_SELECTION_FULLSCREEN)->selected++;
+					fullscreenMode = menus.at(MENU_SELECTION_FULLSCREEN)->selected;
+					UpdateDisplayMode();
+					RefreshDisplayModeMenus();
 				}
 			}
 			break;
@@ -193,9 +224,15 @@ void LoadMenus()
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(70, 150, "Lives: ", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(70, 230, "Screen Mode:", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(70, 310, "Fullscreen:", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 230, "Video Options", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(70, 390, "Keybinds", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 470, "Back", menu_font, menu_color, selected_color));
+	menus.push_back(menu);
+
+	menu = new Menu();
+	menu->AddMenuItem(new MenuItem(70, 150, "Display: ", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 230, "Mode: ", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(70, 310, "Fullscreen:", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(70, 470, "Back", menu_font, menu_color, selected_color));
 	menus.push_back(menu);
 
@@ -218,11 +255,15 @@ void LoadMenus()
 	menus.push_back(menu);
 
 	menu = new Menu();
+	menu->IsHorizontal = true;
+	menu->IsSwitchable = true;
+	menus.push_back(menu);
+
+	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(300, 310, "Off", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(370, 310, "On", menu_font, menu_color, selected_color));
-#ifdef ALLOW_BORDERLESS
-	menu->AddMenuItem(new MenuItem(640, 230, "Borderless", menu_font, menu_color, selected_color));
-#endif
+	menu->AddMenuItem(new MenuItem(440, 310, "Borderless", menu_font, menu_color, selected_color));
+
 	menu->IsHorizontal = true;
 	menus.push_back(menu);
 
@@ -238,6 +279,7 @@ void LoadMenus()
 	menus.push_back(menu);
 	// insert bind and bindings menu here
 
+	CreateDisplayMenu();
 }
 
 MenuItem* Menu::GetItemInfo(int number)
@@ -254,15 +296,14 @@ void SetCurrentMenu(MENUS menu)
 	if(menu == MENU_OPTIONS)
 	{
 		menus.at(MENU_SELECTION_LIVES)->selected = playerLives - 1;
-		menus.at(MENU_SELECTION_SCREEN_MODE)->selected = 0;
-		menus.at(MENU_SELECTION_FULLSCREEN)->selected = fullscreenMode;
+	}
+	if(menu == MENU_VIDEO_OPTIONS)
+	{
+		RefreshDisplayModeMenus();		
 	}
 	if(oldmenu == MENU_OPTIONS)
 	{
 		playerLives = menus.at(MENU_SELECTION_LIVES)->selected + 1;
-		fullscreenMode = menus.at(MENU_SELECTION_FULLSCREEN)->selected;
-		// screen mode = menus.at(MENU_SELECTION_SCREEN_MODE)->selected;
-		UpdateWindowMode();
 		SaveConfig();
 		if(menu == MENU_MAIN)
 			SelectedItem = 1;
@@ -277,4 +318,42 @@ void MenusCleanup()
 		menus.pop_back();
 	}
 	std::vector<Menu*>().swap(menus); // forcibly deallocate memory
+}
+
+int CreateDisplayMenu()
+{
+	for(auto display : displayModes)
+	{
+		std::ostringstream modeName;
+		// TODO: Proper UTF-8 text rendering
+		//modeName << SDL_GetDisplayName(display.first);
+		modeName << display.first;
+		menus.at(MENU_SELECTION_DISPLAY)->AddMenuItem(new MenuItem(300, 160, modeName.str(), menu_font, menu_color, selected_color));
+	}
+	return 0;
+}
+
+int RefreshDisplayModeMenus()
+{
+	delete menus.at(MENU_SELECTION_DISPLAY_MODE);
+	Menu *menu = new Menu();
+	menu->IsHorizontal = true;
+	menu->IsSwitchable = true;
+	menus.at(MENU_SELECTION_DISPLAY_MODE) = menu;
+
+	for(auto mode : displayModes[displayIndex])
+	{
+		std::ostringstream modeName;
+		modeName << mode.w << "x" << mode.h << "@" << mode.refresh_rate << "hz " << SDL_BITSPERPIXEL(mode.format) << "-bit";
+		menus.at(MENU_SELECTION_DISPLAY_MODE)->AddMenuItem(new MenuItem(300, 230, modeName.str(), menu_font, menu_color, selected_color));
+		if(displayMode.w == mode.w &&
+			displayMode.h == mode.h &&
+			displayMode.refresh_rate == mode.refresh_rate &&
+			displayMode.format == mode.format)
+			menus.at(MENU_SELECTION_DISPLAY_MODE)->selected = menus.at(MENU_SELECTION_DISPLAY_MODE)->GetItemCount() - 1;
+	}
+
+	menus.at(MENU_SELECTION_FULLSCREEN)->selected = fullscreenMode;
+	menus.at(MENU_SELECTION_DISPLAY)->selected = displayIndex;
+	return 0;
 }

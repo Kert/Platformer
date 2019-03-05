@@ -12,6 +12,8 @@ std::deque<int> bindList;
 
 extern int playerLives;
 extern int fullscreenMode;
+extern SDL_DisplayMode displayMode;
+extern int displayIndex;
 
 const std::map<std::string, int> configNames = {
 	{"UP", 0},
@@ -94,8 +96,13 @@ void LoadConfig()
 			SetBinding(keycode, i.second);
 		}
 	}
-	std::string fullscreenStr = reader.Get("Game", "Fullscreen", "Off");
-	fullscreenMode = fullscreenModes[fullscreenStr];
+
+	fullscreenMode = fullscreenModes[reader.Get("Video", "Fullscreen", "Off")];
+	displayIndex = atoi(reader.Get("Video", "Display", "0").c_str());
+	displayMode.w = atoi(reader.Get("Video", "Width", "640").c_str());
+	displayMode.h = atoi(reader.Get("Video", "Height", "480").c_str());
+	displayMode.refresh_rate = atoi(reader.Get("Video", "RefreshRate", "60").c_str());
+	displayMode.format = std::stoul(reader.Get("Video", "Format", "32").c_str());
 }
 
 void SaveConfig()
@@ -115,7 +122,14 @@ void SaveConfig()
 	}
 	file << "[Game]" << std::endl;
 	file << "Lives=" << playerLives << std::endl;
+
+	file << "[Video]" << std::endl;
 	file << "Fullscreen=" << GetFullscreenMode(fullscreenMode) << std::endl;
+	file << "Display=" << displayIndex << std::endl;
+	file << "Width=" << displayMode.w << std::endl;
+	file << "Height=" << displayMode.h << std::endl;
+	file << "RefreshRate=" << displayMode.refresh_rate << std::endl;
+	file << "Format=" << displayMode.format << std::endl;
 }
 
 void SetBinding(int code, int bind)

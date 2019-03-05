@@ -1,5 +1,4 @@
 #include "graphics.h"
-#include <sstream>
 #include <SDL_image.h>
 #include "animation.h"
 #include "camera.h"
@@ -26,8 +25,12 @@ extern MENUS CurrentMenu;
 extern std::vector<Menu*> menus;
 extern int BindingKey;
 extern GAME_OVER_REASONS gameOverReason;
-int fullscreenMode;
+
 std::map<int, std::vector<SDL_DisplayMode>> displayModes;
+
+SDL_DisplayMode displayMode;
+int displayIndex;
+int fullscreenMode;
 
 Timer timer100{ 100 }, timerRain{ 200 };
 
@@ -46,7 +49,6 @@ extern std::vector<Lightning*> lightnings;
 int map_width;
 int map_height;
 
-
 int const MAX_TILES_VERTICALLY = 18;
 
 int WINDOW_WIDTH = 768;
@@ -58,11 +60,6 @@ double RENDER_SCALE = 1;
 // in tiles
 int GAME_SCENE_WIDTH = (WINDOW_WIDTH / RENDER_SCALE);
 int GAME_SCENE_HEIGHT = (WINDOW_HEIGHT / RENDER_SCALE);
-
-//int MAX_TILES_VERTICALLY = 18;
-//int ACTUAL_TILESIZE = resolution.y / MAX_TILES_VERTICALLY;
-//int RENDER_SCALE = ACTUAL_TILESIZE / TILESIZE;
-//int MAX_TILES_HORIZONTALLY = resolution.x / ACTUAL_TILESIZE;
 
 SDL_Renderer *renderer = NULL;
 SDL_Surface *player_surf = NULL;
@@ -95,13 +92,15 @@ extern std::vector< std::vector<Tile*> > tilemap_fg;
 SDL_Window *mapwin = NULL;
 SDL_Renderer *maprenderer = NULL;
 SDL_Texture *mapoverview_texture = NULL;
-SDL_Point windowResolution;
 
 extern int SelectedItem;
 extern int timeLimit;
 extern int FadingVal;
 
 extern Level *level;
+
+int GetDisplayModes();
+int SetDisplayMode(SDL_DisplayMode mode);
 
 TextureManager textureManager;
 
@@ -215,9 +214,9 @@ int GraphicsSetup()
 	SDL_SetWindowIcon(win, icon);
 	SDL_FreeSurface(icon);
 
-	if(fullscreenMode < 0 || fullscreenMode > FULLSCREEN_MODES) fullscreenMode = 0;
+	GetDisplayModes();
 
-	UpdateWindowMode();
+	UpdateDisplayMode();
 
 	// Allows drawing half-transparent rectangles
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -246,53 +245,40 @@ int GraphicsSetup()
 	return 1;
 }
 
-int MakeDisplayModeMenus()
+int GetDisplayModes()
 {
 	int display_count = 0, display_index = 0, mode_index = 0;
-    SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
+	SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
 
-    if ((display_count = SDL_GetNumVideoDisplays()) < 1) {
-        SDL_Log("SDL_GetNumVideoDisplays returned: %i", display_count);
-        return 1;
-    }
-		
+	if((display_count = SDL_GetNumVideoDisplays()) < 1)
+	{
+		SDL_Log("SDL_GetNumVideoDisplays returned: %i", display_count);
+		return 1;
+	}
+
 	for(int j = 0; j < display_count; j++)
 	{
 		int numDisplayModes = SDL_GetNumDisplayModes(0);
 		for(int i = 0; i < numDisplayModes; i++)
 		{
-			if (SDL_GetDisplayMode(display_index, i, &mode) != 0)
+			if(SDL_GetDisplayMode(display_index, i, &mode) != 0)
 			{
 				PrintLog(LOG_IMPORTANT, "SDL_GetDisplayMode failed: %s", SDL_GetError());
 				return 1;
 			}
-			//if(SDL_BITSPERPIXEL(mode.format) == 24)
-				PrintLog(LOG_IMPORTANT, "SDL_GetDisplayMode: %i %i %i", SDL_BITSPERPIXEL(mode.format), mode.w, mode.h);
-				displayModes[j].push_back(mode);
+			PrintLog(LOG_SUPERDEBUG, "SDL_GetDisplayMode: %i %i %i", SDL_BITSPERPIXEL(mode.format), mode.w, mode.h);
+			displayModes[j].push_back(mode);
 		}
 	}
-	
-	for(auto display : displayModes)
-	{
-		for(auto mode : display.second)
-		{
-			std::ostringstream modeName;
-			modeName << "Display " << display.first << ": " << mode.w << "x" << mode.h << "@" << mode.refresh_rate << "hz";
-			menus.at(MENU_SELECTION_SCREEN_MODE)->AddMenuItem(new MenuItem(300, 230, modeName.str(), menu_font, menu_color, selected_color));
-		}		
-	}
+	return 0;
 }
 
-int SetDisplayMode(int mode)
+int SetDisplayMode(SDL_DisplayMode mode)
 {
-	SDL_DisplayMode *displayMode = &displayModes[0][mode];
-
-	WINDOW_WIDTH = displayMode->w;
-	WINDOW_HEIGHT = displayMode->h;
+	WINDOW_WIDTH = mode.w;
+	WINDOW_HEIGHT = mode.h;
 
 	SDL_SetWindowSize(win, WINDOW_WIDTH, WINDOW_HEIGHT);
-	//windowResolution.x = WINDOW_WIDTH;
-	//windowResolution.y = WINDOW_HEIGHT;
 	SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	
 	RENDER_SCALE = (double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE);
@@ -309,14 +295,11 @@ int SetDisplayMode(int mode)
 			0x000000FF,
 			0xFF000000);
 	}
-	
-	//SDL_RenderSetScale(renderer, RENDER_SCALE, RENDER_SCALE);
-	//SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
-	//SDL_SetWindowDisplayMode(win, displayMode);
+
 	return 0;
 }
 
-void UpdateWindowMode()
+void UpdateDisplayMode()
 {
 	SDL_WindowFlags flag;
 	switch(fullscreenMode)
@@ -336,6 +319,26 @@ void UpdateWindowMode()
 	}
 
 	SDL_SetWindowFullscreen(win, flag);
+	if(flag == SDL_WINDOW_FULLSCREEN_DESKTOP)
+	{
+		SDL_GetWindowDisplayMode(win, &displayMode);
+		displayIndex = SDL_GetWindowDisplayIndex(win);
+		return;
+	}
+	
+	if(!displayModes.count(displayIndex))
+	{
+		PrintLog(LOG_IMPORTANT, "Display %i doesn't exist. Defaulting to 0", displayIndex);
+		displayIndex = 0;
+	}
+	for(auto mode : displayModes[displayIndex])
+	{
+		if(mode.h == displayMode.h &&
+			mode.w == displayMode.w &&
+			mode.refresh_rate == displayMode.refresh_rate &&
+			mode.format == displayMode.format)
+				SetDisplayMode(mode);			
+	}
 }
 
 void ResetLevelGraphics()
@@ -414,7 +417,7 @@ void BlitObservableTiles()
 	x = ConvertToTileCoord(prect.x, false);
 	y = ConvertToTileCoord(prect.y, false);
 	int w, h;
-	w = ConvertToTileCoord(prect.w, false);
+	w = ConvertToTileCoord(prect.w, true);
 	h = ConvertToTileCoord(prect.h, false);
 
 	// range checks
@@ -1001,7 +1004,11 @@ void RenderMenu()
 	if(CurrentMenu == MENU_OPTIONS)
 	{
 		RenderMenuItems(MENU_SELECTION_LIVES);
-		RenderMenuItems(MENU_SELECTION_SCREEN_MODE);
+	}
+	if(CurrentMenu == MENU_VIDEO_OPTIONS)
+	{
+		RenderMenuItems(MENU_SELECTION_DISPLAY);
+		RenderMenuItems(MENU_SELECTION_DISPLAY_MODE);
 		RenderMenuItems(MENU_SELECTION_FULLSCREEN);
 	}
 	if(CurrentMenu == MENU_BINDS)

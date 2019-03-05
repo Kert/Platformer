@@ -7,17 +7,6 @@
 #include "config.h"
 #include "globals.h"
 
-// Uncommenting this enables borderless window option and support
-// It needs proper scaling values to work right so it's disabled for now
-
-//#define ALLOW_BORDERLESS
-
-#ifdef ALLOW_BORDERLESS
-#define FULLSCREEN_MODES 2
-#else
-#define FULLSCREEN_MODES 1
-#endif
-
 void DoMenuAction(int code, int bind);
 void NavigateMenu(int bind);
 void LoadMenus();

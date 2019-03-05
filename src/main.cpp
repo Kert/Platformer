@@ -48,8 +48,7 @@ int main(int argc, char* argv[])
 	GraphicsSetup();
 
 	// Load menus
-	LoadMenus();
-	MakeDisplayModeMenus();
+	LoadMenus();	
 
 	// Load creature properties and their sprite data
 	ReadCreatureData();

@@ -29,7 +29,7 @@ void RenderLogo();
 void ShowPauseOverlay();
 void RenderMenu();
 void RenderMenuItems(MENUS menu);
-void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color);
+void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color, TEXT_ALIGN align = TEXT_ALIGN_LEFT);
 void UpdateAnimation(Bullet &b);
 void UpdateAnimation(Effect &e);
 void UpdateAnimation(Player &p);
@@ -43,8 +43,8 @@ SDL_Texture* GenerateLightningTexture(std::vector<SDL_Point> &points);
 void ChangePlayerColor(PLAYER_BODY_PARTS bodyPart, SDL_Color color);
 void SetupLevelGraphics(int map_width, int map_height);
 void InitPlayerTexture();
-int GetScreenCenterX();
-int GetScreenCenterY();
+int GetWindowNormalizedX(double val);
+int GetWindowNormalizedY(double val);
 
 class TextureManager
 {

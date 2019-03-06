@@ -313,7 +313,13 @@ void UpdateDisplayMode()
 			mode.w == displayMode.w &&
 			mode.refresh_rate == displayMode.refresh_rate &&
 			mode.format == displayMode.format)
-				SetDisplayMode(mode);			
+		{
+			SetDisplayMode(mode);
+			// TODO: Check for leaks
+			MenusCleanup();
+			LoadMenus();
+			return;
+		}
 	}
 }
 
@@ -892,7 +898,7 @@ void UpdateTransition()
 			int w, h;
 			text = "Generating level...";
 			TTF_SizeText(menu_font, text, &w, &h);
-			RenderText(GetScreenCenterX() - w, GetScreenCenterY() - h, text, menu_font, menu_color);
+			RenderText(GetWindowNormalizedX(0.5) - w, GetWindowNormalizedY(0.5) - h, text, menu_font, menu_color);
 		}
 		else
 		{
@@ -910,7 +916,7 @@ void UpdateTransition()
 			text = "Loaded! Press a key to start.";
 			int w, h;
 			TTF_SizeText(menu_font, text, &w, &h);
-			RenderText(GetScreenCenterX() - w, 400, text, menu_font, menu_color);
+			RenderText(GetWindowNormalizedX(0.5) - w, 400, text, menu_font, menu_color);
 		}
 	}
 	else if(TransitionID == TRANSITION_LEVELCLEAR)
@@ -918,7 +924,7 @@ void UpdateTransition()
 		text = "Level clear!";
 		int w, h;
 		TTF_SizeText(game_font, text, &w, &h);
-		RenderText(GetScreenCenterX() - w, GetScreenCenterY() - h, text, game_font, menu_color);
+		RenderText(GetWindowNormalizedX(0.5) - w, GetWindowNormalizedY(0.5) - h, text, game_font, menu_color);
 
 		// TODO: probably put scoring stuff here
 	}
@@ -936,8 +942,8 @@ void UpdateTransition()
 
 		int w, h;
 		TTF_SizeText(game_font, text, &w, &h);
-		w = GetScreenCenterX() - w;
-		h = GetScreenCenterY() - h;
+		w = GetWindowNormalizedX(0.5) - w;
+		h = GetWindowNormalizedY(0.5) - h;
 		RenderText(w, h - 100, text, menu_font, menu_color);
 
 		char str[32];
@@ -961,14 +967,14 @@ void RenderLogo()
 	SDL_Rect r;
 	r.w = 291;
 	r.h = 100;
-	r.x = GetScreenCenterX() - r.w;
+	r.x = GetWindowNormalizedX(0.5) - r.w / 2;
 	r.y = 30;
 	SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/logo.png"), NULL, &r);
 }
 
 void ShowPauseOverlay()
 {
-	RenderText(GetScreenCenterX(), GetScreenCenterY() - 100, "Pause", game_font, pause_color);
+	RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 100, "Pause", game_font, pause_color);
 	RenderMenuItems(CurrentMenu);
 }
 
@@ -1037,16 +1043,12 @@ void RenderMenuItems(MENUS id)
 	if((int)menus.size() <= id)
 		return;
 	menu = menus.at(id);
-	const char *text;
-
-	SDL_Texture *tex = NULL;
-	SDL_Surface *clearText = NULL;
-	SDL_Rect r;
-
-	SDL_Color color;
 
 	for(int i = 0; i < menu->GetItemCount(); i++)
 	{
+		SDL_Rect r;
+		SDL_Color color;
+		
 		if(i == SelectedItem && id == CurrentMenu || menu->IsSwitchable)
 			color = menu->GetItemInfo(i)->selectedColor;
 		else
@@ -1055,25 +1057,17 @@ void RenderMenuItems(MENUS id)
 		if(menu->IsHorizontal && i == menu->selected)
 			color = menu->GetItemInfo(i)->selectedColor;
 		
-		text = menu->GetItemInfo(i)->text.c_str();
-		clearText = TTF_RenderText_Solid(menu->GetItemInfo(i)->font, text, color);
-		TTF_SizeText(menu->GetItemInfo(i)->font, text, &r.w, &r.h);
+		const char *text = menu->GetItemInfo(i)->text.c_str();
 		r.x = menu->GetItemInfo(i)->pos.x;
 		r.y = menu->GetItemInfo(i)->pos.y;
-		if(CurrentMenu == MENU_PAUSE)
-			r = { (r.x - (r.w / 2)) / (int)RENDER_SCALE, (r.y - (r.h / 2)) / (int)RENDER_SCALE, r.w / (int)RENDER_SCALE, r.h / (int)RENDER_SCALE };
-		
-		if (!menu->IsSwitchable || (menu->IsSwitchable && i == menu->selected))
-		{
-			tex = SDL_CreateTextureFromSurface(renderer, clearText);
-			SDL_RenderCopy(renderer, tex, NULL, &r);
-			SDL_DestroyTexture(tex);			
-		}
-		SDL_FreeSurface(clearText);
+		TTF_Font *font = menu->GetItemInfo(i)->font;
+		TEXT_ALIGN align = menu->GetItemInfo(i)->align;
+		if(!menu->IsSwitchable || i == menu->selected)
+			RenderText(r.x, r.y, text, menu->GetItemInfo(i)->font, color, align);
 	}
 }
 
-void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color)
+void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color, TEXT_ALIGN align)
 {
 	SDL_Texture *tex = NULL;
 	SDL_Surface *clearText = NULL;
@@ -1083,6 +1077,19 @@ void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color)
 	TTF_SizeText(font, text.c_str(), &r.w, &r.h);
 	r.x = x;
 	r.y = y;
+	switch(align)
+	{
+		case TEXT_ALIGN_CENTER:
+		{
+			r.x -= r.w / 2;
+			break;
+		}
+		case TEXT_ALIGN_RIGHT:
+		{
+			r.x -= r.w;
+			break;
+		}
+	}
 	tex = SDL_CreateTextureFromSurface(renderer, clearText);
 	SDL_RenderCopy(renderer, tex, NULL, &r);
 	SDL_DestroyTexture(tex);
@@ -1246,12 +1253,16 @@ void SetupLevelGraphics(int map_width, int map_height)
 	}
 }
 
-int GetScreenCenterX()
+int GetWindowNormalizedX(double val)
 {
-	return WINDOW_WIDTH / 2;
+	val = std::max(0.0, val);
+	val = std::min(100.0, val);
+	return WINDOW_WIDTH * val;
 }
 
-int GetScreenCenterY()
+int GetWindowNormalizedY(double val)
 {
-	return WINDOW_HEIGHT / 2;
+	val = std::max(0.0, val);
+	val = std::min(100.0, val);
+	return WINDOW_HEIGHT * val;
 }

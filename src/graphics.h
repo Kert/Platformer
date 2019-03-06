@@ -12,8 +12,6 @@
 
 int GraphicsSetup();
 void ResetLevelGraphics();
-bool GameRenderSetup();
-bool MenuRenderSetup();
 void BlitLevelTiles();
 void GraphicsUpdate();
 void GraphicsCleanup();
@@ -45,6 +43,8 @@ SDL_Texture* GenerateLightningTexture(std::vector<SDL_Point> &points);
 void ChangePlayerColor(PLAYER_BODY_PARTS bodyPart, SDL_Color color);
 void SetupLevelGraphics(int map_width, int map_height);
 void InitPlayerTexture();
+int GetScreenCenterX();
+int GetScreenCenterY();
 
 class TextureManager
 {

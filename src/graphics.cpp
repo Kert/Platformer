@@ -49,17 +49,17 @@ extern std::vector<Lightning*> lightnings;
 int map_width;
 int map_height;
 
-int const MAX_TILES_VERTICALLY = 18;
+static int const MAX_TILES_VERTICALLY = 18;
 
-int WINDOW_WIDTH = 768;
-int WINDOW_HEIGHT = 720;
+int WINDOW_WIDTH;
+int WINDOW_HEIGHT;
 
 // SHOULD CALCULATE THIS
-double RENDER_SCALE = 1;
+int RENDER_SCALE = 1;
 
 // in tiles
-int GAME_SCENE_WIDTH = (WINDOW_WIDTH / RENDER_SCALE);
-int GAME_SCENE_HEIGHT = (WINDOW_HEIGHT / RENDER_SCALE);
+int GAME_SCENE_WIDTH;
+int GAME_SCENE_HEIGHT;
 
 SDL_Renderer *renderer = NULL;
 SDL_Surface *player_surf = NULL;
@@ -153,30 +153,6 @@ void CreateMapWindow()
 {
 	mapwin = SDL_CreateWindow("map overview", 1000, 100, OVERVIEW_WIDTH, OVERVIEW_HEIGHT, NULL);
 	maprenderer = SDL_CreateRenderer(mapwin, -1, SDL_RENDERER_ACCELERATED);
-}
-
-bool GameRenderSetup()
-{
-	// TODO: might not be needed?
-	//if (gameLoaded) return false;
-
-	// put stuff here to only run once
-	SDL_RenderSetScale(renderer, RENDER_SCALE, RENDER_SCALE);
-
-	gameLoaded = true;
-	return true;
-}
-
-bool MenuRenderSetup()
-{
-	// TODO: might not be needed?
-	//if (menuLoaded) return false;
-
-	// put things in here that only need to be run once
-	SDL_RenderSetScale(renderer, 1, 1);
-
-	menuLoaded = true;
-	return true;
 }
 
 void InitPlayerTexture()
@@ -281,10 +257,10 @@ int SetDisplayMode(SDL_DisplayMode mode)
 	SDL_SetWindowSize(win, WINDOW_WIDTH, WINDOW_HEIGHT);
 	SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	
-	RENDER_SCALE = (double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE);
+	RENDER_SCALE = static_cast<int>(round((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
 
-	GAME_SCENE_WIDTH = ((double)WINDOW_WIDTH / RENDER_SCALE);
-	GAME_SCENE_HEIGHT = ((double)WINDOW_HEIGHT / RENDER_SCALE);
+	GAME_SCENE_WIDTH = static_cast<int>(ceil((double)WINDOW_WIDTH / RENDER_SCALE));
+	GAME_SCENE_HEIGHT = static_cast<int>(ceil((double)WINDOW_HEIGHT / RENDER_SCALE));
 
 	if(pov_surface)
 	{
@@ -418,7 +394,7 @@ void BlitObservableTiles()
 	y = ConvertToTileCoord(prect.y, false);
 	int w, h;
 	w = ConvertToTileCoord(prect.w, true);
-	h = ConvertToTileCoord(prect.h, false);
+	h = ConvertToTileCoord(prect.h, true);
 
 	// range checks
 	if(x < 0) x = 0;
@@ -451,7 +427,11 @@ void BlitObservableTiles()
 	// transfer pixedata from surface to texture
 
 	SDL_Texture *pov_texture = SDL_CreateTextureFromSurface(renderer, pov_surface);
-	SDL_RenderCopy(renderer, pov_texture, NULL, NULL);
+	SDL_Rect dest;
+	dest.x = dest.y = 0;
+	dest.w = GAME_SCENE_WIDTH * RENDER_SCALE;
+	dest.h = GAME_SCENE_HEIGHT * RENDER_SCALE;
+	SDL_RenderCopy(renderer, pov_texture, NULL, &dest);
 	SDL_DestroyTexture(pov_texture);
 }
 
@@ -646,6 +626,11 @@ void Render(Entity &e)
 	realpos.y = (int)round(y - camera->GetPRect().y + e.sprite->GetSpriteOffsetY());
 	realpos.h = (int)e.sprite->GetTextureCoords().h;
 	realpos.w = (int)e.sprite->GetTextureCoords().w;
+
+	realpos.x *= RENDER_SCALE;
+	realpos.y *= RENDER_SCALE;
+	realpos.h *= RENDER_SCALE;
+	realpos.w *= RENDER_SCALE;
 
 	if(e.status == STATUS_INVULN && e.statusTimer % 200 > 100 && e.blinkDamaged) return;
 
@@ -907,7 +892,7 @@ void UpdateTransition()
 			int w, h;
 			text = "Generating level...";
 			TTF_SizeText(menu_font, text, &w, &h);
-			RenderText((WINDOW_WIDTH - w) / 2, (WINDOW_HEIGHT - h) / 2, text, menu_font, menu_color);
+			RenderText(GetScreenCenterX() - w, GetScreenCenterY() - h, text, menu_font, menu_color);
 		}
 		else
 		{
@@ -925,7 +910,7 @@ void UpdateTransition()
 			text = "Loaded! Press a key to start.";
 			int w, h;
 			TTF_SizeText(menu_font, text, &w, &h);
-			RenderText((WINDOW_WIDTH - w) / 2, 400, text, menu_font, menu_color);
+			RenderText(GetScreenCenterX() - w, 400, text, menu_font, menu_color);
 		}
 	}
 	else if(TransitionID == TRANSITION_LEVELCLEAR)
@@ -933,7 +918,7 @@ void UpdateTransition()
 		text = "Level clear!";
 		int w, h;
 		TTF_SizeText(game_font, text, &w, &h);
-		RenderText((WINDOW_WIDTH - w) / 2, (WINDOW_HEIGHT - h) / 2, text, game_font, menu_color);
+		RenderText(GetScreenCenterX() - w, GetScreenCenterY() - h, text, game_font, menu_color);
 
 		// TODO: probably put scoring stuff here
 	}
@@ -951,8 +936,8 @@ void UpdateTransition()
 
 		int w, h;
 		TTF_SizeText(game_font, text, &w, &h);
-		w = (WINDOW_WIDTH - w) / 2;
-		h = (WINDOW_HEIGHT - h) / 2;
+		w = GetScreenCenterX() - w;
+		h = GetScreenCenterY() - h;
 		RenderText(w, h - 100, text, menu_font, menu_color);
 
 		char str[32];
@@ -976,14 +961,14 @@ void RenderLogo()
 	SDL_Rect r;
 	r.w = 291;
 	r.h = 100;
-	r.x = (WINDOW_WIDTH - r.w) / 2;
+	r.x = GetScreenCenterX() - r.w;
 	r.y = 30;
 	SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/logo.png"), NULL, &r);
 }
 
 void ShowPauseOverlay()
 {
-	RenderText(WINDOW_WIDTH / 2, (WINDOW_HEIGHT / 2) - 100, "Pause", game_font, pause_color);
+	RenderText(GetScreenCenterX(), GetScreenCenterY() - 100, "Pause", game_font, pause_color);
 	RenderMenuItems(CurrentMenu);
 }
 
@@ -1259,4 +1244,14 @@ void SetupLevelGraphics(int map_width, int map_height)
 		level_fgLayer_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, map_width, map_height);
 		SDL_SetTextureBlendMode(level_fgLayer_tex, SDL_BLENDMODE_BLEND);
 	}
+}
+
+int GetScreenCenterX()
+{
+	return WINDOW_WIDTH / 2;
+}
+
+int GetScreenCenterY()
+{
+	return WINDOW_HEIGHT / 2;
 }

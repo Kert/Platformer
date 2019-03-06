@@ -30,8 +30,6 @@ int FadingEnd;
 unsigned FadingSpeed;
 GAMESTATES toGameState;
 
-bool menuLoaded = false;
-bool gameLoaded = false;
 extern int TransitionID;
 // used to send it to transition
 GAME_OVER_REASONS gameOverReason;
@@ -288,13 +286,8 @@ void InitFading(FADING_STATES state, int start, int end, int speed, GAMESTATES t
 
 void SetGamestate(int state)
 {
-	if(state == STATE_MENU)
-		if(MenuRenderSetup()) gameLoaded = false;
-	if(state == STATE_GAME)
-		if(GameRenderSetup()) menuLoaded = false;
 	if(state == STATE_TRANSITION)
 	{
-		MenuRenderSetup();
 		if(TransitionID == TRANSITION_LEVELLOSE)
 		{
 			StopMusic();

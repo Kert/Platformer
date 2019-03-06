@@ -21,8 +21,6 @@ extern SDL_Color menu_color;
 extern SDL_Color selected_color;
 extern SDL_Color pause_color;
 
-extern int WINDOW_WIDTH;
-extern int WINDOW_HEIGHT;
 extern int displayIndex;
 extern SDL_DisplayMode displayMode;
 extern std::map<int, std::vector<SDL_DisplayMode>> displayModes;
@@ -237,8 +235,8 @@ void LoadMenus()
 	menus.push_back(menu);
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, (WINDOW_HEIGHT / 2) - 100, "Resume", game_font, pause_color, selected_color));
-	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, (WINDOW_HEIGHT / 2), "Quit", game_font, pause_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetScreenCenterX(), GetScreenCenterY() - 100, "Resume", game_font, pause_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetScreenCenterX(), GetScreenCenterY(), "Quit", game_font, pause_color, selected_color));
 	menus.push_back(menu);
 
 	menu = new Menu();
@@ -268,14 +266,14 @@ void LoadMenus()
 	menus.push_back(menu);
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 50, "Retry Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 100, "New Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 150, "Back to Menu", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetScreenCenterX(), GetScreenCenterY() + 50, "Retry Level", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetScreenCenterX(), GetScreenCenterY() + 100, "New Level", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetScreenCenterX(), GetScreenCenterY() + 150, "Back to Menu", menu_font, menu_color, selected_color));
 	menus.push_back(menu);
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 100, "New Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 150, "Back to Menu", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetScreenCenterX(), GetScreenCenterY() + 100, "New Level", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetScreenCenterX(), GetScreenCenterY() + 150, "Back to Menu", menu_font, menu_color, selected_color));
 	menus.push_back(menu);
 	// insert bind and bindings menu here
 

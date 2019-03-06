@@ -18,7 +18,7 @@ std::map<int, InterfacePiece> interface;
 
 TTF_Font *font = NULL;
 
-extern double RENDER_SCALE;
+extern int RENDER_SCALE;
 
 void InterfaceSetup()
 {
@@ -87,7 +87,7 @@ void BuildInterface(int h, int w, int x, int y, const char* content, int frame, 
 	SDL_Rect f;
 	f.h = h;
 	f.w = w;
-	f.x = (w * frame) / RENDER_SCALE;
+	f.x = (w * frame);
 	f.y = 0;
 
 	SDL_Rect r;
@@ -116,7 +116,14 @@ void RenderInterface()
 		if(iter.second.tex == NULL)
 			RenderText(iter.second.location.x, iter.second.location.y, iter.second.text, font, interface_color);
 		else
-			SDL_RenderCopy(renderer, iter.second.tex, &iter.second.frame, &iter.second.location);
+		{
+			SDL_Rect dest;
+			dest.x = iter.second.location.x * RENDER_SCALE;
+			dest.y = iter.second.location.y * RENDER_SCALE;
+			dest.w = iter.second.location.w * RENDER_SCALE;
+			dest.h = iter.second.location.h * RENDER_SCALE;
+			SDL_RenderCopy(renderer, iter.second.tex, &iter.second.frame, &dest);
+		}
 	}
 }
 

@@ -188,12 +188,22 @@ void CheckSpecialBehaviour(Creature &p) {
 
 	for(int z = minx; z <= maxx; z++)
 	{
-		if(GetTileTypeAtTiledPos(z, head) == PHYSICS_HOOK)
+		PHYSICS_TYPES tileType = GetTileTypeAtTiledPos(z, head);
+		if(tileType == PHYSICS_HOOK || tileType == PHYSICS_HOOK_PLATFORM)
 		{
 			SDL_Rect hook;
-			hook.x = z * TILESIZE + 6;
-			hook.y = head * TILESIZE + 8;
-			hook.w = hook.h = 10;
+			if(tileType == PHYSICS_HOOK)
+			{
+				hook.x = z * TILESIZE + 6;
+				hook.y = head * TILESIZE + 8;
+				hook.w = hook.h = 10;
+			}
+			else if(tileType == PHYSICS_HOOK_PLATFORM)
+			{
+				hook.x = z * TILESIZE;
+				hook.y = head * TILESIZE;
+				hook.w = hook.h = TILESIZE;
+			}
 			SDL_Rect hand;
 			hand.x = p.hitbox->GetRect().x + 4;
 			hand.y = p.hitbox->GetRect().y + 2;
@@ -279,6 +289,35 @@ bool IsOnIce(Creature &c)
 		switch(GetTileTypeAtTiledPos(i, feet))
 		{
 			case PHYSICS_ICEBLOCK: case PHYSICS_ICE:
+			{
+				//PrintLog(LOG_SUPERDEBUG, "I'm ON ICE!!!!!!");
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool IsOnPlatform(Creature &c)
+{
+	PrecisionRect ppr = c.hitbox->GetPRect();
+	double x, y;
+	c.GetPos(x, y);
+	y = c.yNew;
+	int minx = ConvertToTileCoord(x, false);
+	int maxx = ConvertToTileCoord(ppr.x + ppr.w, true);
+	int feet = ConvertToTileCoord(y, false);
+
+	// Bugfix for possible skipping of the next loop
+	if(minx == maxx)
+		maxx = minx + 1;
+
+	for(int i = minx; i < maxx; i++)
+	{
+		if(feet < 1) break;
+		switch(GetTileTypeAtTiledPos(i, feet))
+		{
+			case PHYSICS_PLATFORM: case PHYSICS_HOOK_PLATFORM:
 			{
 				//PrintLog(LOG_SUPERDEBUG, "I'm ON ICE!!!!!!");
 				return true;
@@ -790,7 +829,7 @@ void ResolveBottom(Creature &p)
 		}
 		switch(type)
 		{
-			case PHYSICS_PLATFORM:
+			case PHYSICS_PLATFORM: case PHYSICS_HOOK_PLATFORM:
 			{
 				//PrintLog(LOG_SUPERDEBUG, "Tile intersection: Platform");
 				if(p.GetVelocity().y >= 0 && (y - tileBottom.y) < 2)

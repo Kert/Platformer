@@ -37,6 +37,7 @@ std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity);
 void ProcessShot(WEAPONS weapon, Creature &shooter);
 bool IsInDeathZone(Creature &c);
 bool IsOnIce(Creature &c);
+bool IsOnPlatform(Creature &c);
 bool IsInRain(DynamicEntity &c);
 bool HasCeilingRightAbove(DynamicEntity &c);
 

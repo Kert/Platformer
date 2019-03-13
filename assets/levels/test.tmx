@@ -28,9 +28,9 @@
   <tile id="75" type="block"/>
   <tile id="76" type="block"/>
   <tile id="99" type="block"/>
-  <tile id="100" type="block"/>
-  <tile id="101" type="block"/>
-  <tile id="102" type="block"/>
+  <tile id="100" type="hook_platform"/>
+  <tile id="101" type="hook_platform"/>
+  <tile id="102" type="hook_platform"/>
   <tile id="103" type="block"/>
   <tile id="104" type="block"/>
   <tile id="105" type="block"/>
@@ -14851,13 +14851,13 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
+   <tile gid="101"/>
+   <tile gid="102"/>
+   <tile gid="102"/>
+   <tile gid="102"/>
+   <tile gid="102"/>
+   <tile gid="102"/>
+   <tile gid="103"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>

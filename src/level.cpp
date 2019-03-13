@@ -116,6 +116,8 @@ void Level::LoadLevelFromFile(std::string filename)
 				type = PHYSICS_BLOCK;
 			else if(type_string == "hook" || type_string == std::to_string(PHYSICS_HOOK))
 				type = PHYSICS_HOOK;
+			else if(type_string == "hook_platform" || type_string == std::to_string(PHYSICS_HOOK_PLATFORM))
+				type = PHYSICS_HOOK_PLATFORM;
 			else if(type_string == "platform" || type_string == std::to_string(PHYSICS_PLATFORM))
 				type = PHYSICS_PLATFORM;
 			else if(type_string == "exit" || type_string == std::to_string(PHYSICS_EXITBLOCK))

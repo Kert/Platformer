@@ -150,7 +150,13 @@ EntityState* NormalState::HandleInput(Player &p, int input, int type)
 				}
 				case BIND_JUMP:
 					if(p.hasState(STATE_ONGROUND))
-						return new JumpingState();
+					{
+						if(IsBindPressed(BIND_DOWN) && IsOnPlatform(p))
+							p.SetY(p.GetY() + 2);
+						else
+							return new JumpingState();
+					}
+						
 				default:
 					EntityState::HandleInput(p, input, type);
 			}
@@ -413,7 +419,14 @@ EntityState* HangingState::HandleInput(Player &p, int input, int type)
 					return new NormalState();
 					break;
 				case BIND_JUMP:
-					return new JumpingState();
+					if(IsBindPressed(BIND_DOWN))
+					{
+						p.lefthook = true;
+						p.removeState(STATE_HANGING);
+						return new NormalState();
+					}
+					else
+						return new JumpingState();
 					break;
 				default:
 					EntityState::HandleInput(p, input, type);

@@ -141,14 +141,16 @@ Player::Player()
 	externSpeed.x = 0;
 	externSpeed.y = 0;
 
+	shotLocked = false;
+	charging = false;
+	onMachinery = false;
+	
 	ResetWeapons();
 
 	ammo[WEAPON_FIREBALL] = 3;
 	//Initialize the velocity
 	SetVelocity(0, 0);
-
-	state = 0;
-
+	
 	hitbox = new Hitbox(0, 0, 30, 10);
 	sprite = new Sprite(&player_texture, 0, 0, 34, 32);
 	sprite->SetSpriteOffset(-11, -32 + 1);
@@ -167,8 +169,7 @@ Player::Player()
 	sprite->AddAnimation(ANIMATION_SHOOTING_JUMPING, 32, 33, 1, 0, 64, ANIM_LOOP_TYPES::LOOP_NONE);
 	sprite->AddAnimation(ANIMATION_SHOOTING_FALLING, 64, 33, 1, 0, 64, ANIM_LOOP_TYPES::LOOP_NONE);
 	sprite->AddAnimation(ANIMATION_SHOOTING_RUNNING, 128, 34, 4, 32, 150, ANIM_LOOP_TYPES::LOOP_NORMAL);
-	state_ = new NormalState();
-	state_->Initialize(*this);
+	state = new OnGroundState(this);
 	InitPlayerTexture();
 }
 
@@ -245,7 +246,7 @@ void Player::ResetWeapons()
 
 bool Player::CanMoveWhileFiring()
 {
-	if(hasState(STATE_SHOTLOCKED) && weapon >= WEAPON_FLAME)
+	if(shotLocked && weapon >= WEAPON_FLAME)
 	{
 		// TODO: velocity x 0 here
 		return false;
@@ -286,7 +287,7 @@ void Creature::ToggleDucking(bool enable)
 	PrintLog(LOG_INFO, "ducking toggled");
 	if(enable)
 	{
-		this->setState(STATE_DUCKING);
+		this->SetState(CREATURE_STATES::DUCKING);
 		hitbox->SetRect({ 0, 0, 16, 16 });
 		SetY(GetY());
 		sprite->SetSpriteRect({ 0, 0, 16, 16 });
@@ -294,7 +295,6 @@ void Creature::ToggleDucking(bool enable)
 	}
 	else
 	{
-		this->removeState(STATE_DUCKING);
 		hitbox->SetRect({ 0, 0, 15, 30 });
 		SetY(GetY());
 		sprite->SetSpriteRect({ 24, 0, 24, 32 });
@@ -336,66 +336,67 @@ bool DynamicEntity::isMoving(bool onlyX)
 	return (abs(velocity.x) > 0 || (!onlyX && abs(velocity.y) > 0));
 }
 
-int DynamicEntity::getState()
+void Creature::SetState(CREATURE_STATES state)
 {
-	return this->state;
-}
-
-void DynamicEntity::setState(int state)
-{
-	if(!this->hasState(state))
+	if(this->state != nullptr)
 	{
-		//PrintLog(LOG_INFO, "NEW STATE %d", state);
-		this->state += state;
+		if(state != this->state->GetState())
+			delete this->state;
+		else
+			return;
 	}
-}
-
-void DynamicEntity::removeState(int state)
-{
-	if(this->hasState(state)) this->state -= state;
-}
-
-bool DynamicEntity::hasState(int state)
-{
-	return (this->state & state) != 0;
-}
-
-void Player::SetState(int state)
-{
-	if(state_ != nullptr)
-		delete state_;
+		
 	switch(state)
 	{
-		case PLAYER_STATES::PLAYER_STATE_HANGING:
-			state_ = new HangingState();
+		case CREATURE_STATES::ONGROUND:
+			this->state = new OnGroundState(this);
 			break;
+		case CREATURE_STATES::HANGING:
+			this->state = new HangingState(this);
+			break;
+		case CREATURE_STATES::INAIR:
+			this->state = new InAirState(this);
+			break;
+		case CREATURE_STATES::SLIDING:
+			this->state = new SlidingState(this);
+			break;
+		case CREATURE_STATES::JUMPING:
+			this->state = new JumpingState(this);
+			break;
+		case CREATURE_STATES::ONLADDER:
+			this->state = new OnLadderState(this);
+			break;
+		case CREATURE_STATES::DUCKING:
+			this->state = new DuckingState(this);
+			break;
+		default:
+			PrintLog(LOG_IMPORTANT, "Creature state %d is not implemented!", state);
+			this->state = new InAirState(this);
 	}
-	state_->Initialize(*this);
 }
 
-void Player::SetState(EntityState *newState)
+void Creature::SetState(CreatureState *newState)
 {
-	if(state_ != nullptr)
-		delete state_;
-	state_ = newState;
-	state_->Initialize(*this);
+	if(state != nullptr)
+		delete state;
+	state = newState;
 }
 
-void Player::HandleInput(int input, int type)
+void Creature::HandleInput(int input, int type)
 {
 	if(player->status == STATUS_STUN)
 		return;
 
-	EntityState *newState = this->state_->HandleInput(*this, input, type);
+	CreatureState *newState = this->state->HandleInput(input, type);
 	if(newState != nullptr)
 	{
 		player->SetState(newState);
 	}
 }
 
-void Player::HandleStateIdle()
+void Creature::HandleStateIdle()
 {
-	EntityState *newState = this->state_->HandleIdle(*this);
+	CreatureState *newState = this->state->HandleIdle();
 	if(newState != nullptr)
 	{
 		player->SetState(newState);
@@ -424,15 +425,15 @@ void Creature::Walk(DIRECTIONS direction)
 {
 	Velocity vel;
 	vel = this->GetVelocity();
-	if(!this->hasState(STATE_ONLADDER))
+	if(!this->state->Is(CREATURE_STATES::ONLADDER))
 		this->direction = direction;
 
-	if(this->hasState(STATE_ONGROUND) && !this->hasState(STATE_ONLADDER)) {
+	if(this->state->Is(CREATURE_STATES::ONGROUND) && !this->state->Is(CREATURE_STATES::ONLADDER)) {
 		this->accel.x = 1 * (direction ? 1 : -1);
 		if(IsOnIce(*this))
 			this->accel.x = 0.35 * (direction ? 1 : -1);
 	}
-	else if(!this->hasState(STATE_ONGROUND))
+	else if(!this->state->Is(CREATURE_STATES::ONGROUND))
 		this->accel.x = 0.7 * (direction ? 1 : -1);
 
 	this->SetVelocity(vel.x, vel.y);
@@ -443,14 +444,6 @@ void Creature::Jump()
 	// from
 	// void JumpingState::Enter(Player &p)
 	
-	if(!this->hasState(STATE_ONGROUND))
-	{
-		if(this->hasState(STATE_HANGING))
-			this->removeState(STATE_HANGING);
-		else
-			return;
-	}
-	this->removeState(STATE_ONGROUND);
 	this->jumptime = 210;
 }
 
@@ -473,7 +466,6 @@ Creature::Creature(std::string type)
 	//weapon = WEAPON_ROCKETL;
 
 	attached = false;
-	state = 0;
 	status = 0;
 	AI = nullptr;
 	nearladder = false;
@@ -485,6 +477,9 @@ Creature::Creature(std::string type)
 	accel.y = 0;
 	jumptime = 0;
 	statusTimer = 0;
+	shotLocked = false;
+	charging = false;
+	onMachinery = false;
 
 	creatures.push_back(this);
 	entityID = AssignEntityID(LIST_CREATURES);
@@ -496,6 +491,7 @@ Creature::Creature(std::string type)
 	std::string graphicsName = creatureData[type].graphicsName;
 	hitbox = new Hitbox(creatureGraphicsData[graphicsName].hitbox);
 	sprite = new Sprite(creatureGraphicsData[graphicsName].sprite);
+	state = new OnGroundState(this);
 }
 
 Creature::Creature()
@@ -509,6 +505,11 @@ Creature::Creature()
 	accel.x = 0;
 	accel.y = 0;
 	blinkDamaged = true;
+	shotLocked = false;
+	charging = false;
+	onMachinery = false;
+
+	state = new OnGroundState(this);
 	// creatures are leaking a few bytes when created, something to do with DamageSource it seems like?
 }
 
@@ -908,7 +909,7 @@ Bullet::Bullet()
 }
 
 // Bullets are leaking memory and I don't know why
-Bullet::Bullet(WEAPONS firedFrom, DynamicEntity &shooter)
+Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 {
 	bullets.push_back(this);
 	entityID = AssignEntityID(LIST_BULLETS);
@@ -948,7 +949,7 @@ Bullet::Bullet(WEAPONS firedFrom, DynamicEntity &shooter)
 			sprite = new Sprite(textureManager.GetTexture("assets/sprites/rocketlbullet.png"), 0, 0, 7, 7);
 			sprite->SetSpriteOffset(0, -16);
 			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 7, 105, ANIM_LOOP_TYPES::LOOP_NORMAL);
-			if(shooter.hasState(STATE_ONLADDER))
+			if(shooter.state->Is(CREATURE_STATES::ONLADDER))
 				SetVelocity(0, 0);
 			else
 				SetVelocity(150 * (direction ? 1 : -1), -200);
@@ -1340,7 +1341,6 @@ void Creature::Die()
 	ignoreWorld = true;
 	ignoreGravity = false;
 	term_vel = 360;
-	state = 0;
 	accel.x = 0;
 	accel.y = 0;
 	gravityMultiplier = 1;

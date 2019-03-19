@@ -5,6 +5,7 @@
 #include "entities.h"
 #include "interface.h"
 #include "level.h"
+#include "state.h"
 #include "tiles.h"
 #include "menu.h"
 #include "transition.h"
@@ -663,7 +664,7 @@ void UpdateAnimation(Effect &e)
 bool had_shot_while_jumping = false;
 void UpdateAnimation(Player &p)
 {
-	if(p.hasState(STATE_CHARGING))
+	if(p.charging)
 	{
 		if(p.charge_time == 0 && timer100.completed)
 			p.ToggleChargedColor();
@@ -676,11 +677,11 @@ void UpdateAnimation(Player &p)
 			p.sprite->shootingAnimTimer = 0;
 		else
 		{
-			if(p.hasState(STATE_HANGING))
+			if(p.state->Is(CREATURE_STATES::HANGING))
 				p.sprite->SetAnimation(ANIMATION_SHOOTING_HANGING);
 			else
 			{
-				if(p.hasState(STATE_ONGROUND))
+				if(p.state->Is(CREATURE_STATES::ONGROUND))
 				{
 					if(p.GetVelocity().x != 0)// && p.accel.x != 0)
 						p.sprite->SetAnimation(ANIMATION_SHOOTING_RUNNING);
@@ -703,36 +704,36 @@ void UpdateAnimation(Player &p)
 		}
 	}
 
-	if(p.hasState(STATE_SLIDING))
+	switch(p.state->GetState())
 	{
-		p.sprite->SetAnimation(ANIMATION_SLIDING);
-		return;
-	}
-
-	if(p.hasState(STATE_DUCKING))
-	{
-		p.sprite->SetAnimation(ANIMATION_DUCKING);
-		return;
-	}
-
-	if(p.hasState(STATE_HANGING))
-	{
-		p.sprite->SetAnimation(ANIMATION_HANGING);
-		p.sprite->Animate();
-		return;
-	}
-
-	if(p.hasState(STATE_ONLADDER))
-	{
-		if(p.GetVelocity().y > 0 || p.GetVelocity().y < 0)
+		case CREATURE_STATES::SLIDING:
 		{
-			p.sprite->SetAnimation(ANIMATION_CLIMBING);
-			p.sprite->Animate();
+			p.sprite->SetAnimation(ANIMATION_SLIDING);
+			return;
 		}
-		return;
+		case CREATURE_STATES::DUCKING:
+		{
+			p.sprite->SetAnimation(ANIMATION_DUCKING);
+			return;
+		}
+		case CREATURE_STATES::HANGING:
+		{
+			p.sprite->SetAnimation(ANIMATION_HANGING);
+			p.sprite->Animate();
+			return;
+		}
+		case CREATURE_STATES::ONLADDER:
+		{
+			if(p.GetVelocity().y > 0 || p.GetVelocity().y < 0)
+			{
+				p.sprite->SetAnimation(ANIMATION_CLIMBING);
+				p.sprite->Animate();
+			}
+			return;
+		}
 	}
 
-	if(p.hasState(STATE_ONGROUND))
+	if(p.state->Is(CREATURE_STATES::ONGROUND))
 	{
 		if(p.GetVelocity().x != 0)// && p.accel.x != 0)
 		{
@@ -811,7 +812,7 @@ void UpdateAnimation(Creature &c)
 		// placeholder for death animation later
 		//p.sprite->UseAnimation(1);
 	}
-	if(c.hasState(STATE_ONGROUND))
+	if(c.state->Is(CREATURE_STATES::ONGROUND))
 	{
 		if(c.GetVelocity().x != 0)// && p.accel.x != 0)
 		{
@@ -857,8 +858,8 @@ void ShowDebugInfo(Player &p)
 	int tx, ty;
 	tx = ConvertToTileCoord(x, false);
 	ty = ConvertToTileCoord(y, false);
-	sprintf(debug_str, "nearladder = %d onground = %d attached = %d PlayerX = %d | %d. PlayerY = %d | %d VelX: %d VelY: %d HP: %d",
-		player->ammo[WEAPON_FIREBALL], p.hasState(STATE_ONGROUND), p.hasState(STATE_ONMACHINERY), x, tx, y, ty,
+	sprintf(debug_str, "nearladder = %d state = %d onMachinery = %d PlayerX = %d | %d. PlayerY = %d | %d VelX: %d VelY: %d HP: %d",
+		player->ammo[WEAPON_FIREBALL], p.state->GetState(), p.onMachinery, x, tx, y, ty,
 		(int)p.GetVelocity().x, (int)p.GetVelocity().y, p.health);
 	debug_message = TTF_RenderText_Solid(debug_font, debug_str, debug_color);
 

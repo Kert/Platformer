@@ -5,6 +5,7 @@
 #include "gamelogic.h"
 #include "level.h"
 #include "sound.h"
+#include "state.h"
 #include "tiles.h"
 #include "utils.h"
 
@@ -27,12 +28,12 @@ std::pair<double, double> GetAngleSinCos(DynamicEntity &shooter)
 	double angle;
 	if(shooter.direction) angle = 0;
 	else angle = 180;
-	if(shooter.hasState(STATE_LOOKINGUP))
+	/*if(shooter.hasState(STATE_LOOKINGUP))
 	{
 		if(!angle)
 			angle -= 45;
 		else angle += 45;
-	}
+	}*/
 	angle = angle * M_PI / 180.0;
 	return std::pair<double, double>(std::sin(angle), std::abs(std::cos(angle)));
 }
@@ -46,12 +47,12 @@ void ProcessShot(WEAPONS weapon, Creature &shooter)
 		// LEAK: bullets created here aren't properly disposed??
 		Bullet *bullet = new Bullet(weapon, shooter);
 		SDL_Rect rect = shooter.hitbox->GetRect();
-		if(shooter.hasState(STATE_DUCKING))
+		if(shooter.state->Is(CREATURE_STATES::DUCKING))
 		{
 			rect.y += 6;
 			rect.x -= 6;
 		}
-		if(shooter.hasState(STATE_HANGING))
+		if(shooter.state->Is(CREATURE_STATES::HANGING))
 		{
 			rect.y += 2;
 		}
@@ -113,8 +114,8 @@ void DetectAndResolveEntityCollisions(Creature &p)
 					{
 						foundCollision = true;
 						p.yNew = machy->hitbox->GetRect().y + 1.001;
-						p.setState(STATE_ONGROUND);
-						p.setState(STATE_ONMACHINERY);
+						p.SetState(CREATURE_STATES::ONGROUND);
+						p.onMachinery = true;
 						p.attached = machy;
 						vel.y = 0;
 						p.externSpeed.x = p.attached->GetVelocity().x;
@@ -127,7 +128,7 @@ void DetectAndResolveEntityCollisions(Creature &p)
 	}
 	if(!foundCollision)
 	{
-		p.removeState(STATE_ONMACHINERY);
+		p.onMachinery = false;
 	}
 	p.SetVelocity(vel.x, vel.y);
 }
@@ -151,7 +152,7 @@ void CheckSpecialBehaviour(Creature &p) {
 		for(int j = head; j <= feet; j++) {
 			if(GetTileTypeAtTiledPos(i, j) == PHYSICS_LADDER) {
 				p.nearladder = true;
-				if(p.hasState(STATE_ONLADDER))
+				if(p.state->Is(CREATURE_STATES::ONLADDER))
 					x = i * TILESIZE;
 			}
 		}
@@ -213,10 +214,9 @@ void CheckSpecialBehaviour(Creature &p) {
 			{
 				p.nearhook = true;
 
-				if(!p.hasState(STATE_HANGING) && p.GetVelocity().y > 0 && !p.lefthook)
+				if(p.GetVelocity().y > 0 && !p.lefthook)
 				{
-					((Player &)p).SetState(1);
-					p.setState(STATE_HANGING);
+					p.SetState(CREATURE_STATES::HANGING);
 					break;
 				}
 			}
@@ -426,18 +426,18 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	Velocity vel; // Resulting velocity
 	vel = p.GetVelocity();
 
-	if(p.hasState(STATE_ONGROUND) && !p.hasState(STATE_ONLADDER) && p.status != STATUS_STUN)
+	if(p.state->Is(CREATURE_STATES::ONGROUND) && p.status != STATUS_STUN)
 		vel.y = 0;
 
 	if(!p.ignoreGravity)
 	{
-		if(!p.hasState(STATE_HANGING))
+		if(!p.state->Is(CREATURE_STATES::HANGING) && !p.state->Is(CREATURE_STATES::SLIDING))
 			p.accel.y = 5 * p.gravityMultiplier;
 		else
 			p.accel.y = 0;
 	}
 
-	if(p.hasState(STATE_ONLADDER) || p.hasState(STATE_ONMACHINERY))
+	if(p.state->Is(CREATURE_STATES::ONLADDER) || p.onMachinery)
 		p.accel.y = 0;
 
 	if(p.jumptime > 0)
@@ -448,17 +448,17 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	vel = p.GetVelocity();
 
 	vel.y += p.accel.y;
-	if(!p.hasState(STATE_ONGROUND) && !p.ignoreWorld)
+	if(!p.state->Is(CREATURE_STATES::ONGROUND) && !p.ignoreWorld)
 		p.accel.x *= 99999;
 	vel.x += p.accel.x * deltaTicks;
 
 	double friction = 4;
-	if(!p.hasState(STATE_ONGROUND))
+	if(!p.state->Is(CREATURE_STATES::ONGROUND))
 		friction = 10;
 
 	if(IsOnIce(p))
 	{
-		if(p.hasState(STATE_SLIDING))
+		if(p.state->Is(CREATURE_STATES::SLIDING))
 			friction = 0.4;
 		else
 			friction = 1.5;
@@ -470,7 +470,7 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	if(p.ignoreWorld)
 		friction = 0;
 
-	if(!(HasCeilingRightAbove(p) && p.hasState(STATE_SLIDING)))
+	if(!(HasCeilingRightAbove(p) && p.state->Is(CREATURE_STATES::SLIDING)))
 	{
 		if(vel.x > 0)
 		{
@@ -507,16 +507,16 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	vel = p.GetVelocity();
 
 	// Applying external forces
-	if(p.hasState(STATE_ONMACHINERY))
+	if(p.onMachinery)
 	{
 		vel.x += p.externSpeed.x;
 		//vel.y += p.externSpeed.y;
 		p.SetY(p.attached->hitbox->GetRect().y + 1.001);
 	}
 
-	if(!p.hasState(STATE_HANGING))
+	if(!p.state->Is(CREATURE_STATES::HANGING))
 	{
-		if(!p.hasState(STATE_ONLADDER))
+		if(!p.state->Is(CREATURE_STATES::ONLADDER))
 			p.xNew = p.GetX() + vel.x * (deltaTicks * PHYSICS_SPEED);
 		p.yNew = p.GetY() + vel.y * (deltaTicks * PHYSICS_SPEED);
 	}
@@ -799,7 +799,6 @@ void ResolveBottom(Creature &p)
 	if(minx == maxx)
 		maxx = minx + 1;
 
-	p.removeState(STATE_ONGROUND);
 	// Bottom
 	bool collisionFound = false;
 	for(int i = minx; i < maxx; i++)
@@ -810,11 +809,10 @@ void ResolveBottom(Creature &p)
 		if(GetTileTypeAtTiledPos(i, feet - 1) == PHYSICS_LADDER_TOP)
 		{
 			PrintLog(LOG_SUPERDEBUG, "Tile intersection: Ladder top");
-			if(!p.hasState(STATE_ONLADDER))
+			if(!p.state->Is(CREATURE_STATES::ONLADDER))
 			{
 				//PrintLog(LOG_SUPERDEBUG, "Intersecting ladder top at %d by %d. Returning back to y = %f", pr.y, result.h, y);
 				y = tileBottom.y - 0.001;
-				p.setState(STATE_ONGROUND);
 				collisionFound = true;
 			}
 			break;
@@ -824,7 +822,7 @@ void ResolveBottom(Creature &p)
 		{
 			y = tileBottom.y - 0.001;
 			//PrintLog(LOG_SUPERDEBUG, "Intersecting block bottom at %d. Returning back to y = %lf", tileBottom.y, y);
-			p.setState(STATE_ONGROUND);
+			collisionFound = true;
 			break;
 		}
 		switch(type)
@@ -836,19 +834,22 @@ void ResolveBottom(Creature &p)
 				{
 					//PrintLog(LOG_SUPERDEBUG, "Intersecting platform at %d by %d. Returning back to y = %d", pr.y, result.h, y);
 					y = tileBottom.y - 0.001;
-					p.setState(STATE_ONGROUND);
 					collisionFound = true;
 					break;
 				}
 			}
 		}
 	}
-	if(p.hasState(STATE_ONMACHINERY))
+
+	if(!collisionFound)
 	{
-		if(p.hasState(STATE_ONGROUND))
-			p.removeState(STATE_ONMACHINERY);
-		else
-			p.setState(STATE_ONGROUND);
+		if(!p.state->Is(CREATURE_STATES::JUMPING) && !p.state->Is(CREATURE_STATES::HANGING) && !p.onMachinery)
+			p.SetState(CREATURE_STATES::INAIR);
+	}
+	else
+	{
+		if(!p.state->Is(CREATURE_STATES::SLIDING))
+			p.SetState(CREATURE_STATES::ONGROUND);
 	}
 
 	p.SetY(y);
@@ -881,12 +882,10 @@ void ResolveTop(Creature &p)
 		if(collisionFound) break;
 		if(GetTileTypeAtTiledPos(i, feet) == PHYSICS_LADDER_TOP)
 		{
-			if(p.hasState(STATE_ONLADDER))
+			if(p.state->Is(CREATURE_STATES::ONLADDER))
 			{
 				y = (double)tileBottom.y;
 				vel.y = 0;
-				p.setState(STATE_ONGROUND);
-				p.removeState(STATE_ONLADDER);
 				//PrintLog(LOG_SUPERDEBUG, "Reached ladder top end");
 				collisionFound = true;
 				break;
@@ -1133,7 +1132,7 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 		if(p.shottime <= 0)
 		{
 			p.shottime = 0;
-			p.removeState(STATE_SHOTLOCKED);
+			p.shotLocked = false;
 		}
 	}
 
@@ -1212,7 +1211,7 @@ void OnHitboxCollision(Creature &c, Creature &e, Uint32 deltaTicks)
 {
 	if(c.status == STATUS_NORMAL && e.status != STATUS_DYING)
 	{
-		c.removeState(STATE_ONLADDER);
+		c.SetState(CREATURE_STATES::INAIR);
 		PlaySound("player_hit");
 		c.TakeDamage(25);
 		ApplyKnockback(c, e);

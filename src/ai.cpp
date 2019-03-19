@@ -1,6 +1,7 @@
 #include "ai.h"
 #include "entities.h"
 #include "level.h"
+#include "state.h"
 #include "tiles.h"
 #include "utils.h"
 
@@ -101,7 +102,7 @@ void AI_Chaser::OnTimerTimeup(int id)
 
 	if(chase)
 	{
-		if(me->hasState(STATE_ONGROUND) || followTargetInAir)
+		if(me->state->Is(CREATURE_STATES::ONGROUND) || followTargetInAir)
 		{
 			if(target->GetX() < me->GetX())
 				me->SetDirection(DIRECTION_LEFT);
@@ -143,7 +144,7 @@ void AI_ChaserJumper::OnTimerTimeup(int id)
 {
 	if(chase)
 	{
-		if(me->hasState(STATE_ONGROUND) || followTargetInAir)
+		if(me->state->Is(CREATURE_STATES::ONGROUND) || followTargetInAir)
 		{
 			if(target->GetX() < me->GetX())
 				me->SetDirection(DIRECTION_LEFT);
@@ -166,7 +167,7 @@ void AI_ChaserJumper::OnTimerTimeup(int id)
 			closeToJump = true;
 		if(obstacled || closeToJump)
 		{
-			if(me->hasState(STATE_ONGROUND))
+			if(me->state->Is(CREATURE_STATES::ONGROUND))
 				me->Jump();
 		}
 	}

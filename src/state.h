@@ -3,69 +3,74 @@
 
 #include "entities.h"
 
-enum PLAYER_STATES
-{
-	PLAYER_STATE_ONGROUND,
-	PLAYER_STATE_HANGING
-};
-
-class EntityState
+class CreatureState
 {
 public:
-	Player *pl;
+	Creature *cr;
+	CREATURE_STATES state;
+
 public:
-	virtual EntityState* HandleInput(Player &p, int input, int type);
-	virtual EntityState* HandleIdle(Player &p);
-	virtual void Enter(Player &p) = 0;
-	void Initialize(Player &p);
-	virtual ~EntityState();
+	virtual CreatureState* HandleInput(int input, int type);
+	virtual CreatureState* HandleIdle();
+	CREATURE_STATES GetState() { return state; };
+	bool Is(CREATURE_STATES state) { return this->state == state; };
+	CreatureState(Creature *cr);
+	virtual ~CreatureState();
 };
 
-// On ground or in-air but NOT JUMPING/SLIDING e.t.c.
-class NormalState : public EntityState
+// On ground standing or walking
+class OnGroundState : public CreatureState
 {
-	virtual EntityState* HandleInput(Player &p, int input, int type);
-	void Enter(Player &p);
+	virtual CreatureState* HandleInput(int input, int type);
+public:
+	OnGroundState(Creature *cr);
 };
 
-class JumpingState : public EntityState
+class InAirState : public CreatureState
 {
-	virtual EntityState* HandleInput(Player &p, int input, int type);
+	virtual CreatureState* HandleInput(int input, int type);
 public:
-	void Enter(Player &p);
+	InAirState(Creature *cr);
+};
+
+class JumpingState : public CreatureState
+{
+	virtual CreatureState* HandleInput(int input, int type);
+public:
+	JumpingState(Creature *cr);
 	~JumpingState();
 };
 
-class OnLadderState : public EntityState
+class OnLadderState : public CreatureState
 {
-	virtual EntityState* HandleInput(Player &p, int input, int type);
+	virtual CreatureState* HandleInput(int input, int type);
 public:
-	void Enter(Player &p);
+	OnLadderState(Creature *cr);
 	~OnLadderState();
 };
 
-class DuckingState : public EntityState
+class DuckingState : public CreatureState
 {
-	virtual EntityState* HandleInput(Player &p, int input, int type);
+	virtual CreatureState* HandleInput(int input, int type);
 public:
-	void Enter(Player &p);
+	DuckingState(Creature *cr);
 	~DuckingState();
 };
 
-class HangingState : public EntityState
+class HangingState : public CreatureState
 {
-	virtual EntityState* HandleInput(Player &p, int input, int type);
+	virtual CreatureState* HandleInput(int input, int type);
 public:
-	void Enter(Player &p);
+	HangingState(Creature *cr);
 	~HangingState();
 };
 
-class SlidingState : public EntityState
+class SlidingState : public CreatureState
 {
-	virtual EntityState* HandleInput(Player &p, int input, int type);
-	virtual EntityState* HandleIdle(Player &p);
+	virtual CreatureState* HandleInput(int input, int type);
+	virtual CreatureState* HandleIdle();
 public:
-	void Enter(Player &p);
+	SlidingState(Creature *cr);
 	~SlidingState();
 };
 

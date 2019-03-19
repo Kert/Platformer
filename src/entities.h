@@ -8,7 +8,7 @@
 #include "globals.h"
 #include "sprite.h"
 
-class EntityState;
+class CreatureState;
 class Player;
 
 struct Velocity
@@ -105,7 +105,6 @@ class DynamicEntity : public Entity
 		Velocity velocity;
 
 	public:
-		int state;
 		Accel accel;
 		bool ignoreWorld = 0;
 		bool ignoreGravity = 0;
@@ -117,10 +116,6 @@ class DynamicEntity : public Entity
 		bool isMoving(bool onlyX);
 		void SetVelocity(Velocity vel);
 		void SetVelocity(double x, double y);
-		int getState();
-		void setState(int state);
-		void removeState(int state);
-		bool hasState(int state);
 		virtual void Remove();
 };
 
@@ -161,7 +156,7 @@ class Bullet : public DynamicEntity
 	public:
 		Bullet();
 		~Bullet();
-		Bullet(WEAPONS firedFrom, DynamicEntity &shooter);
+		Bullet(WEAPONS firedFrom, Creature &shooter);
 		void Remove();
 };
 
@@ -212,6 +207,10 @@ class Creature : public DynamicEntity
 		WEAPONS weapon;
 		// still leaks apparently?
 		std::vector<DamageSource> hitFrom;
+		CreatureState* state;
+		bool shotLocked;
+		bool charging;
+		bool onMachinery;
 	public:
 		Creature();
 		Creature(std::string type);
@@ -238,6 +237,10 @@ class Creature : public DynamicEntity
 				delete this->AI;
 			this->AI = new T((Creature*)this);
 		};
+		void SetState(CREATURE_STATES state);
+		void SetState(CreatureState *newState);
+		void HandleInput(int input, int type);
+		void HandleStateIdle();
 };
 
 struct CreatureData
@@ -270,7 +273,6 @@ class Player : public Creature
 		bool ownedWeapons[NUMWEAPONS];
 		int ammo[NUMWEAPONS];
 		int fireDelay[NUMWEAPONS]; // Time in ms
-		EntityState* state_;
 		bool chargedColored = false;
 
 	public:
@@ -281,10 +283,6 @@ class Player : public Creature
 		void ResetWeapons();
 		void GiveWeapon(WEAPONS weap);
 		bool CanMoveWhileFiring();
-		void SetState(int state);
-		void SetState(EntityState *newState);
-		void HandleInput(int input, int type);
-		void HandleStateIdle();
 		void ToggleChargedColor();
 		void DisableChargedColor();
 };

@@ -7,8 +7,10 @@
 extern std::vector<Machinery*> machinery;
 
 const int SHOOTING_ANIM_DURATION = 30;
-EntityState* EntityState::HandleInput(Player &p, int input, int type)
+CreatureState* CreatureState::HandleInput(int input, int type)
 {
+	// if creature == player do
+	Player *p = (Player*)cr;
 	switch(type)
 	{
 		case 0: // press
@@ -16,31 +18,31 @@ EntityState* EntityState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_FIRE:
-					if(p.shottime == 0)
+					if(p->shottime == 0)
 					{
-						p.shottime = p.fireDelay[p.weapon];
-						if(p.ammo[p.weapon] && p.weapon == WEAPON_GRENADE)
+						p->shottime = p->fireDelay[p->weapon];
+						if(p->ammo[p->weapon] && p->weapon == WEAPON_GRENADE)
 						{
-							p.ammo[p.weapon]--;
-							ProcessShot(p.weapon, *pl);
+							p->ammo[p->weapon]--;
+							ProcessShot(p->weapon, *cr);
 						}
-						if(p.weapon == WEAPON_LIGHTNING)
+						if(p->weapon == WEAPON_LIGHTNING)
 						{
-							ProcessShot(p.weapon, *pl);
+							ProcessShot(p->weapon, *cr);
 						}
-						if(p.ammo[p.weapon] && p.weapon == WEAPON_FIREBALL)
+						if(p->ammo[p->weapon] && p->weapon == WEAPON_FIREBALL)
 						{
-							p.ammo[p.weapon]--;
-							p.setState(STATE_CHARGING);
-							ProcessShot(p.weapon, *pl);
-							p.charge_time = 700;
+							p->ammo[p->weapon]--;
+							p->charging = true;
+							ProcessShot(p->weapon, *cr);
+							p->charge_time = 700;
 						}
-						p.sprite->shootingAnimTimer = SHOOTING_ANIM_DURATION;
+						p->sprite->shootingAnimTimer = SHOOTING_ANIM_DURATION;
 					}
 					break;
 				case BIND_SWITCH:
-					//if(!p.hasState(STATE_SHOOTING))
-					//	p.SwitchWeapon();
+					//if(!p->hasState(STATE_SHOOTING))
+					//	p->SwitchWeapon();
 					break;
 			}
 			break;
@@ -64,7 +66,7 @@ EntityState* EntityState::HandleInput(Player &p, int input, int type)
 					//		pl->removeState(STATE_SHOOTING);
 					//		pl->shottime = pl->fireDelay[pl->weapon];
 					//		if (pl->weapon >= 2)
-					//			pl->setState(STATE_SHOTLOCKED); // don't let player move while firing fire
+					//			pl->shotLocked = true; // don't let player move while firing fire
 					//	}
 					//}
 					break;
@@ -76,20 +78,20 @@ EntityState* EntityState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_FIRE:
-					if(pl->weapon == WEAPON_FIREBALL)
+					if(cr->weapon == WEAPON_FIREBALL)
 					{
-						if(pl->hasState(STATE_CHARGING) && pl->charge_time == 0)
+						if(cr->charging && cr->charge_time == 0)
 						{
-							if(!IsInRain(p))
+							if(!IsInRain(*p))
 							{
-								ProcessShot(WEAPON_ROCKETL, *pl); // charged
-								pl->DisableChargedColor();
-								p.sprite->shootingAnimTimer = SHOOTING_ANIM_DURATION;
+								ProcessShot(WEAPON_ROCKETL, *cr); // charged
+								p->DisableChargedColor();
+								p->sprite->shootingAnimTimer = SHOOTING_ANIM_DURATION;
 							}
 						}
 					}
-					pl->charge_time = 0;
-					pl->removeState(STATE_CHARGING);
+					cr->charge_time = 0;
+					cr->charging = false;
 					break;
 			}
 			break;
@@ -98,29 +100,31 @@ EntityState* EntityState::HandleInput(Player &p, int input, int type)
 	return nullptr;
 }
 
-EntityState* EntityState::HandleIdle(Player &p)
+CreatureState* CreatureState::HandleIdle()
 {
 	return nullptr;
 }
 
-void EntityState::Initialize(Player &p)
+CreatureState::CreatureState(Creature *cr)
 {
-	pl = &p;
-	Enter(p);
+	this->cr = cr;
 }
 
-EntityState::~EntityState()
+CreatureState::~CreatureState()
 {
 
 }
 
-void NormalState::Enter(Player &p)
+OnGroundState::OnGroundState(Creature *cr) : CreatureState(cr)
 {
+	state = CREATURE_STATES::ONGROUND;
 	PrintLog(LOG_DEBUG, "Switched to ONGROUND");
 }
 
-EntityState* NormalState::HandleInput(Player &p, int input, int type)
+CreatureState* OnGroundState::HandleInput(int input, int type)
 {
+	// if creature == player do
+	Player *p = (Player*)cr;
 	switch(type)
 	{
 		case 0:
@@ -128,37 +132,34 @@ EntityState* NormalState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_DOWN:
-					//if (!p.nearladder && p.hasState(STATE_ONGROUND))
+					//if (!p->nearladder && p->state->Is(CREATURE_STATES::ONGROUND))
 					//	return new DuckingState();
-					if(IsOnIce(p))
-						if((p.GetVelocity().x > 80 && p.direction) || (p.GetVelocity().x < -80 && !p.direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
-							return new SlidingState();
+					if(IsOnIce(*p))
+						if((p->GetVelocity().x > 80 && p->direction) || (p->GetVelocity().x < -80 && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
+							return new SlidingState(cr);
 					break;
 				case BIND_UP:
 				{
-					if(p.interactTarget > -1)
+					if(p->interactTarget > -1)
 					{
 						for(auto &dy : machinery)
 						{
-							if(p.interactTarget == dy->pairID && dy->isSolid == true)
+							if(p->interactTarget == dy->pairID && dy->isSolid == true)
 								dy->Activate();
 						}
 					}
-					if(p.nearladder)
-						return new OnLadderState();
+					if(p->nearladder)
+						return new OnLadderState(cr);
 					break;
 				}
 				case BIND_JUMP:
-					if(p.hasState(STATE_ONGROUND))
-					{
-						if(IsBindPressed(BIND_DOWN) && IsOnPlatform(p))
-							p.SetY(p.GetY() + 2);
-						else
-							return new JumpingState();
-					}
-						
+					if(IsBindPressed(BIND_DOWN) && IsOnPlatform(*p))
+						p->SetY(p->GetY() + 2);
+					else
+						return new JumpingState(cr);
+					break;						
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -167,29 +168,29 @@ EntityState* NormalState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				/*case BIND_DOWN:
-					if (!p.nearladder && p.hasState(STATE_ONGROUND))
+					if (!p->nearladder && p->state->Is(CREATURE_STATES::ONGROUND))
 						return new DuckingState();
 					break;*/
 				case BIND_RIGHT:
-					if(IsBindPressed(BIND_DOWN) && IsOnIce(p))
-						if((p.GetVelocity().x > 100 && p.direction) || (p.GetVelocity().x < -100 && !p.direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
-							return new SlidingState();
-					if(pl->status == STATUS_DYING)
+					if(IsBindPressed(BIND_DOWN) && IsOnIce(*p))
+						if((p->GetVelocity().x > 100 && p->direction) || (p->GetVelocity().x < -100 && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
+							return new SlidingState(cr);
+					if(cr->status == STATUS_DYING)
 						break;
-					pl->SetDirection(DIRECTION_RIGHT);
-					pl->Walk();
+					cr->SetDirection(DIRECTION_RIGHT);
+					cr->Walk();
 					break;
 				case BIND_LEFT:
-					if(IsBindPressed(BIND_DOWN) && IsOnIce(p))
-						if((p.GetVelocity().x > 100 && p.direction) || (p.GetVelocity().x < -100 && !p.direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
-							return new SlidingState();
-					if(pl->status == STATUS_DYING)
+					if(IsBindPressed(BIND_DOWN) && IsOnIce(*p))
+						if((p->GetVelocity().x > 100 && p->direction) || (p->GetVelocity().x < -100 && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
+							return new SlidingState(cr);
+					if(cr->status == STATUS_DYING)
 						break;
-					pl->SetDirection(DIRECTION_LEFT);
-					pl->Walk();
+					cr->SetDirection(DIRECTION_LEFT);
+					cr->Walk();
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -198,30 +199,93 @@ EntityState* NormalState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_RIGHT: case BIND_LEFT:
-					p.accel.x = 0;
+					p->accel.x = 0;
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 		}
 	}
 	return nullptr;
 }
 
-void OnLadderState::Enter(Player &p)
+InAirState::InAirState(Creature *cr) : CreatureState(cr)
 {
+	state = CREATURE_STATES::INAIR;
+	PrintLog(LOG_DEBUG, "Switched to IN AIR");
+}
+
+CreatureState* InAirState::HandleInput(int input, int type)
+{
+	// if creature == player do
+	Player *p = (Player*)cr;
+	switch(type)
+	{
+		case 0:
+		{
+			switch(input)
+			{
+				default:
+					CreatureState::HandleInput(input, type);
+			}
+			break;
+		}
+		case 1: // hold
+		{
+			switch(input)
+			{
+				/*case BIND_DOWN:
+				if (!p->nearladder && p->hasState(STATE_ONGROUND))
+				return new DuckingState();
+				break;*/
+				case BIND_RIGHT:
+					if(cr->status == STATUS_DYING)
+						break;
+					cr->SetDirection(DIRECTION_RIGHT);
+					cr->Walk();
+					break;
+				case BIND_LEFT:
+					if(cr->status == STATUS_DYING)
+						break;
+					cr->SetDirection(DIRECTION_LEFT);
+					cr->Walk();
+					break;
+				default:
+					CreatureState::HandleInput(input, type);
+			}
+			break;
+		}
+		case 2: //unpress
+		{
+			switch(input)
+			{
+				case BIND_RIGHT: case BIND_LEFT:
+					p->accel.x = 0;
+					break;
+				default:
+					CreatureState::HandleInput(input, type);
+			}
+		}
+	}
+	return nullptr;
+}
+
+OnLadderState::OnLadderState(Creature *cr) : CreatureState(cr)
+{
+	state = CREATURE_STATES::ONLADDER;
 	PrintLog(LOG_DEBUG, "Switched to LADDER");
-	p.setState(STATE_ONLADDER);
-	p.direction = DIRECTION_RIGHT;
+	cr->direction = DIRECTION_RIGHT;
 }
 
 OnLadderState::~OnLadderState()
 {
-	pl->removeState(STATE_ONLADDER);
+
 }
 
-EntityState* OnLadderState::HandleInput(Player &p, int input, int type)
+CreatureState* OnLadderState::HandleInput(int input, int type)
 {
+	// if creature == player do
+	Player *p = (Player*)cr;
 	switch(type)
 	{
 		case 0:
@@ -233,7 +297,7 @@ EntityState* OnLadderState::HandleInput(Player &p, int input, int type)
 				case BIND_RIGHT:
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -242,17 +306,17 @@ EntityState* OnLadderState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_UP:
-					p.SetVelocity(0, -p.climb_vel);
-					if(!p.nearladder)
-						return new NormalState();
+					p->SetVelocity(0, -p->climb_vel);
+					if(!p->nearladder)
+						return new OnGroundState(cr);
 					break;
 				case BIND_DOWN:
-					p.SetVelocity(0, p.climb_vel);
-					if(!p.nearladder || p.hasState(STATE_ONGROUND))
-						return new NormalState();
+					p->SetVelocity(0, p->climb_vel);
+					if(!p->nearladder /*|| p->hasState(STATE_ONGROUND)*/)
+						return new OnGroundState(cr);
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -261,30 +325,33 @@ EntityState* OnLadderState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_UP: case BIND_DOWN:
-					p.SetVelocity(0, 0);
+					p->SetVelocity(0, 0);
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 		}
 	}
 	return nullptr;
 }
 
-void DuckingState::Enter(Player &p)
+DuckingState::DuckingState(Creature *cr) : CreatureState(cr)
 {
+	state = CREATURE_STATES::DUCKING;
 	PrintLog(LOG_DEBUG, "Switched to DUCKING");
-	pl->ToggleDucking(true);
-	pl->accel.x = 0;
+	cr->ToggleDucking(true);
+	cr->accel.x = 0;
 }
 
 DuckingState::~DuckingState()
 {
-	pl->ToggleDucking(false);
+	cr->ToggleDucking(false);
 }
 
-EntityState* DuckingState::HandleInput(Player &p, int input, int type)
+CreatureState* DuckingState::HandleInput(int input, int type)
 {
+	// if creature == player do
+	Player *p = (Player*)cr;
 	switch(type)
 	{
 		case 0: // press
@@ -292,15 +359,15 @@ EntityState* DuckingState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_RIGHT:	case BIND_LEFT: case BIND_UP:
-					p.ToggleDucking(false);
-					return new NormalState();
+					p->ToggleDucking(false);
+					return new OnGroundState(cr);
 					break;
 				case BIND_JUMP:
-					p.ToggleDucking(false);
-					return new JumpingState();
+					p->ToggleDucking(false);
+					return new JumpingState(cr);
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -309,31 +376,35 @@ EntityState* DuckingState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_DOWN:
-					return new NormalState();
+					return new OnGroundState(cr);
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 		}
 	}
 	return nullptr;
 }
 
-void JumpingState::Enter(Player &p)
+JumpingState::JumpingState(Creature *cr) : CreatureState(cr)
 {
-	p.Jump();
+	state = CREATURE_STATES::JUMPING;
+	PrintLog(LOG_DEBUG, "Switched to JUMPING");
+	cr->Jump();
 	//Play the jump sound
 	//if (playSound) PlaySound("jump");
 }
 
 JumpingState::~JumpingState()
 {
-	pl->jumptime = 0;
+	cr->jumptime = 0;
 	//pl->accel.y = 0;
 }
 
-EntityState* JumpingState::HandleInput(Player &p, int input, int type)
+CreatureState* JumpingState::HandleInput(int input, int type)
 {
+	// if creature == player do
+	Player *p = (Player*)cr;
 	switch(type)
 	{
 		case 0:
@@ -341,7 +412,7 @@ EntityState* JumpingState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -351,22 +422,22 @@ EntityState* JumpingState::HandleInput(Player &p, int input, int type)
 			{
 				case BIND_JUMP:
 				{
-					if(p.jumptime <= 0)
+					if(p->jumptime <= 0)
 					{
-						return new NormalState();
+						return new InAirState(cr);
 					}
 					break;
 				}
 				case BIND_RIGHT:
-					pl->SetDirection(DIRECTION_RIGHT);
-					pl->Walk();
+					cr->SetDirection(DIRECTION_RIGHT);
+					cr->Walk();
 					break;
 				case BIND_LEFT:
-					pl->SetDirection(DIRECTION_LEFT);
-					pl->Walk();
+					cr->SetDirection(DIRECTION_LEFT);
+					cr->Walk();
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -375,23 +446,24 @@ EntityState* JumpingState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_JUMP:
-					return new NormalState();
+					return new InAirState(cr);
 				case BIND_LEFT: case BIND_RIGHT:
-					p.accel.x = 0;
+					p->accel.x = 0;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 		}
 	}
 	return nullptr;
 }
 
-void HangingState::Enter(Player &p)
+HangingState::HangingState(Creature *cr) : CreatureState(cr)
 {
+	state = CREATURE_STATES::HANGING;
 	PrintLog(LOG_DEBUG, "Switched to HANGING");
-	pl->accel.y = 0;
-	pl->accel.x = 0;
-	pl->SetVelocity(0, 0);
+	cr->accel.y = 0;
+	cr->accel.x = 0;
+	cr->SetVelocity(0, 0);
 }
 
 HangingState::~HangingState()
@@ -399,8 +471,10 @@ HangingState::~HangingState()
 
 }
 
-EntityState* HangingState::HandleInput(Player &p, int input, int type)
+CreatureState* HangingState::HandleInput(int input, int type)
 {
+	// if creature == player do
+	Player *p = (Player*)cr;
 	switch(type)
 	{
 		case 0: // press
@@ -408,28 +482,26 @@ EntityState* HangingState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_RIGHT:
-					//p.direction = true;
+					//p->direction = true;
 					break;
 				case BIND_LEFT:
-					//p.direction = false;
+					//p->direction = false;
 					break;
 				case BIND_DOWN:
-					p.lefthook = true;
-					p.removeState(STATE_HANGING);
-					return new NormalState();
+					p->lefthook = true;
+					return new InAirState(cr);
 					break;
 				case BIND_JUMP:
 					if(IsBindPressed(BIND_DOWN))
 					{
-						p.lefthook = true;
-						p.removeState(STATE_HANGING);
-						return new NormalState();
+						p->lefthook = true;
+						return new InAirState(cr);
 					}
 					else
-						return new JumpingState();
+						return new JumpingState(cr);
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -438,7 +510,7 @@ EntityState* HangingState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 		}
 		case 2:
@@ -446,40 +518,41 @@ EntityState* HangingState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 		}
 	}
 	return nullptr;
 }
 
-void SlidingState::Enter(Player &p)
+SlidingState::SlidingState(Creature *cr) : CreatureState(cr)
 {
-	//p.ToggleSliding(true);
+	state = CREATURE_STATES::SLIDING;
+	//p->ToggleSliding(true);
 	PrintLog(LOG_INFO, "slide ON");
-	p.hitbox->SetSize(10, 10);
-	p.accel.x = 0;
-	p.setState(STATE_SLIDING);
-	//p.sprite->SetSpriteSize(30,10);
-	//p.sprite->SetSpriteY(20);
-	//p.sprite->SetSpriteOffset(-11, -32 + 1);
+	cr->hitbox->SetSize(10, 10);
+	cr->accel.x = 0;
+	//p->sprite->SetSpriteSize(30,10);
+	//p->sprite->SetSpriteY(20);
+	//p->sprite->SetSpriteOffset(-11, -32 + 1);
 }
 
 SlidingState::~SlidingState()
 {
 	//pl->ToggleSliding(false);
 	PrintLog(LOG_INFO, "slide OFF");
-	pl->hitbox->SetSize(10, 30);
-	pl->hitbox->SetPos(pl->GetX(), pl->GetY() - 30);
-	pl->accel.x = 0;
-	pl->removeState(STATE_SLIDING);
+	cr->hitbox->SetSize(10, 30);
+	cr->hitbox->SetPos(cr->GetX(), cr->GetY() - 30);
+	cr->accel.x = 0;
 	//pl->sprite->SetSpriteY(0);
 	//pl->sprite->SetSpriteSize(10,30);
 	//pl->sprite->SetSpriteOffset(-11, -32 + 1);
 }
 
-EntityState* SlidingState::HandleInput(Player &p, int input, int type)
+CreatureState* SlidingState::HandleInput(int input, int type)
 {
+	// if creature == player do
+	Player *p = (Player*)cr;
 	switch(type)
 	{
 		case 0:
@@ -488,45 +561,45 @@ EntityState* SlidingState::HandleInput(Player &p, int input, int type)
 			{
 				case BIND_JUMP:
 				{
-					if(HasCeilingRightAbove(p))
+					if(HasCeilingRightAbove(*p))
 						break;
-					return new JumpingState();
+					return new JumpingState(cr);
 					break;
 				}
 				case BIND_LEFT:
 				{
-					if(HasCeilingRightAbove(p))
+					if(HasCeilingRightAbove(*p))
 					{
-						if(p.GetVelocity().x == 0)
+						if(p->GetVelocity().x == 0)
 						{
-							p.SetVelocity(-50, 0);
-							p.direction = DIRECTION_LEFT;
-							EntityState::HandleInput(p, input, type);
+							p->SetVelocity(-50, 0);
+							p->direction = DIRECTION_LEFT;
+							CreatureState::HandleInput(input, type);
 						}
 						break;
 					}
-					if(p.GetVelocity().x > 0)
-						return new NormalState();
+					if(p->GetVelocity().x > 0)
+						return new OnGroundState(cr);
 					break;
 				}
 				case BIND_RIGHT:
 				{
-					if(HasCeilingRightAbove(p))
+					if(HasCeilingRightAbove(*p))
 					{
-						if(p.GetVelocity().x == 0)
+						if(p->GetVelocity().x == 0)
 						{
-							p.SetVelocity(50, 0);
-							p.direction = DIRECTION_RIGHT;
-							EntityState::HandleInput(p, input, type);
+							p->SetVelocity(50, 0);
+							p->direction = DIRECTION_RIGHT;
+							CreatureState::HandleInput(input, type);
 						}
 						break;
 					}
-					if(p.GetVelocity().x < 0)
-						return new NormalState();
+					if(p->GetVelocity().x < 0)
+						return new OnGroundState(cr);
 					break;
 				}
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 		}
 		case 1: // hold
@@ -535,14 +608,14 @@ EntityState* SlidingState::HandleInput(Player &p, int input, int type)
 			{
 				case BIND_LEFT: case BIND_RIGHT: case BIND_DOWN:
 				{
-					if(HasCeilingRightAbove(p))
+					if(HasCeilingRightAbove(*p))
 						break;
-					if(!p.hasState(STATE_ONGROUND) || !IsOnIce(p) || p.GetVelocity().x == 0)
-						return new NormalState();
+					if(!IsOnIce(*p) || p->GetVelocity().x == 0)
+						return new OnGroundState(cr);
 					break;
 				}
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
@@ -551,27 +624,27 @@ EntityState* SlidingState::HandleInput(Player &p, int input, int type)
 			switch(input)
 			{
 				case BIND_DOWN:
-					if(HasCeilingRightAbove(p))
+					if(HasCeilingRightAbove(*p))
 						break;
-					return new NormalState();
+					return new OnGroundState(cr);
 					break;
 				default:
-					EntityState::HandleInput(p, input, type);
+					CreatureState::HandleInput(input, type);
 			}
 			break;
 		}
 		case 3: // not holding anything specific
 		{
-			if(HasCeilingRightAbove(p))
+			if(HasCeilingRightAbove(*p))
 				break;
 			if(!IsBindPressed(BIND_DOWN))
-				return new NormalState();
+				return new OnGroundState(cr);
 		}
 	}
 	return nullptr;
 }
 
-EntityState* SlidingState::HandleIdle(Player &p)
+CreatureState* SlidingState::HandleIdle()
 {
-	return this->HandleInput(p, NULL, 3);
+	return this->HandleInput(NULL, 3);
 }

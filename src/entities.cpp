@@ -1086,7 +1086,7 @@ void Creature::SetInvulnerability(int milliseconds)
 
 void Creature::TakeDamage(int damage)
 {
-	if(status == STATUS_DYING || status == STATUS_INVULN)
+	if(status == STATUS_DYING || status == STATUS_INVULN || status == STATUS_STUN)
 		return;
 	health -= damage;
 	SetInvulnerability(500);

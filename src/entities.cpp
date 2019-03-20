@@ -340,7 +340,9 @@ void Creature::SetState(CREATURE_STATES state)
 {
 	if(this->state != nullptr)
 	{
-		if(state != this->state->GetState())
+		if(state == CREATURE_STATES::JUMPING && !this->state->Is(CREATURE_STATES::ONGROUND))
+			return;
+		if(state != this->state->GetState())			
 			delete this->state;
 		else
 			return;
@@ -439,14 +441,6 @@ void Creature::Walk(DIRECTIONS direction)
 	this->SetVelocity(vel.x, vel.y);
 }
 
-void Creature::Jump()
-{
-	// from
-	// void JumpingState::Enter(Player &p)
-	
-	this->jumptime = 210;
-}
-
 Creature::Creature(std::string type)
 {
 	if(creatureData.find(type) == creatureData.end())
@@ -491,7 +485,7 @@ Creature::Creature(std::string type)
 	std::string graphicsName = creatureData[type].graphicsName;
 	hitbox = new Hitbox(creatureGraphicsData[graphicsName].hitbox);
 	sprite = new Sprite(creatureGraphicsData[graphicsName].sprite);
-	state = new OnGroundState(this);
+	state = new InAirState(this);
 }
 
 Creature::Creature()
@@ -509,7 +503,7 @@ Creature::Creature()
 	charging = false;
 	onMachinery = false;
 
-	state = new OnGroundState(this);
+	state = new InAirState(this);
 	// creatures are leaking a few bytes when created, something to do with DamageSource it seems like?
 }
 
@@ -1336,7 +1330,7 @@ void Creature::Die()
 		delete AI;
 		AI = nullptr;
 	}
-
+	SetState(CREATURE_STATES::INAIR);
 	status = STATUS_DYING;
 	ignoreWorld = true;
 	ignoreGravity = false;

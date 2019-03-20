@@ -121,7 +121,7 @@ void AI_Chaser::OnTimerTimeup(int id)
 
 		if(jump && obstacled)
 		{
-			me->Jump();
+			me->SetState(CREATURE_STATES::JUMPING);
 		}
 	}
 	else
@@ -167,8 +167,7 @@ void AI_ChaserJumper::OnTimerTimeup(int id)
 			closeToJump = true;
 		if(obstacled || closeToJump)
 		{
-			if(me->state->Is(CREATURE_STATES::ONGROUND))
-				me->Jump();
+			me->SetState(CREATURE_STATES::JUMPING);
 		}
 	}
 }
@@ -182,7 +181,7 @@ void AI_Wanderer::OnTimerTimeup(int id)
 
 void AI_Idle::OnDistanceReached()
 {
-	me->Jump();
+	me->SetState(CREATURE_STATES::JUMPING);
 }
 
 void AI_HomingMissile::OnDistanceReached()

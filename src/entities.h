@@ -221,7 +221,6 @@ class Creature : public DynamicEntity
 		void SetStun(int milliseconds);
 		// TODO: Make it player specific
 		void ToggleDucking(bool enable);
-		void Jump();
 		void Walk();
 		void Walk(DIRECTIONS direction);
 		void MoveUp();

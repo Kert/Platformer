@@ -866,10 +866,8 @@ void ShowDebugInfo(Player &p)
 	SDL_Texture* debug_texture = SDL_CreateTextureFromSurface(renderer, debug_message);
 	SDL_Rect temp;
 	SDL_GetClipRect(debug_message, &temp);
-	temp.x = 8;	
-	temp.y = GAME_SCENE_HEIGHT - 16;
-	temp.w /= RENDER_SCALE;
-	temp.h /= RENDER_SCALE;
+	temp.x = 8 * RENDER_SCALE;
+	temp.y = (GAME_SCENE_HEIGHT - 16) * RENDER_SCALE;
 	//PrintNumToInterface(p.statusTimer, INTERFACE_SCORE, 0);
 	SDL_RenderCopy(renderer, debug_texture, NULL, &temp);
 	SDL_DestroyTexture(debug_texture);

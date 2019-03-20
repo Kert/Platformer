@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 #include <vector>
+#include "globals.h"
 
 enum AI_TIMER_TYPE {
 	AI_TIMER_REACH,
@@ -37,6 +38,7 @@ class BaseAI
 		void RunAI();
 		void SetDistanceToReachX(int x) { distanceToReachX = x; distanceToReach = 1000; };
 		void SetDistanceToReachY(int y) { distanceToReachY = y; distanceToReach = 1000; };
+		virtual void OnStateChange(CREATURE_STATES oldState, CREATURE_STATES newState) {};
 
 	protected:
 		BaseAI(Creature *c);
@@ -201,6 +203,23 @@ class AI_Jumpingfire : public BaseAI
 	private:
 		void OnDistanceReached();
 		void OnTimerTimeup(int id);
+};
+
+class AI_GroundShockwaver : public BaseAI
+{
+	bool activated = false;
+	int startingY;
+public:
+	AI_GroundShockwaver(Creature *c) : BaseAI(c) {
+		distanceToReach = 200;
+		timeToTrigger = std::vector<int>{ 0, 250 };
+		timerTime = std::vector<int>{ 0 , 0 };
+	};	
+
+private:
+	void OnDistanceReached();
+	void OnTimerTimeup(int id);
+	void OnStateChange(CREATURE_STATES oldState, CREATURE_STATES newState);
 };
 
 #endif

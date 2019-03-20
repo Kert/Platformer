@@ -28416,10 +28416,10 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
+   <tile gid="218"/>
+   <tile gid="218"/>
+   <tile gid="218"/>
+   <tile gid="218"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
@@ -28777,12 +28777,12 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="0"/>
+   <tile gid="218"/>
+   <tile gid="218"/>
+   <tile gid="218"/>
+   <tile gid="218"/>
+   <tile gid="218"/>
+   <tile gid="218"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
@@ -39759,7 +39759,7 @@
   </object>
   <object id="47" name="Dale" type="spawn" x="464" y="192">
    <properties>
-    <property name="ai" value="Liner"/>
+    <property name="ai" value="GroundShockwaver"/>
     <property name="distanceToReachX" type="int" value="12"/>
     <property name="facing" value="left"/>
    </properties>

@@ -61,7 +61,14 @@ void ProcessShot(WEAPONS weapon, Creature &shooter)
 			adjustedX = rect.x + rect.w;
 		else
 			adjustedX = rect.x - bullet->hitbox->GetRect().w;
-		bullet->SetPos(adjustedX, rect.y + (rect.h / 2) + offset_weapon_y);
+
+		int adjustedY;
+
+		adjustedY = rect.y + (rect.h / 2) + offset_weapon_y;
+		if(weapon == WEAPON_GROUNDSHOCKWAVE)
+			adjustedY = rect.y + rect.h + offset_weapon_y;
+
+		bullet->SetPos(adjustedX, adjustedY);
 	}
 	else
 	{

@@ -338,6 +338,7 @@ bool DynamicEntity::isMoving(bool onlyX)
 
 void Creature::SetState(CREATURE_STATES state)
 {
+	CREATURE_STATES oldState = this->state->GetState();
 	if(this->state != nullptr)
 	{
 		if(state == CREATURE_STATES::JUMPING && !this->state->Is(CREATURE_STATES::ONGROUND))
@@ -375,12 +376,29 @@ void Creature::SetState(CREATURE_STATES state)
 			PrintLog(LOG_IMPORTANT, "Creature state %d is not implemented!", state);
 			this->state = new InAirState(this);
 	}
+	if(this->IsAI())
+	{
+		this->AI->OnStateChange(oldState, this->state->GetState());
+	}
 }
 
 void Creature::SetState(CreatureState *newState)
 {
-	if(state != nullptr)
-		delete state;
+	if(this->state != nullptr)
+	{
+		if(newState->GetState() == CREATURE_STATES::JUMPING && !this->state->Is(CREATURE_STATES::ONGROUND))
+		{
+			delete newState;
+			return;
+		}
+		if(newState->GetState() != this->state->GetState())
+			delete this->state;
+		else
+		{
+			delete newState;
+			return;
+		}
+	}
 	state = newState;
 }
 
@@ -977,6 +995,18 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			statusTimer = lifetime;
 			piercing = false;
 			break;
+		case WEAPON_GROUNDSHOCKWAVE:
+			hitbox = new Hitbox(0, 0, 7, 9);
+			sprite = new Sprite(textureManager.GetTexture("assets/sprites/fireball.png"), 0, 0, 16, 16);
+			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 16, 90, ANIM_LOOP_TYPES::LOOP_NONE);
+			sprite->SetSpriteOffset(-3, -12);
+			SetVelocity(240 * (direction ? 1 : -1), 0);
+			accel.y = 0;
+			accel.x = 0;
+			lifetime = (int)(0.5 * 1000);
+			statusTimer = lifetime;
+			piercing = false;
+			break;
 	}
 	origin = firedFrom;
 }
@@ -1027,6 +1057,11 @@ void Creature::ProcessBulletHit(Bullet *b)
 			break;
 		}
 		case WEAPONS::WEAPON_BOMBDROP:
+		{
+			damage = 25;
+			break;
+		}
+		case WEAPONS::WEAPON_GROUNDSHOCKWAVE:
 		{
 			damage = 25;
 			break;

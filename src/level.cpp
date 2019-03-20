@@ -341,6 +341,8 @@ void Level::LoadEnemies()
 			c->SetAI<AI_Anvil>();
 		else if(e.AItype == "Jumpingfire")
 			c->SetAI<AI_Jumpingfire>();
+		else if(e.AItype == "GroundShockwaver")
+			c->SetAI<AI_GroundShockwaver>();
 		else
 		{
 			PrintLog(LOG_IMPORTANT, "Invalid AI type %s", e.AItype.c_str());

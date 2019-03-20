@@ -278,3 +278,39 @@ void AI_Jumpingfire::OnTimerTimeup(int id)
 		startingY = (int)me->GetY();
 	}
 }
+
+void AI_GroundShockwaver::OnTimerTimeup(int id)
+{
+	if(!activated)
+		return;
+
+	if(id == AI_TIMER_SHOOT)
+	{
+		me->SetState(CREATURE_STATES::JUMPING);
+	}
+}
+
+void AI_GroundShockwaver::OnStateChange(CREATURE_STATES oldState, CREATURE_STATES newState)
+{
+	if(!activated)
+		return;
+
+	if(newState == CREATURE_STATES::ONGROUND)
+	{
+		DIRECTIONS oldDirection = me->direction;
+		me->direction = DIRECTION_LEFT;
+		me->Shoot();
+		me->direction = DIRECTION_RIGHT;
+		me->Shoot();
+		me->direction = oldDirection;
+	}
+}
+
+void AI_GroundShockwaver::OnDistanceReached()
+{
+	if(!activated)
+	{
+		me->weapon = WEAPON_GROUNDSHOCKWAVE;
+		activated = true;
+	}
+}

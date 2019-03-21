@@ -341,7 +341,7 @@ void Creature::SetState(CREATURE_STATES state)
 	CREATURE_STATES oldState = this->state->GetState();
 	if(this->state != nullptr)
 	{
-		if(state == CREATURE_STATES::JUMPING && !this->state->Is(CREATURE_STATES::ONGROUND))
+		if(state == CREATURE_STATES::JUMPING && !(this->state->Is(CREATURE_STATES::ONGROUND) || this->state->Is(CREATURE_STATES::HANGING)))
 			return;
 		if(state != this->state->GetState())			
 			delete this->state;
@@ -386,7 +386,7 @@ void Creature::SetState(CreatureState *newState)
 {
 	if(this->state != nullptr)
 	{
-		if(newState->GetState() == CREATURE_STATES::JUMPING && !this->state->Is(CREATURE_STATES::ONGROUND))
+		if(newState->GetState() == CREATURE_STATES::JUMPING && !(this->state->Is(CREATURE_STATES::ONGROUND) || this->state->Is(CREATURE_STATES::HANGING)))
 		{
 			delete newState;
 			return;

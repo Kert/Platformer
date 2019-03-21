@@ -433,15 +433,12 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	Velocity vel; // Resulting velocity
 	vel = p.GetVelocity();
 
-	if(p.state->Is(CREATURE_STATES::ONGROUND) && p.status != STATUS_STUN)
+	if((p.state->Is(CREATURE_STATES::ONGROUND) && p.status != STATUS_STUN) || p.state->Is(CREATURE_STATES::SLIDING) || p.state->Is(CREATURE_STATES::HANGING))
 		vel.y = 0;
 
 	if(!p.ignoreGravity)
 	{
-		if(!p.state->Is(CREATURE_STATES::HANGING) && !p.state->Is(CREATURE_STATES::SLIDING))
-			p.accel.y = 5 * p.gravityMultiplier;
-		else
-			p.accel.y = 0;
+		p.accel.y = 5 * p.gravityMultiplier;
 	}
 
 	if(p.state->Is(CREATURE_STATES::ONLADDER) || p.onMachinery)

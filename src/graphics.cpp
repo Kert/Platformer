@@ -58,7 +58,7 @@ int WINDOW_HEIGHT;
 // SHOULD CALCULATE THIS
 int RENDER_SCALE = 1;
 
-// in tiles
+// in non-scaled pixels 
 int GAME_SCENE_WIDTH;
 int GAME_SCENE_HEIGHT;
 
@@ -258,7 +258,7 @@ int SetDisplayMode(SDL_DisplayMode mode)
 	SDL_SetWindowSize(win, WINDOW_WIDTH, WINDOW_HEIGHT);
 	SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	
-	RENDER_SCALE = static_cast<int>(round((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
+	RENDER_SCALE = static_cast<int>(ceil((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
 
 	GAME_SCENE_WIDTH = static_cast<int>(ceil((double)WINDOW_WIDTH / RENDER_SCALE));
 	GAME_SCENE_HEIGHT = static_cast<int>(ceil((double)WINDOW_HEIGHT / RENDER_SCALE));

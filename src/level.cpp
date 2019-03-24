@@ -153,7 +153,12 @@ void Level::LoadLevelFromFile(std::string filename)
 		TiXmlElement* curData = curLayer->FirstChildElement("data");
 		for(TiXmlElement* curTile = curData->FirstChildElement("tile"); curTile != NULL; curTile = curTile->NextSiblingElement("tile"))
 		{
-			int type = SDL_atoi(curTile->Attribute("gid"));
+			const char* gid = curTile->Attribute("gid");
+			int type;
+			if (gid == nullptr)
+				type = 0;
+			else
+				type = SDL_atoi(gid);
 			if(type)
 			{
 				TILEMAP_LAYERS l;

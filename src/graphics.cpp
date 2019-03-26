@@ -871,6 +871,14 @@ void ShowDebugInfo(Player &p)
 	//PrintNumToInterface(p.statusTimer, INTERFACE_SCORE, 0);
 	SDL_RenderCopy(renderer, debug_texture, NULL, &temp);
 	SDL_DestroyTexture(debug_texture);
+
+	SDL_Rect virtualCamRect;
+	virtualCamRect.x = (camera->virtualCam.x - camera->GetRect().x) * RENDER_SCALE;
+	virtualCamRect.y = (camera->virtualCam.y - camera->GetRect().y) * RENDER_SCALE;
+	virtualCamRect.w = camera->virtualCam.w * RENDER_SCALE;
+	virtualCamRect.h = camera->virtualCam.h * RENDER_SCALE;
+	SDL_SetRenderDrawColor(renderer, 0, 200, 10, 250);
+	SDL_RenderDrawRect(renderer, &virtualCamRect);	
 }
 
 void UpdateTransition()

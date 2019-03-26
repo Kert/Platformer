@@ -10,6 +10,9 @@ extern Level *level;
 extern int GAME_SCENE_WIDTH;
 extern int GAME_SCENE_HEIGHT;
 
+const int VIRTUAL_CAM_WIDTH = 22 * TILESIZE;
+const int VIRTUAL_CAM_HEIGHT = 18 * TILESIZE;
+
 Camera::Camera()
 {
 	x = 0;
@@ -19,6 +22,9 @@ Camera::Camera()
 	at = nullptr;
 	offsetX = 0;
 	offsetY = 0;
+	virtualCam.x = virtualCam.y = 0;
+	virtualCam.w = VIRTUAL_CAM_WIDTH;
+	virtualCam.h = VIRTUAL_CAM_HEIGHT;
 }
 
 Camera::~Camera()
@@ -35,6 +41,9 @@ Camera::Camera(double x, double y, double w, double h)
 	at = nullptr;
 	offsetX = 0;
 	offsetY = 10;
+	virtualCam.x = virtualCam.y = 0;
+	virtualCam.w = VIRTUAL_CAM_WIDTH;
+	virtualCam.h = VIRTUAL_CAM_HEIGHT;
 }
 
 SDL_Rect Camera::GetRect()
@@ -88,129 +97,45 @@ void Camera::Update()
 {
 	if(at != nullptr)
 	{
-		//Center the camera over the player
-		//x = ( at->hitbox->GetPRect().x + at->hitbox->GetPRect().w / 2. ) - GAME_SCENE_WIDTH / 2.;
-		//x = at->hitbox->GetPRect().x - GAME_SCENE_WIDTH / 2.;
-		//y = at->hitbox->GetPRect().y - GAME_SCENE_HEIGHT / 2.;// - 26 - 32 - GAME_SCENE_HEIGHT / 2.;
-
-		//double val;
-		//double diff;
-		//val = (at->hitbox->GetRect().x + at->hitbox->GetRect().w / 2) - GAME_SCENE_WIDTH / 2;
-		//val += offsetX;
-		//diff = val - x;
-		//if (abs(diff) > 1)
-		//{
-		//	double tmp;
-		//	tmp = abs(diff);
-		//	if (diff < 0)
-		//		x = x - pow(tmp, 0.5);
-		//		//x = x - 1.5 * pow(0.99999, tmp); // expo
-		//	else
-		//		x = x + pow(tmp, 0.5);
-		//		//x = x + 1.5 * pow(0.99999, tmp); // expo
-		//}
-		//	
-		//val = (at->hitbox->GetRect().y + at->hitbox->GetRect().h / 2) - GAME_SCENE_HEIGHT / 2;
-		//val += offsetY;
-		//diff = val - y;
-		//if (abs(diff) > 1)
-		//	y = y + factorY * (diff); // linear interpolation
-
-		std::vector<SDL_Rect> activeBounds;
-		for(auto i : level->CameraBounds)
-		{
-			if(SDL_HasIntersection(&at->hitbox->GetRect(), &i))
-				activeBounds.push_back(i);
-		}
-
 		double playerX = at->hitbox->GetRect().x;
 		double playerY = at->hitbox->GetRect().y;
 
-		if(activeBounds.size() == 1)
+		SDL_Rect newRectX, newRectY;
+		newRectX.x = playerX - VIRTUAL_CAM_WIDTH / 2;
+		newRectX.y = virtualCam.y;
+		newRectX.w = virtualCam.w;
+		newRectX.h = virtualCam.h;
+
+		newRectY.x = virtualCam.x;
+		newRectY.y = playerY - VIRTUAL_CAM_HEIGHT / 2;
+		newRectY.w = virtualCam.w;
+		newRectY.h = virtualCam.h;
+
+		bool xFine, yFine;
+		xFine = yFine = false;
+
+		for(auto bound : level->CameraBounds)
 		{
-			SDL_Rect i = activeBounds[0];
-			currentBounds = i;
+			SDL_Rect intersectX;
+			SDL_IntersectRect(&bound,&newRectX,&intersectX);
+			SDL_Rect intersectY;
+			SDL_IntersectRect(&bound, &newRectY, &intersectY);
+			if(SDL_RectEquals(&intersectX, &newRectX))
+				xFine = true;
+			if(SDL_RectEquals(&intersectY, &newRectY))
+				yFine = true;
+		}
 
+		if(xFine)
+		{
+			virtualCam.x = newRectX.x;
 			x = playerX - GAME_SCENE_WIDTH / 2;
-			if(x < i.x)
-				x = i.x;
-			if(x + GAME_SCENE_WIDTH > i.x + i.w)
-				x = i.x + i.w - GAME_SCENE_WIDTH;
-
+		}
+		if(yFine)
+		{
+			virtualCam.y = newRectY.y;
 			y = playerY - GAME_SCENE_HEIGHT / 2;
-			if(y < i.y)
-				y = i.y;
-			if(y + GAME_SCENE_HEIGHT > i.y + i.h)
-				y = i.y + i.h - GAME_SCENE_HEIGHT;
 		}
-		else if(activeBounds.size() > 1)
-		{
-			for(auto i : activeBounds)
-			{
-				SDL_Rect res;
-				if(SDL_IntersectRect(&at->hitbox->GetRect(), &i, &res))
-				{
-					bool vertical = false;
-					if(i.h > i.w)
-						vertical = true;
-					SDL_Rect cam = this->GetRect();
-					SDL_IntersectRect(&cam, &i, &res);
-
-					// if player hitbox farther than currentCamX
-					if(at->hitbox->GetRect().x > (x + GAME_SCENE_WIDTH / 2))
-					{
-						double newX = x + 1; //at->hitbox->GetRect().x - (x + GAME_SCENE_WIDTH / 2);
-						if(newX <= i.x + i.w - GAME_SCENE_WIDTH)
-							if(!vertical && SDL_RectEquals(&cam, &res))
-								//x = newX;
-								x = playerX - GAME_SCENE_WIDTH / 2;
-					}
-					// if player hitbox closer than currentCamX
-					else if(at->hitbox->GetRect().x < (x + GAME_SCENE_WIDTH / 2))
-					{
-						double newX = x - 1; // +at->hitbox->GetRect().x - (x + GAME_SCENE_WIDTH / 2);
-						if(newX >= i.x)
-							if(!vertical && SDL_RectEquals(&cam, &res))
-								//x = newX;
-								x = playerX - GAME_SCENE_WIDTH / 2;
-					}
-					// if player hitbox lower than currentCamY
-					if(at->hitbox->GetRect().y > (y + GAME_SCENE_HEIGHT / 2))
-					{
-						double newY = y + 1; // at->hitbox->GetRect().y - (y + GAME_SCENE_HEIGHT / 2);
-						if(newY <= i.y + i.h - GAME_SCENE_HEIGHT)
-							if(vertical && SDL_RectEquals(&cam, &res))
-							{
-								PrintLog(LOG_SUPERDEBUG, "2 MOVE LOWER BECAUSE HITBOX THERE!");
-								//y = newY;
-								y = playerY - GAME_SCENE_HEIGHT / 2;
-							}
-					}
-					// if player hitbox higher than currentCamY
-					else if(at->hitbox->GetRect().y < (y + GAME_SCENE_HEIGHT / 2))
-					{
-						double newY = y - 1; //at->hitbox->GetRect().y - (y + GAME_SCENE_HEIGHT / 2);
-						if(newY >= i.y)
-							if(vertical && SDL_RectEquals(&cam, &res))
-							{
-								PrintLog(LOG_SUPERDEBUG, "2 MOVE HIGHER BECAUSE HITBOX THERE!");
-								//y = newY;
-								y = playerY - GAME_SCENE_HEIGHT / 2;
-							}
-					}
-				}
-			}
-		}
-		else
-		{
-			x = playerX - GAME_SCENE_WIDTH / 2;
-			SDL_Rect i = currentBounds;
-			if(x < i.x)
-				x = i.x;
-			if(x + GAME_SCENE_WIDTH > i.x + i.w)
-				x = i.x + i.w - GAME_SCENE_WIDTH;
-		}
-
 
 		//Keep the camera in bounds.
 		if(x < 0)

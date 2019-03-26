@@ -17,8 +17,8 @@ class Camera
 		double factorY = 0.055;
 		// attached to what
 		Entity *at;
-		// used when player jumps above the top of the screen
-		SDL_Rect currentBounds;
+	public:
+		SDL_Rect virtualCam;
 
 	public:
 		Camera();

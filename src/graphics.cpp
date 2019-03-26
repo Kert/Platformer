@@ -308,20 +308,30 @@ void UpdateDisplayMode()
 		PrintLog(LOG_IMPORTANT, "Display %i doesn't exist. Defaulting to 0", displayIndex);
 		displayIndex = 0;
 	}
-	for(auto mode : displayModes[displayIndex])
+
+	SDL_DisplayMode mode;
+	if(displayMode.format == 0) // config is missing
 	{
-		if(mode.h == displayMode.h &&
-			mode.w == displayMode.w &&
-			mode.refresh_rate == displayMode.refresh_rate &&
-			mode.format == displayMode.format)
+		mode = displayModes[0][0]; // first available
+	}
+	else
+	{
+		for(auto i : displayModes[displayIndex])
 		{
-			SetDisplayMode(mode);
-			// TODO: Check for leaks
-			MenusCleanup();
-			LoadMenus();
-			return;
+			if(i.h == displayMode.h &&
+				i.w == displayMode.w &&
+				i.refresh_rate == displayMode.refresh_rate &&
+				i.format == displayMode.format)
+			{
+				mode = i;
+				break;
+			}
 		}
 	}
+	SetDisplayMode(mode);
+	// TODO: Check for leaks
+	MenusCleanup();
+	LoadMenus();
 }
 
 void ResetLevelGraphics()

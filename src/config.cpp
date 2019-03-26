@@ -102,7 +102,7 @@ void LoadConfig()
 	displayMode.w = atoi(reader.Get("Video", "Width", "640").c_str());
 	displayMode.h = atoi(reader.Get("Video", "Height", "480").c_str());
 	displayMode.refresh_rate = atoi(reader.Get("Video", "RefreshRate", "60").c_str());
-	displayMode.format = std::stoul(reader.Get("Video", "Format", "32").c_str());
+	displayMode.format = std::stoul(reader.Get("Video", "Format", "0").c_str());
 }
 
 void SaveConfig()

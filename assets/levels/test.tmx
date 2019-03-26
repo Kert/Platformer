@@ -39672,9 +39672,9 @@
   </data>
  </layer>
  <objectgroup name="Object Layer 1">
-  <object id="5" type="cam" x="32" y="0" width="2656" height="240"/>
-  <object id="6" type="cam" x="2432" y="0" width="256" height="1200"/>
-  <object id="7" type="cam" x="320" y="960" width="2368" height="240"/>
+  <object id="5" type="cam" x="32" y="0" width="2656" height="288"/>
+  <object id="6" type="cam" x="2336" y="0" width="352" height="1200"/>
+  <object id="7" type="cam" x="320" y="912" width="2368" height="288"/>
   <object id="11" name="player" type="spawn" x="64" y="176"/>
   <object id="13" name="Dale" type="spawn" x="2256" y="144">
    <properties>

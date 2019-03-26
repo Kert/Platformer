@@ -98,7 +98,7 @@ void Camera::Update()
 	if(at != nullptr)
 	{
 		double playerX = at->hitbox->GetRect().x;
-		double playerY = at->hitbox->GetRect().y;
+		double playerY = at->hitbox->GetRect().y + at->hitbox->GetRect().h;
 
 		SDL_Rect newRectX, newRectY;
 		newRectX.x = playerX - VIRTUAL_CAM_WIDTH / 2;

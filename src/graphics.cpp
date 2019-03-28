@@ -12,14 +12,11 @@
 #include "utils.h"
 
 extern bool IsDebugMode;
-bool RENDER_ONLY_OBSERVABLE = true;
 
 Camera* camera;
 extern Player *player;
 
 bool graphicsLoaded = false;
-extern bool menuLoaded;
-extern bool gameLoaded;
 
 extern int TransitionID;
 extern MENUS CurrentMenu;
@@ -47,9 +44,6 @@ extern std::vector<Pickup*> pickups;
 extern std::vector<Machinery*> machinery;
 extern std::vector<Lightning*> lightnings;
 
-int map_width;
-int map_height;
-
 static int const MAX_TILES_VERTICALLY = 18;
 
 int WINDOW_WIDTH;
@@ -65,13 +59,8 @@ int GAME_SCENE_HEIGHT;
 SDL_Renderer *renderer = NULL;
 SDL_Surface *player_surf = NULL;
 SDL_Texture *player_texture = NULL;
-SDL_Texture *level_bgLayer_tex = NULL;
-SDL_Texture *level_fgLayer_tex = NULL;
-SDL_Surface *surface_bg = NULL;
-SDL_Surface *surface_fg = NULL;
 SDL_Surface *surface_level_textures = NULL;
 SDL_Surface *lightningSegment = NULL;
-
 SDL_Surface *pov_surface = NULL;
 SDL_Surface *fading_surface = NULL;
 
@@ -87,12 +76,7 @@ SDL_Color menu_color = { 115, 77, 0 };
 SDL_Color selected_color = { 100, 100, 255 };
 SDL_Surface *debug_message = NULL;
 
-extern std::vector< std::vector<Tile*> > tilemap_bg;
-extern std::vector< std::vector<Tile*> > tilemap_fg;
-
-SDL_Window *mapwin = NULL;
-SDL_Renderer *maprenderer = NULL;
-SDL_Texture *mapoverview_texture = NULL;
+extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 extern int SelectedItem;
 extern int timeLimit;
@@ -148,12 +132,6 @@ void TextureManager::Clear()
 	for(auto i : textures)
 		SDL_DestroyTexture(i.second);
 	textures.clear();
-}
-
-void CreateMapWindow()
-{
-	mapwin = SDL_CreateWindow("map overview", 1000, 100, OVERVIEW_WIDTH, OVERVIEW_HEIGHT, NULL);
-	maprenderer = SDL_CreateRenderer(mapwin, -1, SDL_RENDERER_ACCELERATED);
 }
 
 void InitPlayerTexture()
@@ -216,8 +194,6 @@ int GraphicsSetup()
 
 	lightningSegment = IMG_Load("assets/textures/millhilightning.png");
 	
-	if(IsDebugMode)
-		CreateMapWindow();
 	graphicsLoaded = true;
 	return 1;
 }
@@ -334,25 +310,6 @@ void UpdateDisplayMode()
 	LoadMenus();
 }
 
-void ResetLevelGraphics()
-{
-	if(!RENDER_ONLY_OBSERVABLE)
-	{
-		SDL_DestroyTexture(level_bgLayer_tex);
-		SDL_DestroyTexture(level_fgLayer_tex);
-		SDL_DestroyTexture(mapoverview_texture);
-		level_bgLayer_tex = nullptr;
-		level_fgLayer_tex = nullptr;
-		mapoverview_texture = nullptr;
-		SDL_FreeSurface(surface_bg);
-		SDL_FreeSurface(surface_fg);
-		surface_bg = nullptr;
-		surface_fg = nullptr;
-		//SDL_FillRect(surface_bg, NULL, 0x000000);
-		//SDL_FillRect(surface_fg, NULL, 0x000000);
-	}
-}
-
 void DrawFPS(Uint32 dt)
 {
 	static int oldfps = 0;
@@ -399,8 +356,7 @@ void BlitObserveTileAt(Tile* tile, int x, int y)
 	rect2.w = rect.w; rect2.h = rect.h;
 
 	//PrintLog(LOG_SUPERDEBUG, ("x= %d y= %d ", rect2.x, rect2.y);
-
-	SDL_BlitScaled(tile->src_tex, &rect, pov_surface, &rect2);
+	SDL_BlitSurface(tile->src_tex, &rect, pov_surface, &rect2);
 }
 
 void BlitObservableTiles()
@@ -432,8 +388,10 @@ void BlitObservableTiles()
 		{
 			if(i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
 			{
-				BlitObserveTileAt(tilemap_bg[i][j], p, q);
-				BlitObserveTileAt(tilemap_fg[i][j], p, q);
+				for(auto &layer : tileLayers)
+				{
+					BlitObserveTileAt(layer[i][j], p, q);
+				}
 				q += TILESIZE;
 			}
 		}
@@ -461,24 +419,8 @@ void GraphicsUpdate()
 
 	UpdateTileAnimations();
 
-	if(RENDER_ONLY_OBSERVABLE)
-		BlitObservableTiles();
-	else
-	{
-		// background color
-		SDL_SetRenderDrawColor(renderer, level->bgColor.r, level->bgColor.g, level->bgColor.b, 255);
-		SDL_RenderFillRect(renderer, NULL);
-
-		// show level map
-		SDL_RenderCopy(renderer, level_bgLayer_tex, &camera->GetRect(), NULL);
-		void *pixels;
-		int pitch;
-		SDL_LockTexture(level_fgLayer_tex, NULL, &pixels, &pitch);
-		memcpy(pixels, surface_fg->pixels, surface_fg->pitch * surface_fg->h);
-		SDL_UnlockTexture(level_fgLayer_tex);
-		SDL_RenderCopy(renderer, level_fgLayer_tex, &camera->GetRect(), NULL);
-	}
-
+	BlitObservableTiles();
+	
 	// Renders everything in entities collections
 	for(auto &dy : machinery)
 		Render(*dy);
@@ -516,85 +458,6 @@ void GraphicsUpdate()
 	ChangeInterfaceFrame(healthFrame, INTERFACE_LIFE);
 
 	if(IsDebugMode) ShowDebugInfo(*player);
-
-	if(IsDebugMode)
-	{
-		// background color
-		SDL_SetRenderDrawColor(maprenderer, 210, 226, 254, 255);
-		SDL_RenderFillRect(maprenderer, NULL);
-
-		SDL_Rect r;
-		r.w = OVERVIEW_WIDTH;
-		r.h = OVERVIEW_HEIGHT;
-		r.x = r.y = 0;
-		if(OVERVIEW_WIDTH <= OVERVIEW_HEIGHT)
-		{
-			r.h = level->height_in_pix;
-			if(level->width_in_pix / OVERVIEW_WIDTH)
-				r.h /= level->width_in_pix / OVERVIEW_WIDTH;
-		}
-		else
-		{
-			r.w = level->width_in_pix;
-			if(level->height_in_pix / OVERVIEW_HEIGHT)
-				r.w /= level->height_in_pix / OVERVIEW_HEIGHT;
-		}
-		SDL_RenderCopy(maprenderer, mapoverview_texture, NULL, &r);
-	}
-}
-
-void BlitTile(Tile *tile, TILEMAP_LAYERS layer)
-{
-	SDL_Rect rect;
-	SDL_Rect rect2;
-	rect.x = tile->tex_x;
-	rect.y = tile->tex_y;
-	rect.w = TILESIZE; rect.h = TILESIZE;
-	rect2.x = tile->x * TILESIZE;
-	rect2.y = tile->y * TILESIZE;
-	rect2.w = TILESIZE; rect2.h = TILESIZE;
-	//PrintLog(LOG_SUPERDEBUG, ("x= %d y= %d ", rect2.x, rect2.y);
-	if(layer == LAYER_BACKGROUND)
-		SDL_BlitScaled(tile->src_tex, &rect, surface_bg, &rect2);
-	if(layer == LAYER_FOREGROUND)
-	{
-		if(tile->type != PHYSICS_RAIN)
-			SDL_BlitScaled(tile->src_tex, &rect, surface_fg, &rect2);
-	}
-}
-
-void BlitLevelTiles()
-{
-	for(auto i : tilemap_bg)
-	{
-		for(auto j : i)
-		{
-			if(j != NULL)
-				BlitTile(j, LAYER_BACKGROUND);
-		}
-	}
-	for(auto p : tilemap_fg)
-	{
-		for(auto q : p)
-		{
-			if(q != NULL)
-				BlitTile(q, LAYER_FOREGROUND);
-		}
-	}
-
-	// tile coordinates
-	/*for(int i = 0; i < map_height; i += 16)
-	{
-		SDL_Rect temp = { 0, i, level->width_in_pix, 1 };
-		SDL_FillRect(surface_bg, &temp, SDL_MapRGB(surface_bg->format, 255, 255, 255));
-		for(int j = 0; j < map_width; j += 50)
-		{
-			SDL_Surface *text_surface = TTF_RenderText_Solid(debug_font, std::to_string(i).c_str(), debug_color);
-			SDL_Rect destrect = { j, i - 13, text_surface->w / RENDER_SCALE / 2, text_surface->h / RENDER_SCALE / 2};
-			SDL_BlitSurface(text_surface, NULL, surface_bg, &destrect);
-			SDL_FreeSurface(text_surface);
-		}
-	}*/
 }
 
 void GraphicsCleanup()
@@ -604,13 +467,9 @@ void GraphicsCleanup()
 
 void GraphicsExit()
 {
-	SDL_FreeSurface(surface_bg);
-	SDL_FreeSurface(surface_fg);
 	SDL_FreeSurface(surface_level_textures);
 	SDL_FreeSurface(debug_message);
 	SDL_DestroyTexture(player_texture);
-	SDL_DestroyTexture(level_bgLayer_tex);
-	SDL_DestroyTexture(level_fgLayer_tex);
 	textureManager.Clear();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);
@@ -1129,36 +988,13 @@ void WindowFlush()
 {
 	// clear the screen
 	SDL_RenderClear(renderer);
-	if(IsDebugMode)
-	{
-		SDL_RenderClear(maprenderer);
-	}
 }
 
 void WindowUpdate()
 {
 	SDL_RenderPresent(renderer);
-	if(IsDebugMode)
-	{
-		SDL_RenderPresent(maprenderer);
-	}
 }
 
-void ReBlitTile(Tile *tile)
-{
-	SDL_Rect rect;
-	SDL_Rect rect2;
-	rect.x = tile->tex_x;
-	rect.y = tile->tex_y;
-	rect.w = TILESIZE; rect.h = TILESIZE;
-	rect2.x = tile->x * TILESIZE;
-	rect2.y = tile->y * TILESIZE;
-	rect2.w = TILESIZE; rect2.h = TILESIZE;
-	//PrintLog(LOG_SUPERDEBUG, ("x= %d y= %d ", rect2.x, rect2.y);
-	//SDL_LockTexture(level_fgLayer_tex, &rect2, &surface_fg->pixels, &surface_fg->pitch);
-	SDL_BlitScaled(tile->src_tex, &rect, surface_fg, &rect2);
-	//SDL_UnlockTexture(level_fgLayer_tex);
-}
 extern std::vector<CustomTile> tileset;
 
 void UpdateTileAnimations()
@@ -1185,22 +1021,19 @@ void UpdateTileAnimations()
 		}
 	}
 
-	for(auto i : tilemap_fg)
+	for(auto &layer : tileLayers)
 	{
-		for(auto t : i)
+		for(auto &i : layer)
 		{
-			if(t != nullptr)
+			for(auto t : i)
 			{
-				if(t->HasAnimation())
+				if(t != nullptr)
 				{
-					if(!RENDER_ONLY_OBSERVABLE)
-						UnblitTile(t);
-
-					t->tex_x = t->customTile->animated_x_offset;
-					t->tex_y = t->customTile->animated_y_offset;
-
-					if(!RENDER_ONLY_OBSERVABLE)
-						ReBlitTile(t);
+					if(t->HasAnimation())
+					{
+						t->tex_x = t->customTile->animated_x_offset;
+						t->tex_y = t->customTile->animated_y_offset;
+					}
 				}
 			}
 		}
@@ -1237,37 +1070,6 @@ SDL_Texture* GenerateLightningTexture(std::vector<SDL_Point> &points)
 	SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, lightning);
 	SDL_FreeSurface(lightning);
 	return tex;
-}
-
-void SetupLevelGraphics(int map_width, int map_height)
-{
-	surface_bg = SDL_CreateRGBSurface(0, map_width, map_height, 32,
-		0x00FF0000,
-		0x0000FF00,
-		0x000000FF,
-		0xFF000000);
-	surface_fg = SDL_CreateRGBSurface(0, map_width, map_height, 32,
-		0x00FF0000,
-		0x0000FF00,
-		0x000000FF,
-		0xFF000000);
-	SDL_SetColorKey(surface_bg, 1, SDL_MapRGB(surface_bg->format, 0, 0, 0));
-	SDL_SetColorKey(surface_fg, 1, SDL_MapRGB(surface_fg->format, 0, 0, 0));
-	BlitLevelTiles();
-	mapoverview_texture = SDL_CreateTextureFromSurface(maprenderer, surface_bg);
-	if(RENDER_ONLY_OBSERVABLE)
-	{
-		SDL_FreeSurface(surface_bg);
-		SDL_FreeSurface(surface_fg);
-		surface_bg = nullptr;
-		surface_fg = nullptr;
-	}
-	else
-	{
-		level_bgLayer_tex = SDL_CreateTextureFromSurface(renderer, surface_bg);
-		level_fgLayer_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, map_width, map_height);
-		SDL_SetTextureBlendMode(level_fgLayer_tex, SDL_BLENDMODE_BLEND);
-	}
 }
 
 int GetWindowNormalizedX(double val)

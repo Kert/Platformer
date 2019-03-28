@@ -10,12 +10,10 @@ extern std::vector<std::vector<int>> tiles;
 
 extern SDL_Surface *surface_level_textures;
 extern SDL_Surface *surface_fg;
-extern SDL_Texture *level_fgLayer_tex;
 
 extern Level *level;
 
-std::vector<std::vector<Tile*>> tilemap_bg;
-std::vector<std::vector<Tile*>> tilemap_fg;
+std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 std::vector<CustomTile> tileset;
 
@@ -42,30 +40,22 @@ void AddDataToTileSet(int type, int x_offset, int y_offset)
 
 void DeleteAllTiles()
 {
-	for(auto &i : tilemap_bg)
+	for(auto &layer : tileLayers)
 	{
-		for(auto &j : i)
+		for(auto &i : layer)
 		{
-			if(j)
+			for(auto &j : i)
 			{
-				delete j;
-				j = nullptr;
+				if(j)
+				{
+					delete j;
+					j = nullptr;
+				}
 			}
 		}
 	}
-	for(auto &i : tilemap_fg)
-	{
-		for(auto &j : i)
-		{
-			if(j)
-			{
-				delete j;
-				j = nullptr;
-			}
-		}
-	}
-	tilemap_bg.clear();
-	tilemap_fg.clear();
+
+	tileLayers.clear();
 }
 
 void LoadTileTypesFromFile(std::string filename)
@@ -98,102 +88,77 @@ void LoadTileTypesFromFile(std::string filename)
 	}
 }
 
-Tile::Tile(int x, int y, CustomTile *data, bool replace, TILEMAP_LAYERS layer)
+Tile::Tile(int x, int y, int layer, CustomTile *data, bool replace)
 {
+	if(x >= (int)tileLayers[layer].size() || y >= (int)tileLayers[layer][0].size())
+	{
+		PrintLog(LOG_IMPORTANT, "Attempted to place a tile outside of level boundaries: %d %d", x, y);
+		delete this;
+		return;
+	}
+
 	this->x = x;
 	this->y = y;
+	this->layer = layer;
+	this->tex_x = data->x_offset;
+	this->tex_y = data->y_offset;
+	src_tex = surface_level_textures;
+	animation = &data->animationData;
+	customTile = data;
+	this->type = data->type;
 
-	if(x >= (int)tilemap_bg.size() || y >= (int)tilemap_bg[0].size())
+	if(tiles[x][y] != PHYSICS_UNOCCUPIED)
 	{
-		PrintLog(LOG_IMPORTANT, "Attempted to place a tile outside of level boundaries: %d %d", x, y);
-		delete this;
-		return;
-	}
-	else
-	{
-		this->type = data->type;
-		this->tex_x = data->x_offset;
-		this->tex_y = data->y_offset;
-		src_tex = surface_level_textures;
-		animation = &data->animationData;
-		customTile = data;
-
-		if(tiles[x][y] != PHYSICS_UNOCCUPIED)
+		if(!replace)
 		{
-			if(!replace)
-			{
-				delete this;
-				return;
-			}
-			else
-			{
-				if(layer == LAYER_BACKGROUND)
-					delete tilemap_bg[x][y];
-				else if(layer == LAYER_FOREGROUND)
-					delete tilemap_fg[x][y];
-				else if(layer == LAYER_SPECIAL)
-					delete tilemap_fg[x][y];
-				tiles[x][y] = PHYSICS_UNOCCUPIED;
-			}
+			delete this;
+			return;
 		}
-
-		tiles[x][y] = type;
-		if(layer == LAYER_BACKGROUND)
-			tilemap_bg[x][y] = this;
-		else if(layer == LAYER_FOREGROUND)
-			tilemap_fg[x][y] = this;
-		else if(layer == LAYER_FOREGROUND)
-			tilemap_fg[x][y] = this;
+		else
+		{
+			delete tileLayers[layer][x][y];
+			tiles[x][y] = PHYSICS_UNOCCUPIED;
+		}
 	}
+	tiles[x][y] = type;
+	tileLayers[layer][x][y] = this;
 }
 
-Tile::Tile(int x, int y, CustomTile *data, char type, bool replace, TILEMAP_LAYERS layer)
+Tile::Tile(int x, int y, int layer, CustomTile *data, char type, bool replace)
 {
-	if(x >= (int)tilemap_bg.size() || y >= (int)tilemap_bg[0].size())
+	if(x >= (int)tileLayers[layer].size() || y >= (int)tileLayers[layer][0].size())
 	{
 		PrintLog(LOG_IMPORTANT, "Attempted to place a tile outside of level boundaries: %d %d", x, y);
 		delete this;
 		return;
 	}
-	else
+
+	this->x = x;
+	this->y = y;
+	this->layer = layer;
+	this->tex_x = data->x_offset;
+	this->tex_y = data->y_offset;	
+	src_tex = surface_level_textures;
+	animation = &data->animationData;
+	customTile = data;
+	this->type = type;
+
+	if(tiles[x][y] != PHYSICS_UNOCCUPIED)
 	{
-		this->type = type;
-		this->tex_x = data->x_offset;
-		this->tex_y = data->y_offset;
-		this->x = x;
-		this->y = y;
-		src_tex = surface_level_textures;
-		animation = &data->animationData;
-
-		customTile = data;
-
-		if(tiles[x][y] != PHYSICS_UNOCCUPIED)
+		if(!replace)
 		{
-			if(!replace)
-			{
-				delete this;
-				return;
-			}
-			else
-			{
-				if(layer == LAYER_BACKGROUND)
-					delete tilemap_bg[x][y];
-				else if(layer == LAYER_FOREGROUND)
-					delete tilemap_fg[x][y];
-				else if(layer == LAYER_SPECIAL)
-					delete tilemap_fg[x][y];
-				tiles[x][y] = PHYSICS_UNOCCUPIED;
-			}
+			delete this;
+			return;
 		}
-
-		tiles[x][y] = type;
-		if(layer == LAYER_BACKGROUND)
-			tilemap_bg[x][y] = this;
-		else if(layer == LAYER_FOREGROUND)
-			tilemap_fg[x][y] = this;
-		else if(layer == LAYER_SPECIAL)
-			tilemap_fg[x][y] = this;
+		else
+		{
+			delete tileLayers[layer][x][y];
+			tiles[x][y] = PHYSICS_UNOCCUPIED;
+		}
 	}
+
+	tiles[x][y] = type;
+	tileLayers[layer][x][y] = this;
 }
 
 
@@ -209,32 +174,26 @@ bool Tile::HasAnimation()
 
 void TilesCleanup()
 {
-	tilemap_bg.~vector();
-	tilemap_fg.~vector();
+	tileLayers.~vector();
 	tileset.~vector();
-}
-
-void UnblitTile(Tile *tile)
-{
-	if(surface_fg)
-	{
-		SDL_Rect rect = { tile->x * TILESIZE, tile->y * TILESIZE, TILESIZE, TILESIZE };
-		SDL_FillRect(surface_fg, &rect, 0x00000000);
-	}
 }
 
 Tile::~Tile()
 {
-	if(tilemap_fg[x][y] == this)
+	tileLayers[layer][x][y] = nullptr;
+	// Setting tile type of a tile below current one
+	bool foundTile = false;
+	for(int i = layer-1; i >= 0; i--)
 	{
-		if(tilemap_bg[x][y])
-			tiles[x][y] = tilemap_bg[x][y]->type;
-		else tiles[x][y] = PHYSICS_AIR;
-		UnblitTile(this);
-		tilemap_fg[x][y] = nullptr;
+		if(tileLayers[i][x][y] != nullptr)
+		{
+			tiles[x][y] = tileLayers[i][x][y]->type;
+			foundTile = true;
+			break;
+		}
 	}
-	if(tilemap_bg[x][y] == this)
-		tilemap_bg[x][y] = nullptr;
+	if(!foundTile)
+		tiles[x][y] = PHYSICS_AIR;
 }
 
 PHYSICS_TYPES GetTileTypeAtTiledPos(int x, int y)

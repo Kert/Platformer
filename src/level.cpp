@@ -37,12 +37,12 @@ struct EnemyData
 std::vector<QueuedEntity> entitySpawns;
 std::vector<EnemyData> levelEnemies;
 
-extern std::vector< std::vector<Tile*> > tilemap_bg;
-extern std::vector< std::vector<Tile*> > tilemap_fg;
+extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 std::vector<std::vector<int>> tiles;
-extern int map_width;
-extern int map_height;
+
+int map_width; // in pixels
+int map_height; // in pixels
 extern SDL_Surface *surface_level_textures;
 
 Level::Level()
@@ -66,8 +66,6 @@ void Level::Init()
 	// create a deathzone below level
 	deathZones.push_back({ 0, height_in_pix + 50, width_in_pix, 50 });
 
-	SetupLevelGraphics(map_width, map_height);
-
 	loaded = true;
 }
 
@@ -86,9 +84,7 @@ void Level::LoadLevelFromFile(std::string filename)
 	this->width_in_tiles = SDL_atoi(mapProperties->Attribute("width"));
 	this->height_in_tiles = SDL_atoi(mapProperties->Attribute("height"));
 	tiles = std::vector<std::vector<int>>(this->width_in_tiles, std::vector<int>(this->height_in_tiles));
-	tilemap_bg = std::vector< std::vector<Tile*>>(this->width_in_tiles, std::vector<Tile*>(this->height_in_tiles));
-	tilemap_fg = std::vector< std::vector<Tile*>>(this->width_in_tiles, std::vector<Tile*>(this->height_in_tiles));
-
+	
 	TiXmlNode* tileset_data = node->FirstChild("tileset");
 	std::string tileset_name;
 	for(TiXmlElement* img = tileset_data->FirstChildElement("image"); img != NULL; img = img->NextSiblingElement("image"))
@@ -148,6 +144,8 @@ void Level::LoadLevelFromFile(std::string filename)
 	int layerNum = 0;
 	for(TiXmlElement* curLayer = node->FirstChildElement("layer"); curLayer != NULL; curLayer = curLayer->NextSiblingElement("layer"))
 	{
+		tileLayers.push_back(std::vector< std::vector<Tile*>>(this->width_in_tiles, std::vector<Tile*>(this->height_in_tiles)));
+		
 		int tileColumn = 0;
 		int tileRow = 0;
 		TiXmlElement* curData = curLayer->FirstChildElement("data");
@@ -161,15 +159,7 @@ void Level::LoadLevelFromFile(std::string filename)
 				type = SDL_atoi(gid);
 			if(type)
 			{
-				TILEMAP_LAYERS l;
-				if(!layerNum)
-					l = LAYER_BACKGROUND;
-				else if(layerNum == LAYER_FOREGROUND)
-					l = LAYER_FOREGROUND;
-				else if(layerNum = LAYER_SPECIAL)
-					l = LAYER_FOREGROUND;
-				TileCoord t = { tileColumn, tileRow, l };
-				new Tile(tileColumn, tileRow, &tileset[type - 1], true, l);
+				new Tile(tileColumn, tileRow, layerNum, &tileset[type - 1], true);
 			}
 			tileColumn++;
 			if(tileColumn >= this->width_in_tiles)
@@ -293,7 +283,6 @@ void Level::Reload()
 void Level::Cleanup()
 {
 	DeleteAllTiles();
-	ResetLevelGraphics();
 	UnloadEntities();
 	entitySpawns.clear();
 	levelEnemies.clear();

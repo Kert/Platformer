@@ -7,12 +7,7 @@
 #include "entities.h"
 #include "globals.h"
 
-#define OVERVIEW_WIDTH 800
-#define OVERVIEW_HEIGHT 800
-
 int GraphicsSetup();
-void ResetLevelGraphics();
-void BlitLevelTiles();
 void GraphicsUpdate();
 void GraphicsCleanup();
 void GraphicsExit();
@@ -41,7 +36,6 @@ void WindowUpdate();
 void UpdateTileAnimations();
 SDL_Texture* GenerateLightningTexture(std::vector<SDL_Point> &points);
 void ChangePlayerColor(PLAYER_BODY_PARTS bodyPart, SDL_Color color);
-void SetupLevelGraphics(int map_width, int map_height);
 void InitPlayerTexture();
 int GetWindowNormalizedX(double val);
 int GetWindowNormalizedY(double val);

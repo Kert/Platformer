@@ -9,7 +9,7 @@
 #include "tiles.h"
 #include "utils.h"
 
-extern std::vector<std::vector<Tile*>> tilemap_fg;
+extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 extern int GameState;
 
@@ -719,9 +719,16 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 		{
 			if(type == PHYSICS_ICEBLOCK)
 			{
-				if(tilemap_fg[tileX][tileY] != nullptr)
+				// TODO: Optimize this?
+				for(auto &layer : tileLayers)
 				{
-					delete tilemap_fg[tileX][tileY];
+					if(layer[tileX][tileY] != nullptr)
+					{
+						if(layer[tileX][tileY]->type == PHYSICS_ICEBLOCK)
+						{
+							delete layer[tileX][tileY];							
+						}
+					}
 				}
 			}
 		}

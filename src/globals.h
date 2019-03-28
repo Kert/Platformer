@@ -146,20 +146,6 @@ struct CustomTile
 	TileAnimationData animationData;
 };
 
-enum TILEMAP_LAYERS
-{
-	LAYER_BACKGROUND,
-	LAYER_FOREGROUND,
-	LAYER_SPECIAL
-};
-
-struct TileCoord
-{
-	int x;
-	int y;
-	TILEMAP_LAYERS layer;
-};
-
 struct QueuedEntity
 {
 	SPAWN_TYPES entityType;

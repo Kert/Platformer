@@ -27,19 +27,19 @@ class Tile
 		// coords in texture
 		int tex_x;
 		int tex_y;
+		// layer number
+		int layer;
 		// unique tile
 		CustomTile *customTile = nullptr;
 		// animation stuff
 		TileAnimationData *animation = nullptr;
 		// texture surface
 		SDL_Surface *src_tex;
-		Tile(int x, int y, CustomTile *data, bool replace, TILEMAP_LAYERS layer = LAYER_BACKGROUND);
-		Tile(int x, int y, CustomTile *data, char type, bool replace, TILEMAP_LAYERS layer = LAYER_BACKGROUND);
+		Tile(int x, int y, int layer, CustomTile *data, bool replace);
+		Tile(int x, int y, int layer, CustomTile *data, char type, bool replace);
 		int GetID();
 		bool HasAnimation();
 		~Tile();
 };
-
-void UnblitTile(Tile *tile);
 
 #endif

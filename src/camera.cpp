@@ -111,30 +111,59 @@ void Camera::Update()
 		newRectY.w = virtualCam.w;
 		newRectY.h = virtualCam.h;
 
+		int deltaX = newRectX.x - virtualCam.x;
+		int deltaY = newRectY.y - virtualCam.y;
 		bool xFine, yFine;
 		xFine = yFine = false;
 
 		for(auto bound : level->CameraBounds)
 		{
-			SDL_Rect intersectX;
-			SDL_IntersectRect(&bound,&newRectX,&intersectX);
-			SDL_Rect intersectY;
-			SDL_IntersectRect(&bound, &newRectY, &intersectY);
-			if(SDL_RectEquals(&intersectX, &newRectX))
-				xFine = true;
-			if(SDL_RectEquals(&intersectY, &newRectY))
-				yFine = true;
+			if(!xFine)
+			{
+				for(int i = deltaX; i != 0; deltaX > 0 ? i-- : i++)
+				{
+					newRectX.x = virtualCam.x + i;
+					SDL_Rect intersectX;
+					SDL_IntersectRect(&bound, &newRectX, &intersectX);
+					if(SDL_RectEquals(&intersectX, &newRectX))
+					{
+						xFine = true;
+						break;
+					}
+				}				
+			}
+
+			if(!yFine)
+			{
+				for(int i = deltaY; i != 0; deltaY > 0 ? i-- : i++)
+				{
+					newRectY.y = virtualCam.y + i;
+					SDL_Rect intersectY;
+					SDL_IntersectRect(&bound, &newRectY, &intersectY);
+					if(SDL_RectEquals(&intersectY, &newRectY))
+					{
+						yFine = true;
+						break;
+					}
+				}
+				
+			}
+			
+			if(xFine && yFine)
+				break;
 		}
 
 		if(xFine)
 		{
 			virtualCam.x = newRectX.x;
-			x = playerX - GAME_SCENE_WIDTH / 2;
+			x = virtualCam.x + VIRTUAL_CAM_WIDTH / 2 - GAME_SCENE_WIDTH / 2;
+			PrintLog(LOG_SUPERDEBUG, "Camera X set to %lf", x);
 		}
 		if(yFine)
 		{
 			virtualCam.y = newRectY.y;
-			y = playerY - GAME_SCENE_HEIGHT / 2;
+			y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - GAME_SCENE_HEIGHT / 2;
+			PrintLog(LOG_SUPERDEBUG, "Camera Y set to %lf", y);
 		}
 
 		//Keep the camera in bounds.

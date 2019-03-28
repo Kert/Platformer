@@ -8,6 +8,24 @@ std::map<std::string, Mix_Chunk*> loadedSounds;
 
 Mix_Music *activeMusic = NULL;
 bool restartMusic = false;
+int volumeMusic = 128;
+
+void InitSound()
+{
+	Mix_Init(MIX_INIT_OGG);
+	if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 1, 512) == -1)
+	{
+		PrintLog(LOG_IMPORTANT, "Sound system could not be initialized");
+	}
+	Mix_Volume(-1, 50);
+	SetMusicVolume(volumeMusic);
+}
+
+void SetMusicVolume(int volume)
+{
+	volumeMusic = volume;
+	Mix_VolumeMusic(volumeMusic);
+}
 
 void PlaySound(char* soundName)
 {

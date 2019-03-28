@@ -871,6 +871,7 @@ void RenderMenu()
 	if(CurrentMenu == MENU_OPTIONS)
 	{
 		RenderMenuItems(MENU_SELECTION_LIVES);
+		RenderMenuItems(MENU_SELECTION_MUSIC_VOLUME);
 	}
 	if(CurrentMenu == MENU_VIDEO_OPTIONS)
 	{

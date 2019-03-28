@@ -44,6 +44,7 @@ class MenuItem
 	public:
 		MenuItem(int x, int y, std::string text, TTF_Font *font, SDL_Color standardColor, SDL_Color selectedColor, TEXT_ALIGN align = TEXT_ALIGN_CENTER);
 		MenuItem(SDL_Point pos, std::string text, TTF_Font *font, SDL_Color standardColor, SDL_Color selectedColor);
+		void SetText(std::string text);
 		~MenuItem();
 };
 

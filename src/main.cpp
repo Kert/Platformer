@@ -32,17 +32,14 @@ int main(int argc, char* argv[])
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
 		return 1;
 
-	// Initialize audio
-	Mix_Init(MIX_INIT_OGG);
-	if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 1, 512) == -1)
-		return 1;
-	Mix_Volume(-1, 50);
-
 	// Initialize gamepad support
 	InitInput();
 
 	// Initialize config settings
 	InitConfig();
+
+	// Music and SFX support
+	InitSound();
 
 	// Loading textures and tilesets
 	GraphicsSetup();

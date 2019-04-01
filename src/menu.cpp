@@ -6,6 +6,9 @@
 #include "sound.h"
 #include "transition.h"
 
+// TODO: go cross-platform
+#include <Windows.h>
+
 int SelectedItem;
 int BindingKey;
 MENUS CurrentMenu;
@@ -29,6 +32,7 @@ extern std::map<int, std::vector<SDL_DisplayMode>> displayModes;
 
 int RefreshDisplayModeMenus();
 int CreateDisplayMenu();
+int CreateMapSelectMenu();
 
 void DoMenuAction(int code, int bind)
 {
@@ -51,12 +55,7 @@ void DoMenuAction(int code, int bind)
 				{
 					if(SelectedItem == 0)
 					{
-						SetCurrentTransition(TRANSITION_LEVELSTART);
-						ChangeGamestate(STATE_TRANSITION);
-						// force the loading screen to draw for one frame before we start loading
-						UpdateTransition();
-						WindowUpdate();
-						level = new Level();
+						SetCurrentMenu(MENU_MAPSELECT);						
 					}
 					if(SelectedItem == 1)
 					{
@@ -64,6 +63,16 @@ void DoMenuAction(int code, int bind)
 					}
 					if(SelectedItem == 2)
 						GameEndFlag = true;
+				}
+				else if(CurrentMenu == MENU_MAPSELECT)
+				{
+					std::string currentLevel = menus.at(MENU_MAPSELECT)->GetItemInfo(SelectedItem)->text;
+					SetCurrentTransition(TRANSITION_LEVELSTART);
+					ChangeGamestate(STATE_TRANSITION);
+					// force the loading screen to draw for one frame before we start loading
+					RenderTransition();
+					WindowUpdate();
+					level = new Level(currentLevel);
 				}
 				else if(CurrentMenu == MENU_OPTIONS)
 				{
@@ -308,6 +317,10 @@ void LoadMenus()
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "New Level", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "Back to Menu", menu_font, menu_color, selected_color));
 	menus.push_back(menu);
+
+	menu = new Menu();
+	menus.push_back(menu);
+	CreateMapSelectMenu();
 	// insert bind and bindings menu here
 
 	CreateDisplayMenu();
@@ -361,6 +374,35 @@ int CreateDisplayMenu()
 		//modeName << SDL_GetDisplayName(display.first);
 		modeName << display.first;
 		menus.at(MENU_SELECTION_DISPLAY)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) - 100, modeName.str(), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	}
+	return 0;
+}
+
+std::vector<std::string> GetAllTiledMaps()
+{
+	std::vector<std::string> names;
+	std::string search_path = "assets/levels/*.tmx";
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
+	if(hFind != INVALID_HANDLE_VALUE) {
+		do {
+			// read all (real) files in current folder
+			// , delete '!' read other 2 default folder . and ..
+			if(!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+				names.push_back(fd.cFileName);
+			}
+		} while(::FindNextFile(hFind, &fd));
+		::FindClose(hFind);
+	}
+	return names;
+}
+
+int CreateMapSelectMenu()
+{
+	std::vector<std::string> maps = GetAllTiledMaps();
+	for(int i = 0; i < (int)maps.size(); i++)
+	{
+		menus.at(MENU_MAPSELECT)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.2), GetWindowNormalizedY(0.2) + i * 50, maps[i], menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	}
 	return 0;
 }

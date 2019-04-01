@@ -750,7 +750,7 @@ void ShowDebugInfo(Player &p)
 	SDL_RenderDrawRect(renderer, &virtualCamRect);	
 }
 
-void UpdateTransition()
+void RenderTransition()
 {
 	char *text = NULL;
 	SDL_Texture *tex = NULL;
@@ -868,6 +868,10 @@ void RenderMenu()
 		RenderText(490, 540, "Kert & MillhioreF © 2017", minor_font, color_credits);
 	}
 	RenderMenuItems(CurrentMenu);
+	if(CurrentMenu == MENU_MAPSELECT)
+	{
+		RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.1), "Select your Level", menu_font, menu_color, TEXT_ALIGN_CENTER);
+	}
 	if(CurrentMenu == MENU_OPTIONS)
 	{
 		RenderMenuItems(MENU_SELECTION_LIVES);

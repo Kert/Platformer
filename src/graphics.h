@@ -18,7 +18,7 @@ void DrawHitbox(Entity &e);
 void DrawFPS(Uint32 dt);
 void ShowDebugInfo(Player &p);
 void UpdateDisplayMode();
-void UpdateTransition();
+void RenderTransition();
 void MenuUpdate();
 void RenderLogo();
 void ShowPauseOverlay();

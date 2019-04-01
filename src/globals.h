@@ -175,6 +175,7 @@ enum MENUS
 	MENU_SELECTION_FULLSCREEN,
 	MENU_PLAYER_FAILED,
 	MENU_PLAYER_FAILED_NO_ESCAPE,
+	MENU_MAPSELECT,
 	MENU_BINDS,
 	MENU_BIND // should be a transition?
 	// otherwise MENU_BINDS must be the last one apart from this

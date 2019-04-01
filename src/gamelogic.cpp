@@ -300,7 +300,7 @@ void SetGamestate(int state)
 		else if(TransitionID == TRANSITION_LEVELCLEAR)
 		{
 			PlaySound("level_clear");
-			UpdateTransition(); // don't make player wait for the level to unload to see his astonishing victory
+			RenderTransition(); // don't make player wait for the level to unload to see his astonishing victory
 			delete level;
 			level = nullptr;
 		}

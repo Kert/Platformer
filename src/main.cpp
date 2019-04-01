@@ -44,9 +44,6 @@ int main(int argc, char* argv[])
 	// Loading textures and tilesets
 	GraphicsSetup();
 
-	// Load menus
-	LoadMenus();	
-
 	// Load creature properties and their sprite data
 	ReadCreatureData();
 
@@ -101,7 +98,7 @@ int main(int argc, char* argv[])
 				if(GameState == STATE_MENU)
 					RenderMenu();
 				if(GameState == STATE_TRANSITION)
-					UpdateTransition();
+					RenderTransition();
 			}
 			if(FadingState != FADING_STATE_NONE)
 				DrawFading();

@@ -47,6 +47,13 @@ extern SDL_Surface *surface_level_textures;
 
 Level::Level()
 {
+	fileName = "test.tmx";
+	Init();
+}
+
+Level::Level(std::string fileName)
+{
+	this->fileName = fileName;
 	Init();
 }
 
@@ -54,8 +61,8 @@ void Level::Init()
 {
 	loaded = false;
 
-	LoadLevelFromFile("assets/levels/test.tmx");
-	//LoadLevelFromFile("assets/levels/volcano_surroundings.tmx");
+	LoadLevelFromFile(fileName);
+
 	LoadNonRandomElements();
 	LoadEnemies();
 	LoadEntities();
@@ -71,6 +78,7 @@ void Level::Init()
 
 void Level::LoadLevelFromFile(std::string filename)
 {
+	filename = "assets/levels/" + filename;
 	TiXmlDocument doc(filename.c_str());
 	bool loadOkay = doc.LoadFile();
 

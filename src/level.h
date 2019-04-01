@@ -10,6 +10,7 @@
 class Level
 {
 	public:
+		std::string fileName;
 		bool loaded;
 		SDL_Point playerSpawn = { 200, 70 };
 		SDL_Point exit;
@@ -24,6 +25,7 @@ class Level
 
 	public:
 		Level();
+		Level(std::string fileName);
 		void Init();
 		void Cleanup();
 		void Reload();

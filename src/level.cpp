@@ -283,6 +283,7 @@ void Level::Reload()
 void Level::Cleanup()
 {
 	DeleteAllTiles();
+	tileset.clear();
 	UnloadEntities();
 	entitySpawns.clear();
 	levelEnemies.clear();

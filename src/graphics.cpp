@@ -20,7 +20,7 @@ bool graphicsLoaded = false;
 
 extern int TransitionID;
 extern MENUS CurrentMenu;
-extern std::vector<Menu*> menus;
+extern std::map<MENUS, Menu*> menus;
 extern int BindingKey;
 extern GAME_OVER_REASONS gameOverReason;
 
@@ -276,6 +276,8 @@ void UpdateDisplayMode()
 	{
 		SDL_GetWindowDisplayMode(win, &displayMode);
 		displayIndex = SDL_GetWindowDisplayIndex(win);
+		MenusCleanup();
+		LoadMenus();
 		return;
 	}
 	
@@ -886,7 +888,7 @@ void RenderMenu()
 	if(CurrentMenu == MENU_BINDS)
 	{
 		unsigned off = 40, step = 50, i = 0;
-		if(menus.size() <= MENU_BINDS)
+		if(menus.find(MENU_BINDS) == menus.end())
 		{
 			Menu *menu = new Menu();
 			for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
@@ -895,7 +897,7 @@ void RenderMenu()
 			}
 			menu->AddMenuItem(new MenuItem(100, off + step*(i++), "Reset to defaults", menu_font, menu_color, selected_color));
 			menu->AddMenuItem(new MenuItem(150, off + step*i, "Back", menu_font, menu_color, selected_color));
-			menus.push_back(menu);
+			menus[MENU_BINDS] = menu;
 		}
 		for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 		{
@@ -904,14 +906,6 @@ void RenderMenu()
 	}
 	if(CurrentMenu == MENU_BIND)
 	{
-		// Binding key names will be most certainly updates so we delete the menu
-		// It will be recreated because it won't exist. With new key names too
-		while(menus.size() > MENU_BINDS)
-		{
-			delete menus.back();
-			menus.pop_back();
-		}
-
 		RenderText(150, 180, "Press the key you wish to use for", menu_font, menu_color);
 		RenderText(355, 260, GetBindingName(BindingKey), menu_font, menu_color);
 		RenderText(220, 340, "(or press ESC to cancel)", menu_font, menu_color);
@@ -921,7 +915,7 @@ void RenderMenu()
 void RenderMenuItems(MENUS id)
 {
 	Menu *menu;
-	if((int)menus.size() <= id)
+	if(menus.find(id) == menus.end())
 		return;
 	menu = menus.at(id);
 

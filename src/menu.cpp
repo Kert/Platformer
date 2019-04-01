@@ -12,7 +12,7 @@
 int SelectedItem;
 int BindingKey;
 MENUS CurrentMenu;
-std::vector<Menu*> menus;
+std::map<MENUS, Menu*> menus;
 
 extern Level *level;
 extern int playerLives;
@@ -254,7 +254,7 @@ void LoadMenus()
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), "Start game", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "Options", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100 * 2, "Exit", menu_font, menu_color, selected_color));
-	menus.push_back(menu);
+	menus[MENU_MAIN] = menu;
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) - 100, "Lives: ", menu_font, menu_color, selected_color));
@@ -262,19 +262,19 @@ void LoadMenus()
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "Music Volume", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 200, "Keybinds", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 300, "Back", menu_font, menu_color, selected_color));
-	menus.push_back(menu);
+	menus[MENU_OPTIONS] = menu;
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.4), GetWindowNormalizedY(0.4) - 100, "Display: ", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.4), GetWindowNormalizedY(0.4), "Mode: ", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.4), GetWindowNormalizedY(0.4) + 100, "Fullscreen:", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.4), GetWindowNormalizedY(0.4) + 100 * 2, "Back", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menus.push_back(menu);
+	menus[MENU_VIDEO_OPTIONS] = menu;
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 100, "Resume", game_font, pause_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "Quit", game_font, pause_color, selected_color));
-	menus.push_back(menu);
+	menus[MENU_PAUSE] = menu;
 
 	menu = new Menu();
 	for(int i = 0; i < MAX_LIVES; i++)
@@ -282,44 +282,43 @@ void LoadMenus()
 		menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.6) + 30 * i, 150, std::to_string(i + 1), menu_font, menu_color, selected_color));
 	}
 	menu->IsHorizontal = true;
-	menus.push_back(menu);
+	menus[MENU_SELECTION_LIVES] = menu;
 
 	menu = new Menu();
 	menu->IsHorizontal = true;
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.6) + 30, GetWindowNormalizedY(0.4) + 100, std::to_string(volumeMusic), menu_font, menu_color, selected_color));
-	menus.push_back(menu);
+	menus[MENU_SELECTION_MUSIC_VOLUME] = menu;
 
 	menu = new Menu();
 	menu->IsHorizontal = true;
 	menu->IsSwitchable = true;
-	menus.push_back(menu);
+	menus[MENU_SELECTION_DISPLAY] = menu;
 
 	menu = new Menu();
 	menu->IsHorizontal = true;
 	menu->IsSwitchable = true;
-	menus.push_back(menu);
+	menus[MENU_SELECTION_DISPLAY_MODE] = menu;
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "Off", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 120, GetWindowNormalizedY(0.4) + 100, "On", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 120 * 2, GetWindowNormalizedY(0.4) + 100, "Borderless", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-
 	menu->IsHorizontal = true;
-	menus.push_back(menu);
+	menus[MENU_SELECTION_FULLSCREEN] = menu;
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 50, "Retry Level", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "New Level", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "Back to Menu", menu_font, menu_color, selected_color));
-	menus.push_back(menu);
+	menus[MENU_PLAYER_FAILED] = menu;
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "New Level", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "Back to Menu", menu_font, menu_color, selected_color));
-	menus.push_back(menu);
+	menus[MENU_PLAYER_FAILED_NO_ESCAPE] = menu;
 
 	menu = new Menu();
-	menus.push_back(menu);
+	menus[MENU_MAPSELECT] = menu;
 	CreateMapSelectMenu();
 	// insert bind and bindings menu here
 
@@ -357,12 +356,11 @@ void SetCurrentMenu(MENUS menu)
 
 void MenusCleanup()
 {
-	while(menus.size())
+	for(auto &menu : menus)
 	{
-		delete menus.back();
-		menus.pop_back();
+		delete menu.second;
 	}
-	std::vector<Menu*>().swap(menus); // forcibly deallocate memory
+	std::map<MENUS, Menu*>().swap(menus); // forcibly deallocate memory
 }
 
 int CreateDisplayMenu()

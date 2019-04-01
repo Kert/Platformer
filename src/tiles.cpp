@@ -9,7 +9,6 @@
 extern std::vector<std::vector<int>> tiles;
 
 extern SDL_Surface *surface_level_textures;
-extern SDL_Surface *surface_fg;
 
 extern Level *level;
 

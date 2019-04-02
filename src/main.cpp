@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 			if(FadingState != FADING_STATE_NONE)
 				DrawFading();
 			if(GameState == STATE_PAUSED)
-				ShowPauseOverlay();
+				RenderMenuItems(MENU_PAUSE);
 			//DrawFPS(dtG);
 			WindowUpdate();
 			timeStart_graphics = clock::now();

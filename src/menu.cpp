@@ -36,7 +36,7 @@ int CreateMapSelectMenu();
 
 void DoMenuAction(int code, int bind)
 {
-	if(CurrentMenu == MENU_BIND) // special case for keybind screen
+	if(CurrentMenu == MENU_BINDKEY) // special case for keybind screen
 	{
 		if(bind != BIND_ESCAPE)
 			SetBinding(code, BindingKey);
@@ -76,11 +76,11 @@ void DoMenuAction(int code, int bind)
 				}
 				else if(CurrentMenu == MENU_OPTIONS)
 				{
-					if(SelectedItem == 1)
+					if(SelectedItem == 0)
 						SetCurrentMenu(MENU_VIDEO_OPTIONS);
-					else if(SelectedItem == 3)
+					else if(SelectedItem == 2)
 						SetCurrentMenu(MENU_BINDS);
-					else if(SelectedItem == 4)
+					else if(SelectedItem == 3)
 						SetCurrentMenu(MENU_MAIN);
 				}
 				else if(CurrentMenu == MENU_VIDEO_OPTIONS)
@@ -100,7 +100,7 @@ void DoMenuAction(int code, int bind)
 					if(SelectedItem < (menus.at(CurrentMenu)->GetItemCount() - 2))
 					{
 						BindingKey = SelectedItem; // the enums match up, so we can do this mini-optimization :D
-						SetCurrentMenu(MENU_BIND);
+						SetCurrentMenu(MENU_BINDKEY);
 					}
 					else
 					{
@@ -121,9 +121,7 @@ void NavigateMenu(int bind)
 		case BIND_LEFT: case BIND_ARROWL:
 			if(CurrentMenu == MENU_OPTIONS)
 			{
-				if(SelectedItem == 0)
-					menus.at(MENU_SELECTION_LIVES)->selected <= 0 ? menus.at(MENU_SELECTION_LIVES)->selected = (menus.at(MENU_SELECTION_LIVES)->GetItemCount() - 1) : menus.at(MENU_SELECTION_LIVES)->selected--;
-				if(SelectedItem == 2)
+				if(SelectedItem == 1)
 				{
 					int currentVolume = atoi(menus.at(MENU_SELECTION_MUSIC_VOLUME)->GetItemInfo(0)->text.c_str());
 					currentVolume--;
@@ -155,9 +153,7 @@ void NavigateMenu(int bind)
 		case BIND_RIGHT: case BIND_ARROWR:
 			if(CurrentMenu == MENU_OPTIONS)
 			{
-				if(SelectedItem == 0)
-					menus.at(MENU_SELECTION_LIVES)->selected >= (menus.at(MENU_SELECTION_LIVES)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_LIVES)->selected = 0 : menus.at(MENU_SELECTION_LIVES)->selected++;
-				if(SelectedItem == 2)
+				if(SelectedItem == 1)
 				{
 					int currentVolume = atoi(menus.at(MENU_SELECTION_MUSIC_VOLUME)->GetItemInfo(0)->text.c_str());
 					currentVolume++;
@@ -251,42 +247,33 @@ int Menu::GetItemCount()
 void LoadMenus()
 {
 	Menu *menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), "Start game", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "Options", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100 * 2, "Exit", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), "START GAME", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "OPTIONS", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100 * 2, "EXIT", menu_font, menu_color, selected_color));
 	menus[MENU_MAIN] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) - 100, "Lives: ", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), "Video Options", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "Music Volume", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 200, "Keybinds", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 300, "Back", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) - 100, "VIDEO", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), "MUSIC:", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "CONTROLS", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 200, "BACK", menu_font, menu_color, selected_color));
 	menus[MENU_OPTIONS] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.4), GetWindowNormalizedY(0.4) - 100, "Display: ", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.4), GetWindowNormalizedY(0.4), "Mode: ", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.4), GetWindowNormalizedY(0.4) + 100, "Fullscreen:", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.4), GetWindowNormalizedY(0.4) + 100 * 2, "Back", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1), GetWindowNormalizedY(0.4) - 100, "DISPLAY: ", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1), GetWindowNormalizedY(0.4), "MODE: ", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1), GetWindowNormalizedY(0.4) + 100, "FULLSCREEN:", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1), GetWindowNormalizedY(0.4) + 100 * 2, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menus[MENU_VIDEO_OPTIONS] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 100, "Resume", game_font, pause_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "Quit", game_font, pause_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 60, "RESUME", game_font, pause_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 60, "QUIT", game_font, pause_color, selected_color, TEXT_ALIGN_CENTER));
 	menus[MENU_PAUSE] = menu;
 
 	menu = new Menu();
-	for(int i = 0; i < MAX_LIVES; i++)
-	{
-		menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.6) + 30 * i, 150, std::to_string(i + 1), menu_font, menu_color, selected_color));
-	}
 	menu->IsHorizontal = true;
-	menus[MENU_SELECTION_LIVES] = menu;
-
-	menu = new Menu();
-	menu->IsHorizontal = true;
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.6) + 30, GetWindowNormalizedY(0.4) + 100, std::to_string(volumeMusic), menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 110, GetWindowNormalizedY(0.4), std::to_string(volumeMusic), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menus[MENU_SELECTION_MUSIC_VOLUME] = menu;
 
 	menu = new Menu();
@@ -300,21 +287,21 @@ void LoadMenus()
 	menus[MENU_SELECTION_DISPLAY_MODE] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "Off", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 120, GetWindowNormalizedY(0.4) + 100, "On", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 120 * 2, GetWindowNormalizedY(0.4) + 100, "Borderless", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1) + 380, GetWindowNormalizedY(0.4) + 100, "OFF", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1) + 510, GetWindowNormalizedY(0.4) + 100, "ON", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1) + 610, GetWindowNormalizedY(0.4) + 100, "BORDERLESS", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->IsHorizontal = true;
 	menus[MENU_SELECTION_FULLSCREEN] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 50, "Retry Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "New Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "Back to Menu", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 50, "RETRY LEVEL", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "NEW LEVEL", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "BACK TO MENU", menu_font, menu_color, selected_color));
 	menus[MENU_PLAYER_FAILED] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "New Level", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "Back to Menu", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "NEW LEVEL", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "BACK TO MENU", menu_font, menu_color, selected_color));
 	menus[MENU_PLAYER_FAILED_NO_ESCAPE] = menu;
 
 	menu = new Menu();
@@ -337,17 +324,12 @@ void SetCurrentMenu(MENUS menu)
 	oldmenu = CurrentMenu;
 	CurrentMenu = menu;
 	SelectedItem = 0;
-	if(menu == MENU_OPTIONS)
-	{
-		menus.at(MENU_SELECTION_LIVES)->selected = playerLives - 1;
-	}
 	if(menu == MENU_VIDEO_OPTIONS)
 	{
 		RefreshDisplayModeMenus();		
 	}
 	if(oldmenu == MENU_OPTIONS)
 	{
-		playerLives = menus.at(MENU_SELECTION_LIVES)->selected + 1;
 		SaveConfig();
 		if(menu == MENU_MAIN)
 			SelectedItem = 1;
@@ -371,7 +353,7 @@ int CreateDisplayMenu()
 		// TODO: Proper UTF-8 text rendering
 		//modeName << SDL_GetDisplayName(display.first);
 		modeName << display.first;
-		menus.at(MENU_SELECTION_DISPLAY)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) - 100, modeName.str(), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+		menus.at(MENU_SELECTION_DISPLAY)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1) + 288, GetWindowNormalizedY(0.4) - 100, modeName.str(), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	}
 	return 0;
 }
@@ -416,8 +398,8 @@ int RefreshDisplayModeMenus()
 	for(auto mode : displayModes[displayIndex])
 	{
 		std::ostringstream modeName;
-		modeName << mode.w << "x" << mode.h << "@" << mode.refresh_rate << "hz " << SDL_BITSPERPIXEL(mode.format) << "-bit";
-		menus.at(MENU_SELECTION_DISPLAY_MODE)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), modeName.str(), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+		modeName << mode.w << "x" << mode.h << "@" << mode.refresh_rate << "HZ " << SDL_BITSPERPIXEL(mode.format) << "-BIT";
+		menus.at(MENU_SELECTION_DISPLAY_MODE)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.1) + 192, GetWindowNormalizedY(0.4), modeName.str(), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 		if(displayMode.w == mode.w &&
 			displayMode.h == mode.h &&
 			displayMode.refresh_rate == mode.refresh_rate &&

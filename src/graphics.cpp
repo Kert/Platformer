@@ -71,9 +71,9 @@ TTF_Font *menu_font = NULL;
 TTF_Font *game_font = NULL;
 TTF_Font *minor_font = NULL;
 SDL_Color debug_color = { 50, 180, 0 };
-SDL_Color pause_color = { 40, 100, 0 };
-SDL_Color menu_color = { 115, 77, 0 };
-SDL_Color selected_color = { 100, 100, 255 };
+SDL_Color pause_color = { 255, 255, 255 };
+SDL_Color menu_color = { 255, 255, 255 };
+SDL_Color selected_color = { 0, 255, 0 };
 SDL_Surface *debug_message = NULL;
 
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
@@ -155,10 +155,10 @@ int GraphicsSetup()
 	if(TTF_Init() == -1)
 		return 0;
 
-	debug_font = TTF_OpenFont("assets/misc/verdana.ttf", 12);
-	menu_font = TTF_OpenFont("assets/misc/verdana.ttf", 28);
-	game_font = TTF_OpenFont("assets/misc/InfiniumGuardian.ttf", 28);
-	minor_font = TTF_OpenFont("assets/misc/verdana.ttf", 22);
+	debug_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 8);
+	menu_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 32);
+	game_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 32);
+	minor_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 16);
 
 	// create the window and renderer
 	// note that the renderer is accelerated
@@ -761,7 +761,7 @@ void RenderTransition()
 	r.h = WINDOW_HEIGHT;
 	r.x = 0;
 	r.y = 0;
-	SDL_SetRenderDrawColor(renderer, 204, 231, 255, 255);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(renderer, NULL);
 
 	if(TransitionID == TRANSITION_TITLE)
@@ -773,10 +773,7 @@ void RenderTransition()
 		//if (!level->loaded)
 		if(level == nullptr)
 		{
-			int w, h;
-			text = "Generating level...";
-			TTF_SizeText(menu_font, text, &w, &h);
-			RenderText(GetWindowNormalizedX(0.5) - w, GetWindowNormalizedY(0.5) - h, text, menu_font, menu_color);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADING LEVEL...", menu_font, menu_color, TEXT_ALIGN_CENTER);
 		}
 		else
 		{
@@ -787,14 +784,11 @@ void RenderTransition()
 
 			char str[64];
 			sprintf(str, "Time: %2d min %2d sec", min, sec);
-			RenderText(100, 200, str, game_font, selected_color);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2), str, game_font, selected_color, TEXT_ALIGN_CENTER);
 			sprintf(str, "Lives left: %d", currentLives);
-			RenderText(100, 250, str, game_font, selected_color);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2) + 100, str, game_font, selected_color, TEXT_ALIGN_CENTER);
 
-			text = "Loaded! Press a key to start.";
-			int w, h;
-			TTF_SizeText(menu_font, text, &w, &h);
-			RenderText(GetWindowNormalizedX(0.5) - w, 400, text, menu_font, menu_color);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADED! PRESS A KEY TO START", menu_font, menu_color, TEXT_ALIGN_CENTER);
 		}
 	}
 	else if(TransitionID == TRANSITION_LEVELCLEAR)
@@ -850,15 +844,9 @@ void RenderLogo()
 	SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/logo.png"), NULL, &r);
 }
 
-void ShowPauseOverlay()
-{
-	RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 100, "Pause", game_font, pause_color);
-	RenderMenuItems(CurrentMenu);
-}
-
 void RenderMenu()
 {
-	SDL_SetRenderDrawColor(renderer, 204, 231, 255, 255);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(renderer, NULL);
 
 	switch(CurrentMenu)
@@ -874,12 +862,11 @@ void RenderMenu()
 		}
 		case MENU_MAPSELECT:
 		{
-			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.1), "Select level", menu_font, menu_color, TEXT_ALIGN_CENTER);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.1), "SELECT LEVEL", menu_font, menu_color, TEXT_ALIGN_CENTER);
 			break;
 		}
 		case MENU_OPTIONS:
 		{
-			RenderMenuItems(MENU_SELECTION_LIVES);
 			RenderMenuItems(MENU_SELECTION_MUSIC_VOLUME);
 			break;
 		}
@@ -898,23 +885,23 @@ void RenderMenu()
 				Menu *menu = new Menu();
 				for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 				{
-					menu->AddMenuItem(new MenuItem(100, off + step*i, GetBindingName(i), menu_font, menu_color, selected_color));
+					menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) - 256, off + step*i, GetBindingName(i), menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
 				}
-				menu->AddMenuItem(new MenuItem(100, off + step*(i++), "Reset to defaults", menu_font, menu_color, selected_color));
-				menu->AddMenuItem(new MenuItem(150, off + step*i, "Back", menu_font, menu_color, selected_color));
+				menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 200, "RESET TO DEFAULTS", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+				menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 300, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
 				menus[MENU_BINDS] = menu;
 			}
 			for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 			{
-				RenderText(600, off + step*i, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color);
+				RenderText(GetWindowNormalizedX(0.5) + 256, off + step*i, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color, TEXT_ALIGN_CENTER);
 			}
 			break;
 		}
 		case MENU_BINDKEY:
 		{
-			RenderText(150, 180, "Press the key you wish to use for", menu_font, menu_color);
-			RenderText(355, 260, GetBindingName(BindingKey), menu_font, menu_color);
-			RenderText(220, 340, "(or press ESC to cancel)", menu_font, menu_color);
+			RenderText(GetWindowNormalizedX(0.5), 180, "PRESS THE KEY YOU WISH TO USE FOR", menu_font, menu_color, TEXT_ALIGN_CENTER);
+			RenderText(GetWindowNormalizedX(0.5), 260, GetBindingName(BindingKey), menu_font, selected_color, TEXT_ALIGN_CENTER);
+			RenderText(GetWindowNormalizedX(0.5), 340, "(OR PRESS ESC TO CANCEL)", menu_font, menu_color, TEXT_ALIGN_CENTER);
 			break;
 		}
 	}

@@ -21,7 +21,6 @@ void UpdateDisplayMode();
 void RenderTransition();
 void MenuUpdate();
 void RenderLogo();
-void ShowPauseOverlay();
 void RenderMenu();
 void RenderMenuItems(MENUS menu);
 void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color, TEXT_ALIGN align = TEXT_ALIGN_LEFT);

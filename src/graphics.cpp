@@ -880,29 +880,33 @@ void RenderMenu()
 		}
 		case MENU_BINDS:
 		{
-			unsigned off = 40, step = 50, i = 0;
+			int half = (NUM_CONFIGURABLE_BINDS + 2) / 2;
 			if(menus.find(MENU_BINDS) == menus.end())
 			{
 				Menu *menu = new Menu();
-				for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+				for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 				{
-					menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) - 256, off + step*i, GetBindingName(i), menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+					int x = GetWindowNormalizedX(0.5) - 32;
+					int y = GetWindowNormalizedY(0.5) - 32 * (half - i) * 2;
+					menu->AddMenuItem(new MenuItem(x, y, GetBindingName(i), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 				}
-				menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 200, "RESET TO DEFAULTS", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
-				menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 300, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+				menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - NUM_CONFIGURABLE_BINDS) * 2, "RESET TO DEFAULT", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+				menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - NUM_CONFIGURABLE_BINDS - 1) * 2, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
 				menus[MENU_BINDS] = menu;
 			}
-			for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+			for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 			{
-				RenderText(GetWindowNormalizedX(0.5) + 256, off + step*i, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color, TEXT_ALIGN_CENTER);
+				int x = GetWindowNormalizedX(0.5) + 32;
+				int y = GetWindowNormalizedY(0.5) - 32 * (half - i) * 2;
+				RenderText(x, y, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color, TEXT_ALIGN_LEFT);
 			}
 			break;
 		}
 		case MENU_BINDKEY:
 		{
-			RenderText(GetWindowNormalizedX(0.5), 180, "PRESS THE KEY YOU WISH TO USE FOR", menu_font, menu_color, TEXT_ALIGN_CENTER);
-			RenderText(GetWindowNormalizedX(0.5), 260, GetBindingName(BindingKey), menu_font, selected_color, TEXT_ALIGN_CENTER);
-			RenderText(GetWindowNormalizedX(0.5), 340, "(OR PRESS ESC TO CANCEL)", menu_font, menu_color, TEXT_ALIGN_CENTER);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 3, "PRESS THE KEY YOU WISH TO USE FOR", menu_font, menu_color, TEXT_ALIGN_CENTER);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), GetBindingName(BindingKey), menu_font, selected_color, TEXT_ALIGN_CENTER);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "(OR PRESS ESC TO CANCEL)", menu_font, menu_color, TEXT_ALIGN_CENTER);
 			break;
 		}
 	}

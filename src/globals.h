@@ -177,8 +177,7 @@ enum MENUS
 	MENU_PLAYER_FAILED_NO_ESCAPE,
 	MENU_MAPSELECT,
 	MENU_BINDS,
-	MENU_BIND // should be a transition?
-	// otherwise MENU_BINDS must be the last one apart from this
+	MENU_BINDKEY // should be a transition?
 };
 
 enum GAME_OVER_REASONS

@@ -861,55 +861,65 @@ void RenderMenu()
 	SDL_SetRenderDrawColor(renderer, 204, 231, 255, 255);
 	SDL_RenderFillRect(renderer, NULL);
 
-	if(CurrentMenu == MENU_MAIN)
+	switch(CurrentMenu)
 	{
-		RenderLogo();
-		SDL_Color color_credits = { 0, 0, 0 };
-		RenderText(587, 480, "Outerial Studios", minor_font, color_credits);
-		RenderText(550, 510, "outerial.tumblr.com", minor_font, color_credits);
-		RenderText(490, 540, "Kert & MillhioreF © 2017", minor_font, color_credits);
-	}
-	RenderMenuItems(CurrentMenu);
-	if(CurrentMenu == MENU_MAPSELECT)
-	{
-		RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.1), "Select your Level", menu_font, menu_color, TEXT_ALIGN_CENTER);
-	}
-	if(CurrentMenu == MENU_OPTIONS)
-	{
-		RenderMenuItems(MENU_SELECTION_LIVES);
-		RenderMenuItems(MENU_SELECTION_MUSIC_VOLUME);
-	}
-	if(CurrentMenu == MENU_VIDEO_OPTIONS)
-	{
-		RenderMenuItems(MENU_SELECTION_DISPLAY);
-		RenderMenuItems(MENU_SELECTION_DISPLAY_MODE);
-		RenderMenuItems(MENU_SELECTION_FULLSCREEN);
-	}
-	if(CurrentMenu == MENU_BINDS)
-	{
-		unsigned off = 40, step = 50, i = 0;
-		if(menus.find(MENU_BINDS) == menus.end())
+		case MENU_MAIN:
 		{
-			Menu *menu = new Menu();
+			RenderLogo();
+			SDL_Color color_credits = { 0, 0, 0 };
+			RenderText(587, 480, "Outerial Studios", minor_font, color_credits);
+			RenderText(550, 510, "outerial.tumblr.com", minor_font, color_credits);
+			RenderText(490, 540, "Kert & MillhioreF © 2017", minor_font, color_credits);
+			break;
+		}
+		case MENU_MAPSELECT:
+		{
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.1), "Select level", menu_font, menu_color, TEXT_ALIGN_CENTER);
+			break;
+		}
+		case MENU_OPTIONS:
+		{
+			RenderMenuItems(MENU_SELECTION_LIVES);
+			RenderMenuItems(MENU_SELECTION_MUSIC_VOLUME);
+			break;
+		}
+		case MENU_VIDEO_OPTIONS:
+		{
+			RenderMenuItems(MENU_SELECTION_DISPLAY);
+			RenderMenuItems(MENU_SELECTION_DISPLAY_MODE);
+			RenderMenuItems(MENU_SELECTION_FULLSCREEN);
+			break;
+		}
+		case MENU_BINDS:
+		{
+			unsigned off = 40, step = 50, i = 0;
+			if(menus.find(MENU_BINDS) == menus.end())
+			{
+				Menu *menu = new Menu();
+				for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+				{
+					menu->AddMenuItem(new MenuItem(100, off + step*i, GetBindingName(i), menu_font, menu_color, selected_color));
+				}
+				menu->AddMenuItem(new MenuItem(100, off + step*(i++), "Reset to defaults", menu_font, menu_color, selected_color));
+				menu->AddMenuItem(new MenuItem(150, off + step*i, "Back", menu_font, menu_color, selected_color));
+				menus[MENU_BINDS] = menu;
+			}
 			for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 			{
-				menu->AddMenuItem(new MenuItem(100, off + step*i, GetBindingName(i), menu_font, menu_color, selected_color));
+				RenderText(600, off + step*i, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color);
 			}
-			menu->AddMenuItem(new MenuItem(100, off + step*(i++), "Reset to defaults", menu_font, menu_color, selected_color));
-			menu->AddMenuItem(new MenuItem(150, off + step*i, "Back", menu_font, menu_color, selected_color));
-			menus[MENU_BINDS] = menu;
+			break;
 		}
-		for(i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+		case MENU_BINDKEY:
 		{
-			RenderText(600, off + step*i, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color);
+			RenderText(150, 180, "Press the key you wish to use for", menu_font, menu_color);
+			RenderText(355, 260, GetBindingName(BindingKey), menu_font, menu_color);
+			RenderText(220, 340, "(or press ESC to cancel)", menu_font, menu_color);
+			break;
 		}
 	}
-	if(CurrentMenu == MENU_BIND)
-	{
-		RenderText(150, 180, "Press the key you wish to use for", menu_font, menu_color);
-		RenderText(355, 260, GetBindingName(BindingKey), menu_font, menu_color);
-		RenderText(220, 340, "(or press ESC to cancel)", menu_font, menu_color);
-	}
+
+	RenderMenuItems(CurrentMenu);
 }
 
 void RenderMenuItems(MENUS id)

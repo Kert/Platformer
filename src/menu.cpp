@@ -275,9 +275,9 @@ int Menu::GetItemCount()
 void LoadMenus()
 {
 	Menu *menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 3, "START GAME", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "OPTIONS", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "EXIT", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 5, GetWindowNormalizedY(0.5) - 32 * 3, "START GAME", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 4, GetWindowNormalizedY(0.5), "SETTINGS", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 2, GetWindowNormalizedY(0.5) + 32 * 3, "EXIT", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menus[MENU_MAIN] = menu;
 
 	menu = new Menu();

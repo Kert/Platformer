@@ -15,6 +15,8 @@ extern int fullscreenMode;
 extern SDL_DisplayMode displayMode;
 extern int displayIndex;
 extern int volumeMusic;
+extern int volumeSfx;
+
 const std::map<std::string, int> configNames = {
 	{"UP", 0},
 	{"DOWN", 1},
@@ -104,6 +106,7 @@ void LoadConfig()
 	displayMode.refresh_rate = atoi(reader.Get("Video", "RefreshRate", "60").c_str());
 	displayMode.format = std::stoul(reader.Get("Video", "Format", "0").c_str());
 	volumeMusic = atoi(reader.Get("Sound", "Music", "100").c_str());
+	volumeSfx = atoi(reader.Get("Sound", "Sfx", "100").c_str());
 }
 
 void SaveConfig()
@@ -134,6 +137,7 @@ void SaveConfig()
 
 	file << "[Sound]" << std::endl;
 	file << "Music=" << volumeMusic << std::endl;
+	file << "Sfx=" << volumeSfx << std::endl;
 }
 
 void SetBinding(int code, int bind)

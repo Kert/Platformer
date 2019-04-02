@@ -18,6 +18,7 @@ extern Level *level;
 extern int playerLives;
 extern int fullscreenMode;
 extern int volumeMusic;
+extern int volumeSfx;
 extern bool GameEndFlag;
 extern TTF_Font *minor_font;
 extern TTF_Font *menu_font;
@@ -78,6 +79,8 @@ void DoMenuAction(int code, int bind)
 				{
 					if(SelectedItem == 0)
 						SetCurrentMenu(MENU_VIDEO_OPTIONS);
+					else if(SelectedItem == 1)
+						SetCurrentMenu(MENU_SOUND_OPTIONS);
 					else if(SelectedItem == 2)
 						SetCurrentMenu(MENU_BINDS);
 					else if(SelectedItem == 3)
@@ -93,6 +96,11 @@ void DoMenuAction(int code, int bind)
 						UpdateDisplayMode();
 					}
 					if(SelectedItem == 3)
+						SetCurrentMenu(MENU_OPTIONS);
+				}
+				else if(CurrentMenu == MENU_SOUND_OPTIONS)
+				{
+					if(SelectedItem == 2)
 						SetCurrentMenu(MENU_OPTIONS);
 				}
 				else if(CurrentMenu == MENU_BINDS)
@@ -119,9 +127,9 @@ void NavigateMenu(int bind)
 	switch(bind)
 	{
 		case BIND_LEFT: case BIND_ARROWL:
-			if(CurrentMenu == MENU_OPTIONS)
+			if(CurrentMenu == MENU_SOUND_OPTIONS)
 			{
-				if(SelectedItem == 1)
+				if(SelectedItem == 0)
 				{
 					int currentVolume = atoi(menus.at(MENU_SELECTION_MUSIC_VOLUME)->GetItemInfo(0)->text.c_str());
 					currentVolume--;
@@ -129,7 +137,16 @@ void NavigateMenu(int bind)
 						currentVolume = 128;
 					menus.at(MENU_SELECTION_MUSIC_VOLUME)->GetItemInfo(0)->SetText(std::to_string(currentVolume));
 					SetMusicVolume(currentVolume);
-				}					
+				}
+				if(SelectedItem == 1)
+				{
+					int currentVolume = atoi(menus.at(MENU_SELECTION_SFX_VOLUME)->GetItemInfo(0)->text.c_str());
+					currentVolume--;
+					if(currentVolume < 0)
+						currentVolume = 128;
+					menus.at(MENU_SELECTION_SFX_VOLUME)->GetItemInfo(0)->SetText(std::to_string(currentVolume));
+					SetSfxVolume(currentVolume);
+				}
 			}
 			if(CurrentMenu == MENU_VIDEO_OPTIONS)
 			{
@@ -151,9 +168,9 @@ void NavigateMenu(int bind)
 			}
 			break;
 		case BIND_RIGHT: case BIND_ARROWR:
-			if(CurrentMenu == MENU_OPTIONS)
+			if(CurrentMenu == MENU_SOUND_OPTIONS)
 			{
-				if(SelectedItem == 1)
+				if(SelectedItem == 0)
 				{
 					int currentVolume = atoi(menus.at(MENU_SELECTION_MUSIC_VOLUME)->GetItemInfo(0)->text.c_str());
 					currentVolume++;
@@ -161,7 +178,16 @@ void NavigateMenu(int bind)
 						currentVolume = 0;
 					menus.at(MENU_SELECTION_MUSIC_VOLUME)->GetItemInfo(0)->SetText(std::to_string(currentVolume));
 					SetMusicVolume(currentVolume);
-				}					
+				}
+				if(SelectedItem == 1)
+				{
+					int currentVolume = atoi(menus.at(MENU_SELECTION_SFX_VOLUME)->GetItemInfo(0)->text.c_str());
+					currentVolume++;
+					if(currentVolume > 128)
+						currentVolume = 0;
+					menus.at(MENU_SELECTION_SFX_VOLUME)->GetItemInfo(0)->SetText(std::to_string(currentVolume));
+					SetSfxVolume(currentVolume);
+				}
 			}
 			if(CurrentMenu == MENU_VIDEO_OPTIONS)
 			{
@@ -254,7 +280,7 @@ void LoadMenus()
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) - 100, "VIDEO", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), "MUSIC:", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), "SOUND", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 100, "CONTROLS", menu_font, menu_color, selected_color));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 200, "BACK", menu_font, menu_color, selected_color));
 	menus[MENU_OPTIONS] = menu;
@@ -267,14 +293,25 @@ void LoadMenus()
 	menus[MENU_VIDEO_OPTIONS] = menu;
 
 	menu = new Menu();
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4), "MUSIC:", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 32 * 3, "SFX:", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.4) + 32 * 6, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menus[MENU_SOUND_OPTIONS] = menu;
+
+	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 60, "RESUME", game_font, pause_color, selected_color, TEXT_ALIGN_CENTER));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 60, "QUIT", game_font, pause_color, selected_color, TEXT_ALIGN_CENTER));
 	menus[MENU_PAUSE] = menu;
 
 	menu = new Menu();
 	menu->IsHorizontal = true;
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 110, GetWindowNormalizedY(0.4), std::to_string(volumeMusic), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 4, GetWindowNormalizedY(0.4), std::to_string(volumeMusic), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menus[MENU_SELECTION_MUSIC_VOLUME] = menu;
+
+	menu = new Menu();
+	menu->IsHorizontal = true;
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 4, GetWindowNormalizedY(0.4) + 32 * 3, std::to_string(volumeSfx), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menus[MENU_SELECTION_SFX_VOLUME] = menu;
 
 	menu = new Menu();
 	menu->IsHorizontal = true;

@@ -9,6 +9,7 @@ std::map<std::string, Mix_Chunk*> loadedSounds;
 Mix_Music *activeMusic = NULL;
 bool restartMusic = false;
 int volumeMusic = 128;
+int volumeSfx = 128;
 
 void InitSound()
 {
@@ -17,8 +18,14 @@ void InitSound()
 	{
 		PrintLog(LOG_IMPORTANT, "Sound system could not be initialized");
 	}
-	Mix_Volume(-1, 50);
+	SetSfxVolume(volumeSfx);
 	SetMusicVolume(volumeMusic);
+}
+
+void SetSfxVolume(int volume)
+{
+	volumeSfx = volume;
+	Mix_Volume(-1, volume);
 }
 
 void SetMusicVolume(int volume)

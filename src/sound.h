@@ -9,6 +9,7 @@ void OnMusicFinished();
 void PauseMusic();
 void ResumeMusic();
 void StopMusic();
+void SetSfxVolume(int volume);
 void SetMusicVolume(int volume);
 void SoundCleanup();
 

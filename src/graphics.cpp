@@ -865,9 +865,10 @@ void RenderMenu()
 			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.1), "SELECT LEVEL", menu_font, menu_color, TEXT_ALIGN_CENTER);
 			break;
 		}
-		case MENU_OPTIONS:
+		case MENU_SOUND_OPTIONS:
 		{
 			RenderMenuItems(MENU_SELECTION_MUSIC_VOLUME);
+			RenderMenuItems(MENU_SELECTION_SFX_VOLUME);
 			break;
 		}
 		case MENU_VIDEO_OPTIONS:

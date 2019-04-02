@@ -34,7 +34,7 @@ void SetMusicVolume(int volume)
 	Mix_VolumeMusic(volumeMusic);
 }
 
-void PlaySound(char* soundName)
+void PlaySfx(char* soundName)
 {
 	char soundFile[50];
 

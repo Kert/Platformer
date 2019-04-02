@@ -392,7 +392,7 @@ JumpingState::JumpingState(Creature *cr) : CreatureState(cr)
 	PrintLog(LOG_DEBUG, "Switched to JUMPING");
 	cr->jumptime = 210;
 	//Play the jump sound
-	//if (playSound) PlaySound("jump");
+	//if (playSound) PlaySfx("jump");
 }
 
 JumpingState::~JumpingState()

@@ -738,7 +738,7 @@ void Pickup::OnPickup()
 			case PICKUP_AMMO:
 				// TODO: Find who picked up
 				player->ammo[player->weapon] += 10;
-				PlaySound("pickup_ammo");
+				PlaySfx("pickup_ammo");
 				//PrintNumToInterface(player.ammo, INTERFACE_AMMO, 3);
 				break;
 			case PICKUP_HEALTH:
@@ -1092,7 +1092,7 @@ void Creature::TakeDamage(int damage)
 	SetInvulnerability(500);
 	if(health <= 0)
 	{
-		PlaySound("death");
+		PlaySfx("death");
 		if(this != player) // TODO: remove this walkaround
 			this->Die();
 	}
@@ -1105,13 +1105,13 @@ void Machinery::Activate()
 	if(enabled)
 	{
 		SetVelocity(0, 200);
-		PlaySound("door_close");
+		PlaySfx("door_close");
 		enabled = false;
 	}
 	else
 	{
 		SetVelocity(0, -200);
-		PlaySound("door_open");
+		PlaySfx("door_open");
 		enabled = true;
 	}
 }
@@ -1162,13 +1162,13 @@ void Door::Remove()
 void Door::Open()
 {
 	SetVelocity(0, -200);
-	PlaySound("door_open");
+	PlaySfx("door_open");
 }
 
 void Door::Close()
 {
 	SetVelocity(0, 200);
-	PlaySound("door_close");
+	PlaySfx("door_close");
 }
 
 Button::Button(int x, int y, int doorID)

@@ -209,7 +209,7 @@ void GameOver(GAME_OVER_REASONS reason)
 	}
 	else
 	{
-		PlaySound("game_over");
+		PlaySfx("game_over");
 		SetCurrentTransition(TRANSITION_LEVELLOSE);
 		ChangeGamestate(STATE_TRANSITION);
 	}
@@ -299,7 +299,7 @@ void SetGamestate(int state)
 		}
 		else if(TransitionID == TRANSITION_LEVELCLEAR)
 		{
-			PlaySound("level_clear");
+			PlaySfx("level_clear");
 			RenderTransition(); // don't make player wait for the level to unload to see his astonishing victory
 			delete level;
 			level = nullptr;

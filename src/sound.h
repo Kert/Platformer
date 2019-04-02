@@ -2,7 +2,7 @@
 #define _sound_h_ 
 
 void InitSound();
-void PlaySound(char* sound);
+void PlaySfx(char* sound);
 void PlayMusic(char* musicName);
 void ProcessMusic();
 void OnMusicFinished();

@@ -363,15 +363,33 @@ void SetCurrentMenu(MENUS menu)
 	oldmenu = CurrentMenu;
 	CurrentMenu = menu;
 	SelectedItem = 0;
+
 	if(menu == MENU_VIDEO_OPTIONS)
 	{
-		RefreshDisplayModeMenus();		
+		RefreshDisplayModeMenus();
 	}
-	if(oldmenu == MENU_OPTIONS)
+
+	switch(oldmenu)
 	{
-		SaveConfig();
-		if(menu == MENU_MAIN)
+		case MENU_OPTIONS:
+			SaveConfig();
+			if(menu == MENU_MAIN)
+				SelectedItem = 1;
+			break;
+		case MENU_VIDEO_OPTIONS:
+			SelectedItem = 0;
+			break;
+		case MENU_SOUND_OPTIONS:
 			SelectedItem = 1;
+			break;
+		case MENU_BINDS:
+			SelectedItem = 2;
+			break;
+		case MENU_BINDKEY:
+			SelectedItem = BindingKey;
+			break;
+		default:
+			SelectedItem = 0;
 	}
 }
 

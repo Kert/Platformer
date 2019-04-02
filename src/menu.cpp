@@ -52,6 +52,7 @@ void DoMenuAction(int code, int bind)
 				NavigateMenu(bind);
 				break;
 			case BIND_JUMP: case BIND_OK: case BIND_ENTER:
+				PlaySfx("menu-confirm");
 				if(CurrentMenu == MENU_MAIN)
 				{
 					if(SelectedItem == 0)
@@ -215,6 +216,7 @@ void NavigateMenu(int bind)
 			SelectedItem >= (menus.at(CurrentMenu)->GetItemCount() - 1) ? SelectedItem = 0 : SelectedItem++;
 			break;
 	}
+	PlaySfx("menu-select");
 }
 
 MenuItem::~MenuItem()

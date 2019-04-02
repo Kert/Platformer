@@ -931,24 +931,24 @@ void RenderMenuItems(MENUS id)
 
 	for(int i = 0; i < menu->GetItemCount(); i++)
 	{
-		SDL_Rect r;
-		SDL_Color color;
-		
-		if(i == SelectedItem && id == CurrentMenu || menu->IsSwitchable)
-			color = menu->GetItemInfo(i)->selectedColor;
-		else
-			color = menu->GetItemInfo(i)->standardColor;
-
-		if(menu->IsHorizontal && i == menu->selected)
-			color = menu->GetItemInfo(i)->selectedColor;
-		
-		const char *text = menu->GetItemInfo(i)->text.c_str();
-		r.x = menu->GetItemInfo(i)->pos.x;
-		r.y = menu->GetItemInfo(i)->pos.y;
-		TTF_Font *font = menu->GetItemInfo(i)->font;
-		TEXT_ALIGN align = menu->GetItemInfo(i)->align;
 		if(!menu->IsSwitchable || i == menu->selected)
+		{			
+			SDL_Color color;
+			if(i == SelectedItem && id == CurrentMenu || menu->IsSwitchable)
+				color = menu->GetItemInfo(i)->selectedColor;
+			else
+				color = menu->GetItemInfo(i)->standardColor;
+			if(menu->IsHorizontal && i == menu->selected)
+				color = menu->GetItemInfo(i)->selectedColor;
+						
+			SDL_Rect r;
+			r.x = menu->GetItemInfo(i)->pos.x;
+			r.y = menu->GetItemInfo(i)->pos.y;
+			TTF_Font *font = menu->GetItemInfo(i)->font;
+			TEXT_ALIGN align = menu->GetItemInfo(i)->align;
+			const char *text = menu->GetItemInfo(i)->text.c_str();
 			RenderText(r.x, r.y, text, menu->GetItemInfo(i)->font, color, align);
+		}
 	}
 }
 

@@ -487,10 +487,10 @@ void GraphicsExit()
 void DrawHitbox(Entity &e)
 {
 	SDL_Rect rect;
-	rect.x = (int)round(e.hitbox->GetPRect().x - camera->GetPRect().x);
-	rect.y = (int)round(e.hitbox->GetPRect().y - camera->GetPRect().y);
-	rect.h = (int)e.hitbox->GetPRect().h;
-	rect.w = (int)e.hitbox->GetPRect().w;
+	rect.x = (int)round(e.hitbox->GetPRect().x - camera->GetPRect().x) * RENDER_SCALE;
+	rect.y = (int)round(e.hitbox->GetPRect().y - camera->GetPRect().y) * RENDER_SCALE;
+	rect.h = (int)e.hitbox->GetPRect().h * RENDER_SCALE;
+	rect.w = (int)e.hitbox->GetPRect().w * RENDER_SCALE;
 	SDL_SetRenderDrawColor(renderer, 230, 0, 0, 150);
 	SDL_RenderFillRect(renderer, &rect);
 }

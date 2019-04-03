@@ -33,7 +33,6 @@ Timer timer100{ 100 }, timerRain{ 200 };
 
 std::vector<Timer*> TimersGraphics{ &timer100, &timerRain };
 
-extern int playerLives;
 extern int currentLives;
 
 extern std::vector<Bullet*> bullets;

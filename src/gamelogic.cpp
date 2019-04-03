@@ -18,7 +18,7 @@ int timeLimit = 300;
 Timer gameTimer{ 1000 };
 
 Player *player;
-int playerLives;
+int playerLives = 3;
 int currentLives;
 extern Player *player;
 extern int GameState;

@@ -35,12 +35,12 @@ int main(int argc, char* argv[])
 	// Initialize gamepad support
 	InitInput();
 
-	// Initialize config settings
-	InitConfig();
-
 	// Music and SFX support
 	InitSound();
 
+	// Initialize config settings
+	InitConfig();
+	
 	// Loading textures and tilesets
 	GraphicsSetup();
 
@@ -76,10 +76,11 @@ int main(int argc, char* argv[])
 			lag_logic -= timestep;
 			if(FadingState != FADING_STATE_NONE)
 				FadingUpdate();
-			if(GameState == STATE_MENU)
-				MenuUpdate();
-			else if(GameState == STATE_GAME && FadingState != FADING_STATE_BLACKNBACK)
-				LogicUpdate(8);
+			if(GameState == STATE_GAME && FadingState != FADING_STATE_BLACKNBACK)
+			{
+				if(GameState != STATE_MENU)
+					LogicUpdate(8);
+			}
 		}
 
 		// calculate how close or far we are from the next timestep

@@ -20,7 +20,6 @@ Timer gameTimer{ 1000 };
 Player *player;
 int playerLives;
 int currentLives;
-extern int SelectedItem;
 extern Player *player;
 extern int GameState;
 int FadingState = FADING_STATE_NONE;
@@ -31,10 +30,13 @@ unsigned FadingSpeed;
 GAMESTATES toGameState;
 
 extern int TransitionID;
-// used to send it to transition
+
 GAME_OVER_REASONS gameOverReason;
 
 extern Level *level;
+
+void InitFading(FADING_STATES state, int start, int end, int speed);
+void InitFading(FADING_STATES state, int start, int end, int speed, GAMESTATES to);
 
 void StartGame()
 {
@@ -210,8 +212,13 @@ void GameOver(GAME_OVER_REASONS reason)
 	else
 	{
 		PlaySfx("game_over");
-		SetCurrentTransition(TRANSITION_LEVELLOSE);
-		ChangeGamestate(STATE_TRANSITION);
+		InitFading(FADING_STATE_BLACKNBACK, 150, 0, 3, STATE_MENU);
+		StopMusic();
+		currentLives -= 1;
+		if(currentLives < 1)
+			SetCurrentMenu(MENU_PLAYER_FAILED_NO_ESCAPE);
+		else
+			SetCurrentMenu(MENU_PLAYER_FAILED);
 	}
 }
 
@@ -288,16 +295,7 @@ void SetGamestate(int state)
 {
 	if(state == STATE_TRANSITION)
 	{
-		if(TransitionID == TRANSITION_LEVELLOSE)
-		{
-			StopMusic();
-			currentLives -= 1;
-			if(currentLives < 1)
-				SetCurrentMenu(MENU_PLAYER_FAILED_NO_ESCAPE);
-			else
-				SetCurrentMenu(MENU_PLAYER_FAILED);
-		}
-		else if(TransitionID == TRANSITION_LEVELCLEAR)
+		if(TransitionID == TRANSITION_LEVELCLEAR)
 		{
 			PlaySfx("level_clear");
 			RenderTransition(); // don't make player wait for the level to unload to see his astonishing victory

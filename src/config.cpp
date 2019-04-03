@@ -5,17 +5,15 @@
 #include <string>
 #include "INIReader.h"
 #include "globals.h"
+#include "sound.h"
 #include "utils.h"
 
 // Pretending joystick input codes never overlap keyboard's
 std::deque<int> bindList;
 
-extern int playerLives;
 extern int fullscreenMode;
 extern SDL_DisplayMode displayMode;
 extern int displayIndex;
-extern int volumeMusic;
-extern int volumeSfx;
 
 const std::map<std::string, int> configNames = {
 	{"UP", 0},
@@ -39,8 +37,6 @@ void InitConfig()
 {
 	LoadDefaultBindings();
 	LoadConfig();
-
-	if(playerLives < 1 || playerLives > MAX_LIVES) playerLives = 3;
 }
 
 void LoadDefaultBindings()
@@ -105,8 +101,8 @@ void LoadConfig()
 	displayMode.h = atoi(reader.Get("Video", "Height", "480").c_str());
 	displayMode.refresh_rate = atoi(reader.Get("Video", "RefreshRate", "60").c_str());
 	displayMode.format = std::stoul(reader.Get("Video", "Format", "0").c_str());
-	volumeMusic = atoi(reader.Get("Sound", "Music", "100").c_str());
-	volumeSfx = atoi(reader.Get("Sound", "Sfx", "100").c_str());
+	SetMusicVolume(atoi(reader.Get("Sound", "Music", "100").c_str()));
+	SetSfxVolume(atoi(reader.Get("Sound", "Sfx", "100").c_str()));
 }
 
 void SaveConfig()
@@ -124,8 +120,6 @@ void SaveConfig()
 	{
 		file << GetBindingName(i) << "=" << GetDeviceBindName(bindList[i]) << std::endl;
 	}
-	file << "[Game]" << std::endl;
-	file << "Lives=" << playerLives << std::endl;
 
 	file << "[Video]" << std::endl;
 	file << "Fullscreen=" << GetFullscreenMode(fullscreenMode) << std::endl;
@@ -136,8 +130,8 @@ void SaveConfig()
 	file << "Format=" << displayMode.format << std::endl;
 
 	file << "[Sound]" << std::endl;
-	file << "Music=" << volumeMusic << std::endl;
-	file << "Sfx=" << volumeSfx << std::endl;
+	file << "Music=" << GetMusicVolume() << std::endl;
+	file << "Sfx=" << GetSfxVolume() << std::endl;
 }
 
 void SetBinding(int code, int bind)

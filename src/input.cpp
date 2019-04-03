@@ -13,10 +13,8 @@
 extern Player *player;
 extern std::vector<Machinery*> machinery;
 extern int GameState;
-extern int SelectedItem;
 extern bool IsDebugMode;
 extern int FadingState;
-extern int TransitionID;
 
 std::map<SDL_Keycode, int> mkeys;
 std::map<Uint8, int> jbuttons;
@@ -90,31 +88,7 @@ bool OnBindPress(int bind)
 	}
 	else if(GameState == STATE_PAUSED)
 	{
-		switch(bind)
-		{
-			case BIND_RIGHT: case BIND_ARROWR:
-				break;
-			case BIND_LEFT: case BIND_ARROWL:
-				break;
-			case BIND_UP: case BIND_DOWN: case BIND_ARROWUP: case BIND_ARROWDOWN:
-				NavigateMenu(bind);
-				break;
-			case BIND_JUMP: case BIND_OK: case BIND_ENTER:
-				if(SelectedItem == 0)
-				{
-					ChangeGamestate(STATE_GAME);
-					ResumeMusic();
-				}
-				else if(SelectedItem == 1)
-				{
-					delete level;
-					level = nullptr;
-					ChangeGamestate(STATE_MENU);
-					SetCurrentMenu(MENU_MAIN);
-					StopMusic();
-				}
-				break;
-		}
+		return false;
 	}
 	else if(GameState == STATE_MENU)
 	{
@@ -226,7 +200,7 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 			}
 		}
 	}
-	else if(GameState == STATE_MENU)
+	else if(GameState == STATE_MENU || GameState == STATE_PAUSED)
 	{
 		DoMenuAction(key, bind);
 	}

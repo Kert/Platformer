@@ -9,18 +9,15 @@
 // TODO: go cross-platform
 #include <Windows.h>
 
-int SelectedItem;
 int BindingKey;
 MENUS CurrentMenu;
 std::map<MENUS, Menu*> menus;
 
 extern Level *level;
+extern int currentLives;
 extern int playerLives;
 extern int fullscreenMode;
-extern int volumeMusic;
-extern int volumeSfx;
 extern bool GameEndFlag;
-extern TTF_Font *minor_font;
 extern TTF_Font *menu_font;
 extern TTF_Font *game_font;
 extern SDL_Color menu_color;
@@ -45,6 +42,7 @@ void DoMenuAction(int code, int bind)
 	}
 	else
 	{
+		int SelectedItem = menus.at(CurrentMenu)->selected;
 		switch(bind)
 		{
 			case BIND_UP: case BIND_DOWN: case BIND_LEFT: case BIND_RIGHT:
@@ -75,6 +73,7 @@ void DoMenuAction(int code, int bind)
 					RenderTransition();
 					WindowUpdate();
 					level = new Level(currentLevel);
+					currentLives = playerLives;
 				}
 				else if(CurrentMenu == MENU_OPTIONS)
 				{
@@ -118,6 +117,62 @@ void DoMenuAction(int code, int bind)
 						SetCurrentMenu(MENU_OPTIONS);
 					}
 				}
+				else if(CurrentMenu == MENU_PAUSE)
+				{
+					if(SelectedItem == 0)
+					{
+						ChangeGamestate(STATE_GAME);
+						ResumeMusic();
+					}
+					else if(SelectedItem == 1)
+					{
+						delete level;
+						level = nullptr;
+						ChangeGamestate(STATE_MENU);
+						SetCurrentMenu(MENU_MAIN);
+						StopMusic();
+					}
+				}
+				else if(CurrentMenu == MENU_PLAYER_FAILED)
+				{
+					if(SelectedItem == 0)
+					{
+						level->Reload();
+						SetCurrentTransition(TRANSITION_LEVELSTART);
+						ChangeGamestate(STATE_TRANSITION);
+					}
+					else if(SelectedItem == 1)
+					{
+						level->Reload();
+						SetCurrentTransition(TRANSITION_LEVELSTART);
+						ChangeGamestate(STATE_TRANSITION);
+						currentLives = playerLives;
+					}
+					else if(SelectedItem == 2)
+					{
+						delete level;
+						level = nullptr;
+						ChangeGamestate(STATE_MENU);
+						SetCurrentMenu(MENU_MAIN);
+					}
+				}
+				else if(CurrentMenu == MENU_PLAYER_FAILED_NO_ESCAPE)
+				{
+					if(SelectedItem == 0)
+					{
+						level->Reload();
+						SetCurrentTransition(TRANSITION_LEVELSTART);
+						ChangeGamestate(STATE_TRANSITION);
+						currentLives = playerLives;						
+					}
+					else if(SelectedItem == 1)
+					{
+						delete level;
+						level = nullptr;
+						ChangeGamestate(STATE_MENU);
+						SetCurrentMenu(MENU_MAIN);
+					}
+				}
 				break;
 		}
 	}
@@ -125,6 +180,7 @@ void DoMenuAction(int code, int bind)
 
 void NavigateMenu(int bind)
 {
+	int SelectedItem = menus.at(CurrentMenu)->selected;
 	switch(bind)
 	{
 		case BIND_LEFT: case BIND_ARROWL:
@@ -216,6 +272,7 @@ void NavigateMenu(int bind)
 			SelectedItem >= (menus.at(CurrentMenu)->GetItemCount() - 1) ? SelectedItem = 0 : SelectedItem++;
 			break;
 	}
+	menus.at(CurrentMenu)->selected = SelectedItem;
 	PlaySfx("menu-select");
 }
 
@@ -306,22 +363,18 @@ void LoadMenus()
 	menus[MENU_PAUSE] = menu;
 
 	menu = new Menu();
-	menu->IsHorizontal = true;
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 6, GetWindowNormalizedY(0.5) - 32 * 6, std::to_string(volumeMusic), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 6, GetWindowNormalizedY(0.5) - 32 * 6, std::to_string(GetMusicVolume()), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menus[MENU_SELECTION_MUSIC_VOLUME] = menu;
 
 	menu = new Menu();
-	menu->IsHorizontal = true;
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 6, GetWindowNormalizedY(0.5) - 32 * 3, std::to_string(volumeSfx), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 6, GetWindowNormalizedY(0.5) - 32 * 3, std::to_string(GetSfxVolume()), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menus[MENU_SELECTION_SFX_VOLUME] = menu;
 
 	menu = new Menu();
-	menu->IsHorizontal = true;
 	menu->IsSwitchable = true;
 	menus[MENU_SELECTION_DISPLAY] = menu;
 
 	menu = new Menu();
-	menu->IsHorizontal = true;
 	menu->IsSwitchable = true;
 	menus[MENU_SELECTION_DISPLAY_MODE] = menu;
 
@@ -329,24 +382,37 @@ void LoadMenus()
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32, GetWindowNormalizedY(0.5), "OFF", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 5, GetWindowNormalizedY(0.5), "ON", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 8, GetWindowNormalizedY(0.5), "BORDERLESS", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->IsHorizontal = true;
 	menus[MENU_SELECTION_FULLSCREEN] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 50, "RETRY LEVEL", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "NEW LEVEL", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "BACK TO MENU", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "RETRY LEVEL", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "NEW LEVEL", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 6, "BACK TO MENU", menu_font, menu_color, selected_color));
 	menus[MENU_PLAYER_FAILED] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 100, "NEW LEVEL", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 150, "BACK TO MENU", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "NEW LEVEL", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 6, "BACK TO MENU", menu_font, menu_color, selected_color));
 	menus[MENU_PLAYER_FAILED_NO_ESCAPE] = menu;
 
 	menu = new Menu();
 	menus[MENU_MAPSELECT] = menu;
 	CreateMapSelectMenu();
-	// insert bind and bindings menu here
+	
+	menu = new Menu();
+	int half = (NUM_CONFIGURABLE_BINDS + 2) / 2;
+	for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+	{
+		int x = GetWindowNormalizedX(0.5) - 32;
+		int y = GetWindowNormalizedY(0.5) - 32 * (half - i) * 2;
+		menu->AddMenuItem(new MenuItem(x, y, GetBindingName(i), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	}
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - NUM_CONFIGURABLE_BINDS) * 2, "RESET TO DEFAULT", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - NUM_CONFIGURABLE_BINDS - 1) * 2, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menus[MENU_BINDS] = menu;
+
+	menu = new Menu();
+	menus[MENU_BINDKEY] = menu;
 
 	CreateDisplayMenu();
 	RefreshDisplayModeMenus();
@@ -362,7 +428,7 @@ void SetCurrentMenu(MENUS menu)
 	MENUS oldmenu;
 	oldmenu = CurrentMenu;
 	CurrentMenu = menu;
-	SelectedItem = 0;
+	int SelectedItem = 0;
 
 	if(menu == MENU_VIDEO_OPTIONS)
 	{
@@ -391,6 +457,12 @@ void SetCurrentMenu(MENUS menu)
 		default:
 			SelectedItem = 0;
 	}
+	menus.at(CurrentMenu)->selected = SelectedItem;
+}
+
+MENUS GetCurrentMenu()
+{
+	return CurrentMenu;
 }
 
 void MenusCleanup()
@@ -448,7 +520,6 @@ int RefreshDisplayModeMenus()
 {
 	delete menus.at(MENU_SELECTION_DISPLAY_MODE);
 	Menu *menu = new Menu();
-	menu->IsHorizontal = true;
 	menu->IsSwitchable = true;
 	menus.at(MENU_SELECTION_DISPLAY_MODE) = menu;
 

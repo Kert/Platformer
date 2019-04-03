@@ -8,9 +8,6 @@
 
 int TransitionID;
 
-extern int playerLives;
-extern int currentLives;
-extern int SelectedItem;
 extern Level *level;
 
 void ProgressTransition()
@@ -36,32 +33,6 @@ void ProgressTransition()
 			delete level;
 			level = new Level();
 			break;
-		case TRANSITION_LEVELLOSE:
-		{
-			int offset = currentLives < 1 ? 1 : 0;
-			if(SelectedItem + offset == 0)
-			{
-				level->Reload();
-				SetCurrentTransition(TRANSITION_LEVELSTART);
-			}
-			else if(SelectedItem + offset == 1)
-			{
-				SetCurrentTransition(TRANSITION_LEVELSTART);
-				if(offset == 1) currentLives = playerLives;
-				// force the loading screen to draw for one frame before we start loading
-				RenderTransition();
-				WindowUpdate();
-				level->Reload();
-			}
-			else if(SelectedItem + offset == 2)
-			{
-				delete level;
-				level = nullptr;
-				ChangeGamestate(STATE_MENU);
-				SetCurrentMenu(MENU_MAIN);
-			}
-			break;
-		}
 	}
 }
 

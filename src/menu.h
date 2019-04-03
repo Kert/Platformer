@@ -11,6 +11,7 @@ void DoMenuAction(int code, int bind);
 void NavigateMenu(int bind);
 void LoadMenus();
 void SetCurrentMenu(MENUS menu);
+MENUS GetCurrentMenu();
 void MenusCleanup();
 
 class MenuItem;
@@ -20,7 +21,6 @@ class Menu
 	private:
 		std::vector<MenuItem*> items;
 	public:
-		bool IsHorizontal = false;
 		int selected = 0;
 		bool IsSwitchable = false;
 	public:

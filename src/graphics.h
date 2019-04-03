@@ -19,7 +19,6 @@ void DrawFPS(Uint32 dt);
 void ShowDebugInfo(Player &p);
 void UpdateDisplayMode();
 void RenderTransition();
-void MenuUpdate();
 void RenderLogo();
 void RenderMenu();
 void RenderMenuItems(MENUS menu);

@@ -28,10 +28,20 @@ void SetSfxVolume(int volume)
 	Mix_Volume(-1, volume);
 }
 
+int GetSfxVolume()
+{
+	return volumeSfx;
+}
+
 void SetMusicVolume(int volume)
 {
 	volumeMusic = volume;
 	Mix_VolumeMusic(volumeMusic);
+}
+
+int GetMusicVolume()
+{
+	return volumeMusic;
 }
 
 void PlaySfx(char* soundName)

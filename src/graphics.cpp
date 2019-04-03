@@ -19,7 +19,6 @@ extern Player *player;
 bool graphicsLoaded = false;
 
 extern int TransitionID;
-extern MENUS CurrentMenu;
 extern std::map<MENUS, Menu*> menus;
 extern int BindingKey;
 extern GAME_OVER_REASONS gameOverReason;
@@ -78,7 +77,6 @@ SDL_Surface *debug_message = NULL;
 
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
-extern int SelectedItem;
 extern int timeLimit;
 extern int FadingVal;
 
@@ -276,6 +274,7 @@ void UpdateDisplayMode()
 	{
 		SDL_GetWindowDisplayMode(win, &displayMode);
 		displayIndex = SDL_GetWindowDisplayIndex(win);
+		SetDisplayMode(displayMode);
 		MenusCleanup();
 		LoadMenus();
 		return;
@@ -754,19 +753,12 @@ void ShowDebugInfo(Player &p)
 
 void RenderTransition()
 {
-	char *text = NULL;
-	SDL_Texture *tex = NULL;
-	SDL_Rect r;
-	r.w = WINDOW_WIDTH;
-	r.h = WINDOW_HEIGHT;
-	r.x = 0;
-	r.y = 0;
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(renderer, NULL);
 
 	if(TransitionID == TRANSITION_TITLE)
 	{
-		SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/title.png"), NULL, &r);
+		SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/title.png"), NULL, NULL);
 	}
 	else if(TransitionID == TRANSITION_LEVELSTART)
 	{
@@ -793,45 +785,8 @@ void RenderTransition()
 	}
 	else if(TransitionID == TRANSITION_LEVELCLEAR)
 	{
-		text = "Level clear!";
-		int w, h;
-		TTF_SizeText(game_font, text, &w, &h);
-		RenderText(GetWindowNormalizedX(0.5) - w, GetWindowNormalizedY(0.5) - h, text, game_font, menu_color);
-
-		// TODO: probably put scoring stuff here
+		RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LEVEL CLEAR!", game_font, menu_color, TEXT_ALIGN_CENTER);
 	}
-	else if(TransitionID == TRANSITION_LEVELLOSE)
-	{
-		switch(gameOverReason)
-		{
-			case GAME_OVER_REASON_DIED:
-				text = "You died!";
-				break;
-			case GAME_OVER_REASON_TIME:
-				text = "Time's up!";
-				break;
-		}
-
-		int w, h;
-		TTF_SizeText(game_font, text, &w, &h);
-		w = GetWindowNormalizedX(0.5) - w;
-		h = GetWindowNormalizedY(0.5) - h;
-		RenderText(w, h - 100, text, menu_font, menu_color);
-
-		char str[32];
-		sprintf(str, "Lives left: %d", currentLives);
-		RenderText(w, h - 50, str, menu_font, menu_color);
-	}
-	// Render menuitems too
-	if(TransitionID == TRANSITION_LEVELLOSE)
-	{
-		RenderMenuItems(CurrentMenu);
-	}
-}
-
-void MenuUpdate()
-{
-	currentLives = playerLives;
 }
 
 void RenderLogo()
@@ -848,7 +803,8 @@ void RenderMenu()
 {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(renderer, NULL);
-
+		
+	MENUS CurrentMenu = GetCurrentMenu();
 	switch(CurrentMenu)
 	{
 		case MENU_MAIN:
@@ -880,24 +836,10 @@ void RenderMenu()
 		}
 		case MENU_BINDS:
 		{
-			int half = (NUM_CONFIGURABLE_BINDS + 2) / 2;
-			if(menus.find(MENU_BINDS) == menus.end())
-			{
-				Menu *menu = new Menu();
-				for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
-				{
-					int x = GetWindowNormalizedX(0.5) - 32;
-					int y = GetWindowNormalizedY(0.5) - 32 * (half - i) * 2;
-					menu->AddMenuItem(new MenuItem(x, y, GetBindingName(i), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-				}
-				menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - NUM_CONFIGURABLE_BINDS) * 2, "RESET TO DEFAULT", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
-				menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - NUM_CONFIGURABLE_BINDS - 1) * 2, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
-				menus[MENU_BINDS] = menu;
-			}
 			for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
 			{
 				int x = GetWindowNormalizedX(0.5) + 32;
-				int y = GetWindowNormalizedY(0.5) - 32 * (half - i) * 2;
+				int y = menus.at(MENU_BINDS)->GetItemInfo(i)->pos.y;
 				RenderText(x, y, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color, TEXT_ALIGN_LEFT);
 			}
 			break;
@@ -907,6 +849,25 @@ void RenderMenu()
 			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 3, "PRESS THE KEY YOU WISH TO USE FOR", menu_font, menu_color, TEXT_ALIGN_CENTER);
 			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), GetBindingName(BindingKey), menu_font, selected_color, TEXT_ALIGN_CENTER);
 			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "(OR PRESS ESC TO CANCEL)", menu_font, menu_color, TEXT_ALIGN_CENTER);
+			break;
+		}
+		case MENU_PLAYER_FAILED: case MENU_PLAYER_FAILED_NO_ESCAPE:
+		{
+			std::string text;
+			switch(gameOverReason)
+			{
+				case GAME_OVER_REASON_DIED:
+					text = "YOU DIED!";
+					break;
+				case GAME_OVER_REASON_TIME:
+					text = "TIME'S UP!";
+					break;
+			}
+
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 9, text, menu_font, menu_color, TEXT_ALIGN_CENTER);
+
+			text = "LIVES LEFT: " + std::to_string(currentLives);
+			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 7, text, menu_font, menu_color, TEXT_ALIGN_CENTER);
 			break;
 		}
 	}
@@ -923,24 +884,23 @@ void RenderMenuItems(MENUS id)
 
 	for(int i = 0; i < menu->GetItemCount(); i++)
 	{
-		if(!menu->IsSwitchable || i == menu->selected)
-		{			
-			SDL_Color color;
-			if(i == SelectedItem && id == CurrentMenu || menu->IsSwitchable)
-				color = menu->GetItemInfo(i)->selectedColor;
-			else
-				color = menu->GetItemInfo(i)->standardColor;
-			if(menu->IsHorizontal && i == menu->selected)
-				color = menu->GetItemInfo(i)->selectedColor;
+		if(menu->IsSwitchable && i != menu->selected)
+			continue;
+
+		SDL_Color color;
 						
-			SDL_Rect r;
-			r.x = menu->GetItemInfo(i)->pos.x;
-			r.y = menu->GetItemInfo(i)->pos.y;
-			TTF_Font *font = menu->GetItemInfo(i)->font;
-			TEXT_ALIGN align = menu->GetItemInfo(i)->align;
-			const char *text = menu->GetItemInfo(i)->text.c_str();
-			RenderText(r.x, r.y, text, menu->GetItemInfo(i)->font, color, align);
-		}
+		if(i == menu->selected)
+			color = menu->GetItemInfo(i)->selectedColor;
+		else
+			color = menu->GetItemInfo(i)->standardColor;
+		
+		SDL_Rect r;
+		r.x = menu->GetItemInfo(i)->pos.x;
+		r.y = menu->GetItemInfo(i)->pos.y;
+		TTF_Font *font = menu->GetItemInfo(i)->font;
+		TEXT_ALIGN align = menu->GetItemInfo(i)->align;
+		const char *text = menu->GetItemInfo(i)->text.c_str();
+		RenderText(r.x, r.y, text, menu->GetItemInfo(i)->font, color, align);
 	}
 }
 

@@ -34,6 +34,7 @@ extern int TransitionID;
 GAME_OVER_REASONS gameOverReason;
 
 extern Level *level;
+extern Camera *camera;
 
 void InitFading(FADING_STATES state, int start, int end, int speed);
 void InitFading(FADING_STATES state, int start, int end, int speed, GAMESTATES to);
@@ -46,6 +47,7 @@ void StartGame()
 	min = timeLimit / 60;
 	sec = timeLimit % 60;
 	PlayMusic("1");
+	camera->Attach(*player);
 }
 
 extern std::vector<Bullet*> bullets;

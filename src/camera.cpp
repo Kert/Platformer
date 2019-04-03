@@ -76,6 +76,20 @@ void Camera::Attach(Entity &p)
 	SetOffsetY(0);
 	x = at->hitbox->GetPRect().x - GAME_SCENE_WIDTH / 2;
 	y = at->hitbox->GetPRect().y - GAME_SCENE_HEIGHT / 2;
+
+	// Fit into bounds
+	SDL_Rect entityRect = p.hitbox->GetRect();
+	for(auto bound : level->CameraBounds)
+	{
+		if(SDL_HasIntersection(&entityRect, &bound))
+		{
+			virtualCam.x = bound.x;
+			virtualCam.y = bound.y;
+			x = virtualCam.x + VIRTUAL_CAM_WIDTH / 2 - GAME_SCENE_WIDTH / 2;
+			y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - GAME_SCENE_HEIGHT / 2;
+			break;
+		}
+	}
 }
 
 void Camera::Detach()
@@ -95,96 +109,95 @@ void Camera::SetOffsetY(int y)
 
 void Camera::Update()
 {
-	if(at != nullptr)
+	if(at == nullptr)
+		return;
+
+	double playerX = at->hitbox->GetRect().x;
+	double playerY = at->hitbox->GetRect().y + at->hitbox->GetRect().h;
+
+	SDL_Rect newRectX, newRectY;
+	newRectX.x = playerX - VIRTUAL_CAM_WIDTH / 2;
+	newRectX.y = virtualCam.y;
+	newRectX.w = virtualCam.w;
+	newRectX.h = virtualCam.h;
+
+	newRectY.x = virtualCam.x;
+	newRectY.y = playerY - VIRTUAL_CAM_HEIGHT / 2;
+	newRectY.w = virtualCam.w;
+	newRectY.h = virtualCam.h;
+
+	int deltaX = newRectX.x - virtualCam.x;
+	int deltaY = newRectY.y - virtualCam.y;
+	bool xFine, yFine;
+	xFine = yFine = false;
+
+	for(auto bound : level->CameraBounds)
 	{
-		double playerX = at->hitbox->GetRect().x;
-		double playerY = at->hitbox->GetRect().y + at->hitbox->GetRect().h;
-
-		SDL_Rect newRectX, newRectY;
-		newRectX.x = playerX - VIRTUAL_CAM_WIDTH / 2;
-		newRectX.y = virtualCam.y;
-		newRectX.w = virtualCam.w;
-		newRectX.h = virtualCam.h;
-
-		newRectY.x = virtualCam.x;
-		newRectY.y = playerY - VIRTUAL_CAM_HEIGHT / 2;
-		newRectY.w = virtualCam.w;
-		newRectY.h = virtualCam.h;
-
-		int deltaX = newRectX.x - virtualCam.x;
-		int deltaY = newRectY.y - virtualCam.y;
-		bool xFine, yFine;
-		xFine = yFine = false;
-
-		for(auto bound : level->CameraBounds)
+		if(!xFine)
 		{
-			if(!xFine)
+			for(int i = deltaX; i != 0; deltaX > 0 ? i-- : i++)
 			{
-				for(int i = deltaX; i != 0; deltaX > 0 ? i-- : i++)
+				newRectX.x = virtualCam.x + i;
+				SDL_Rect intersectX;
+				SDL_IntersectRect(&bound, &newRectX, &intersectX);
+				if(SDL_RectEquals(&intersectX, &newRectX))
 				{
-					newRectX.x = virtualCam.x + i;
-					SDL_Rect intersectX;
-					SDL_IntersectRect(&bound, &newRectX, &intersectX);
-					if(SDL_RectEquals(&intersectX, &newRectX))
-					{
-						xFine = true;
-						break;
-					}
-				}				
-			}
-
-			if(!yFine)
-			{
-				for(int i = deltaY; i != 0; deltaY > 0 ? i-- : i++)
-				{
-					newRectY.y = virtualCam.y + i;
-					SDL_Rect intersectY;
-					SDL_IntersectRect(&bound, &newRectY, &intersectY);
-					if(SDL_RectEquals(&intersectY, &newRectY))
-					{
-						yFine = true;
-						break;
-					}
+					xFine = true;
+					break;
 				}
-				
+			}				
+		}
+
+		if(!yFine)
+		{
+			for(int i = deltaY; i != 0; deltaY > 0 ? i-- : i++)
+			{
+				newRectY.y = virtualCam.y + i;
+				SDL_Rect intersectY;
+				SDL_IntersectRect(&bound, &newRectY, &intersectY);
+				if(SDL_RectEquals(&intersectY, &newRectY))
+				{
+					yFine = true;
+					break;
+				}
 			}
+				
+		}
 			
-			if(xFine && yFine)
-				break;
-		}
-
-		if(xFine)
-		{
-			virtualCam.x = newRectX.x;
-			x = virtualCam.x + VIRTUAL_CAM_WIDTH / 2 - GAME_SCENE_WIDTH / 2;
-			PrintLog(LOG_SUPERDEBUG, "Camera X set to %lf", x);
-		}
-		if(yFine)
-		{
-			virtualCam.y = newRectY.y;
-			y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - GAME_SCENE_HEIGHT / 2;
-			PrintLog(LOG_SUPERDEBUG, "Camera Y set to %lf", y);
-		}
-
-		//Keep the camera in bounds.
-		if(x < 0)
-		{
-			x = 0;
-		}
-		if(y < 0)
-		{
-			y = 0;
-		}
-		if(x > map_width - w)
-		{
-			x = map_width - w;
-		}
-		if(y > map_height - h)
-		{
-			y = map_height - h;
-		}
+		if(xFine && yFine)
+			break;
 	}
-	else {}
+
+	if(xFine)
+	{
+		virtualCam.x = newRectX.x;
+		x = virtualCam.x + VIRTUAL_CAM_WIDTH / 2 - GAME_SCENE_WIDTH / 2;
+		PrintLog(LOG_SUPERDEBUG, "Camera X set to %lf", x);
+	}
+	if(yFine)
+	{
+		virtualCam.y = newRectY.y;
+		y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - GAME_SCENE_HEIGHT / 2;
+		PrintLog(LOG_SUPERDEBUG, "Camera Y set to %lf", y);
+	}
+
+	//Keep the camera in bounds.
+	if(x < 0)
+	{
+		x = 0;
+	}
+	if(y < 0)
+	{
+		y = 0;
+	}
+	if(x > map_width - w)
+	{
+		x = map_width - w;
+	}
+	if(y > map_height - h)
+	{
+		y = map_height - h;
+	}
 }
 
 bool Camera::IsAttachedTo(Entity *e)

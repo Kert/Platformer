@@ -405,7 +405,6 @@ void Level::LoadNonRandomElements()
 	LoadPlayer();
 
 	camera = new Camera(0, 0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT);
-	camera->Attach(*player);
 }
 
 void Level::MakeDoorWithButtons(int x, int y)

@@ -255,7 +255,7 @@ struct CreatureData
 	std::string graphicsName;
 };
 
-struct CreatureGraphicsData
+struct EntityGraphicsData
 {
 	Hitbox hitbox = { 0,0,0,0 };
 	Sprite sprite = {};
@@ -265,6 +265,7 @@ struct CreatureGraphicsData
 };
 
 void ReadCreatureData();
+void ReadPlatformData();
 
 class Player : public Creature
 {
@@ -337,7 +338,7 @@ class Door : public Machinery
 class Platform : public Machinery
 {
 	public:
-		Platform(int x, int y, int x2, int y2);
+		Platform(int x, int y, int x2, int y2, std::string type);
 		void Remove();
 		~Platform();
 };

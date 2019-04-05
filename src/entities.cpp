@@ -29,8 +29,14 @@ extern Player *player;
 extern Camera *camera;
 extern TextureManager textureManager;
 
+struct PlatformData
+{
+	std::string graphicsName;
+};
+
 std::map<std::string, CreatureData> creatureData;
-std::map<std::string, CreatureGraphicsData> creatureGraphicsData;
+std::map<std::string, PlatformData> platformData;
+std::map<std::string, EntityGraphicsData> entityGraphicsData;
 
 void ReadCreatureData()
 {
@@ -73,7 +79,7 @@ void ReadCreatureData()
 			return;
 		}
 
-		CreatureGraphicsData cr;
+		EntityGraphicsData cr;
 
 		std::string textureName = rea.Get("Sprite", "TextureName", "dummy.png");
 		cr.sprite.SetSpriteTexture(textureManager.GetTexture(textureName));
@@ -122,10 +128,31 @@ void ReadCreatureData()
 				cr.sprite.AddAnimation(i.second, animOffX, animOffY, animNumFrames, animInterval, animFps, (ANIM_LOOP_TYPES)animLoopType);
 			}
 		}
-		creatureGraphicsData[fileName] = cr;
+		entityGraphicsData[fileName] = cr;
 	}
 }
 
+void ReadPlatformData()
+{
+	std::vector<std::string> fileList;
+	GetFolderFileList("assets/data/platforms", fileList);
+	for(auto i : fileList)
+	{
+		INIReader reader("assets/data/platforms/" + i);
+
+		if(reader.ParseError() < 0)
+		{
+			PrintLog(LOG_IMPORTANT, "Can't load %s", i);
+			return;
+		}
+
+		PlatformData pl;
+		std::string name = reader.Get("Properties", "Name", "NULL");
+		pl.graphicsName = reader.Get("Properties", "Graphics", "dummy.ini");
+		platformData[name] = pl;
+	}
+	fileList.clear();
+}
 
 Player::Player()
 {
@@ -501,8 +528,8 @@ Creature::Creature(std::string type)
 	SetVelocity(0, 0);
 
 	std::string graphicsName = creatureData[type].graphicsName;
-	hitbox = new Hitbox(creatureGraphicsData[graphicsName].hitbox);
-	sprite = new Sprite(creatureGraphicsData[graphicsName].sprite);
+	hitbox = new Hitbox(entityGraphicsData[graphicsName].hitbox);
+	sprite = new Sprite(entityGraphicsData[graphicsName].sprite);
 	state = new InAirState(this);
 }
 
@@ -1215,7 +1242,7 @@ void Button::Remove()
 	delete this;
 }
 
-Platform::Platform(int x, int y, int x2, int y2)
+Platform::Platform(int x, int y, int x2, int y2, std::string type)
 {
 	machinery.push_back(this);
 	entityID = AssignEntityID(LIST_MACHINERY);
@@ -1238,9 +1265,11 @@ Platform::Platform(int x, int y, int x2, int y2)
 	another_pos.y = y2;
 	another_pos.h = 16;
 	another_pos.w = 16 * 2;
-	hitbox = new Hitbox(0, 0, default_pos.h, default_pos.w);
-	sprite = new Sprite(textureManager.GetTexture("assets/textures/tiles1.png"), 6 * 16, 11 * 16, default_pos.h, default_pos.w);
-	sprite->SetSpriteOffset(0, -default_pos.h);
+		
+	std::string graphicsName = platformData[type].graphicsName;
+	hitbox = new Hitbox(entityGraphicsData[graphicsName].hitbox);
+	sprite = new Sprite(entityGraphicsData[graphicsName].sprite);
+
 	SetPos(x, y + 16);
 	SetVelocity(0, 0);
 	speed = 50;

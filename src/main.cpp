@@ -46,6 +46,8 @@ int main(int argc, char* argv[])
 
 	// Load creature properties and their sprite data
 	ReadCreatureData();
+	// TODO: Combine this somehow
+	ReadPlatformData();
 
 	// Setting game state
 	SetCurrentTransition(TRANSITION_TITLE);

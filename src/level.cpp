@@ -23,7 +23,7 @@ extern std::vector<CustomTile> tileset;
 extern int GAME_SCENE_WIDTH;
 extern int GAME_SCENE_HEIGHT;
 
-struct EnemyData
+struct EnemyLoadData
 {
 	int x;
 	int y;
@@ -34,25 +34,26 @@ struct EnemyData
 	std::string facing;
 };
 
-struct PickupData
+struct PickupLoadData
 {
 	int x;
 	int y;
 	PICKUP_TYPES type;
 };
 
-struct PlatformData
+struct PlatformLoadData
 {
 	int x1;
 	int y1;
 	int x2;
 	int y2;
+	std::string type;
 };
 
 std::vector<QueuedEntity> entitySpawns;
-std::vector<EnemyData> levelEnemies;
-std::vector<PickupData> levelPickups;
-std::vector<PlatformData> levelPlatforms;
+std::vector<EnemyLoadData> levelEnemies;
+std::vector<PickupLoadData> levelPickups;
+std::vector<PlatformLoadData> levelPlatforms;
 
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
@@ -253,7 +254,7 @@ void Level::LoadLevelFromFile(std::string filename)
 					else if(propName == "facing")
 						facing = curProp->Attribute("value");
 				}
-				levelEnemies.push_back(EnemyData{ x, y, name, AItype, distanceToReachX, distanceToReachY, facing });
+				levelEnemies.push_back(EnemyLoadData{ x, y, name, AItype, distanceToReachX, distanceToReachY, facing });
 			}
 		}
 		if(type == "platform")
@@ -262,6 +263,12 @@ void Level::LoadLevelFromFile(std::string filename)
 			int y = SDL_atoi(obj->Attribute("y"));
 			int h = SDL_atoi(obj->Attribute("height"));
 			int w = SDL_atoi(obj->Attribute("width"));
+			const char *type = obj->Attribute("name");
+			if(!type)
+			{
+				PrintLog(LOG_IMPORTANT, "Platform type is null. Setting default");
+				type = "alien_platform";
+			}
 			int x1, y1, x2, y2;
 			if(h > w)
 			{
@@ -277,11 +284,12 @@ void Level::LoadLevelFromFile(std::string filename)
 				x2 = x + w - TILESIZE * 2;
 				y2 = y;
 			}
-			PlatformData data;
+			PlatformLoadData data;
 			data.x1 = x1;
 			data.x2 = x2;
 			data.y1 = y1;
 			data.y2 = y2;
+			data.type = type;
 			levelPlatforms.push_back(data);
 		}
 		if(type == "lava_floor")
@@ -309,7 +317,7 @@ void Level::LoadLevelFromFile(std::string filename)
 				PrintLog(LOG_IMPORTANT, "Invalid Pickup type %s", name.c_str());
 				continue;
 			}
-			PickupData data;
+			PickupLoadData data;
 			data.x = x;
 			data.y = y;
 			data.type = type;
@@ -413,7 +421,7 @@ void Level::LoadEntities()
 
 	for(auto p : levelPlatforms)
 	{
-		new Platform(p.x1, p.y1, p.x2, p.y2);
+		new Platform(p.x1, p.y1, p.x2, p.y2, p.type);
 	}
 
 	for(auto e : entitySpawns)

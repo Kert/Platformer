@@ -34,8 +34,25 @@ struct EnemyData
 	std::string facing;
 };
 
+struct PickupData
+{
+	int x;
+	int y;
+	PICKUP_TYPES type;
+};
+
+struct PlatformData
+{
+	int x1;
+	int y1;
+	int x2;
+	int y2;
+};
+
 std::vector<QueuedEntity> entitySpawns;
 std::vector<EnemyData> levelEnemies;
+std::vector<PickupData> levelPickups;
+std::vector<PlatformData> levelPlatforms;
 
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
@@ -241,16 +258,31 @@ void Level::LoadLevelFromFile(std::string filename)
 		}
 		if(type == "platform")
 		{
-			QueuedEntity q;
 			int x = SDL_atoi(obj->Attribute("x"));
 			int y = SDL_atoi(obj->Attribute("y"));
 			int h = SDL_atoi(obj->Attribute("height"));
 			int w = SDL_atoi(obj->Attribute("width"));
+			int x1, y1, x2, y2;
 			if(h > w)
-				q = { SPAWN_PLATFORM, x, y + TILESIZE, x, y + h };
+			{
+				x1 = x;
+				y1 = y + TILESIZE;
+				x2 = x;
+				y2 = y + h;
+			}
 			else
-				q = { SPAWN_PLATFORM, x, y, x + w - TILESIZE * 2, y };
-			entitySpawns.push_back(q);
+			{
+				x1 = x;
+				y1 = y;
+				x2 = x + w - TILESIZE * 2;
+				y2 = y;
+			}
+			PlatformData data;
+			data.x1 = x1;
+			data.x2 = x2;
+			data.y1 = y1;
+			data.y2 = y2;
+			levelPlatforms.push_back(data);
 		}
 		if(type == "lava_floor")
 		{
@@ -265,19 +297,23 @@ void Level::LoadLevelFromFile(std::string filename)
 			std::string name = obj->Attribute("name");
 			int x = SDL_atoi(obj->Attribute("x"));
 			int y = SDL_atoi(obj->Attribute("y")) + TILESIZE;
-			Pickup *pi;
+			PICKUP_TYPES type;
 			if(name == "health")
-				pi = new Pickup(PICKUP_HEALTH);
+				type = PICKUP_HEALTH;
 			else if(name == "lightning")
-				pi = new Pickup(PICKUP_LIGHTNING);
+				type = PICKUP_LIGHTNING;
 			else if(name == "fireball")
-				pi = new Pickup(PICKUP_FIREBALL);
+				type = PICKUP_FIREBALL;
 			else
 			{
 				PrintLog(LOG_IMPORTANT, "Invalid Pickup type %s", name.c_str());
 				continue;
 			}
-			pi->SetPos(x, y);
+			PickupData data;
+			data.x = x;
+			data.y = y;
+			data.type = type;
+			levelPickups.push_back(data);
 		}
 	}
 }
@@ -295,6 +331,8 @@ void Level::Cleanup()
 	UnloadEntities();
 	entitySpawns.clear();
 	levelEnemies.clear();
+	levelPickups.clear();
+	levelPlatforms.clear();
 	CameraBounds.clear();
 	deathZones.clear();
 	ResetLogic();
@@ -367,6 +405,17 @@ void Level::LoadEnemies()
 
 void Level::LoadEntities()
 {
+	for(auto p : levelPickups)
+	{
+		Pickup *pi = new Pickup(p.type);
+		pi->SetPos(p.x, p.y);
+	}
+
+	for(auto p : levelPlatforms)
+	{
+		new Platform(p.x1, p.y1, p.x2, p.y2);
+	}
+
 	for(auto e : entitySpawns)
 	{
 		if(e.entityType == SPAWN_DOOR)
@@ -375,15 +424,6 @@ void Level::LoadEntities()
 			{
 				Door *d = new Door(e.x, e.y, e.data > 0);
 			}
-		}
-		else if(e.entityType == SPAWN_PICKUP)
-		{
-			Pickup *p = new Pickup((PICKUP_TYPES)e.data);
-			p->SetPos(e.x, e.y);
-		}
-		else if(e.entityType == SPAWN_PLATFORM)
-		{
-			new Platform(e.x, e.y, e.data, e.data2);
 		}
 		/*else if(e.entityType == SPAWN_LAVA_FLOOR)
 		{

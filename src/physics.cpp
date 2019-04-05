@@ -9,6 +9,9 @@
 #include "tiles.h"
 #include "utils.h"
 
+static double PHYSICS_SPEED_FACTOR = 1;
+static double PHYSICS_SPEED = 0.001 * PHYSICS_SPEED_FACTOR;
+
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 extern int GameState;
@@ -430,6 +433,15 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	newAcceleration = force(time, position, velocity) / mass;
 	velocity += timestep * (newAcceleration - acceleration) / 2;*/
 
+	const double JUMP_VELOCITY = -155;
+	const double GROUND_FRICTION = 4;
+	const double AIR_FRICTION = 10;
+	const double ICE_SLIDING_FRICTION = 0.4;
+	const double ICE_WALKING_FRICTION = 1.5;
+	const double WATER_FRICTION_MULTIPLIER = 1.5;
+	const double WATER_MAX_VELOCITY_X_MULTIPLIER = 0.5;
+	const double WATER_MAX_VELOCITY_Y_MULTIPLIER = 0.5;
+
 	Velocity vel; // Resulting velocity
 	vel = p.GetVelocity();
 
@@ -445,7 +457,7 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 		p.accel.y = 0;
 
 	if(p.jumptime > 0)
-		vel.y = -155;
+		vel.y = JUMP_VELOCITY;
 
 	p.SetVelocity(vel);
 
@@ -456,20 +468,20 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 		p.accel.x *= 99999;
 	vel.x += p.accel.x * deltaTicks;
 
-	double friction = 4;
+	double friction = GROUND_FRICTION;
 	if(!p.state->Is(CREATURE_STATES::ONGROUND))
-		friction = 10;
+		friction = AIR_FRICTION;
 
 	if(IsOnIce(p))
 	{
 		if(p.state->Is(CREATURE_STATES::SLIDING))
-			friction = 0.4;
+			friction = ICE_SLIDING_FRICTION;
 		else
-			friction = 1.5;
+			friction = ICE_WALKING_FRICTION;
 	}
 
 	if(IsInWater(p))
-		friction *= 1.5;
+		friction *= WATER_FRICTION_MULTIPLIER;
 
 	if(p.ignoreWorld)
 		friction = 0;
@@ -496,8 +508,8 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	maxVelX = abs(p.move_vel);
 	if(IsInWater(p))
 	{
-		maxVelX *= 0.5;
-		maxVelY *= 0.5;
+		maxVelX *= WATER_MAX_VELOCITY_X_MULTIPLIER;
+		maxVelY *= WATER_MAX_VELOCITY_Y_MULTIPLIER;
 	}
 	if(abs(vel.x) > maxVelX)
 		vel.x = maxVelX * (vel.x < 0 ? -1 : 1);
@@ -638,6 +650,8 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 
 bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 {
+	const double IN_RAIN_FIREBALL_DECAY_MULTIPLIER = 3;
+
 	double x, y;
 	Velocity vel;
 	bool complete = false;
@@ -652,7 +666,7 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 
 	b.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
 	if(IsInRain(b) && b.origin == WEAPON_FIREBALL)
-		b.statusTimer -= (int)(3 * deltaTicks * PHYSICS_SPEED_FACTOR);
+		b.statusTimer -= (int)(IN_RAIN_FIREBALL_DECAY_MULTIPLIER * deltaTicks * PHYSICS_SPEED_FACTOR);
 	else
 		b.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
 
@@ -1045,6 +1059,8 @@ void ResolveLeft(Creature &p)
 
 void DetectAndResolveMapCollisions(Creature &p)
 {
+	const double OOB_EXTENT = 100;
+
 	if(p.yNew >= p.GetY())
 		ResolveBottom(p);
 	else
@@ -1056,14 +1072,14 @@ void DetectAndResolveMapCollisions(Creature &p)
 		ResolveLeft(p);
 
 	//Allow out of bounds coords, but not much
-	if(p.GetX() < -100)
-		p.SetX(-100);
-	else if(p.GetX() + p.hitbox->GetRect().w > level->width_in_pix + 100)
-		p.SetX(level->width_in_pix - p.hitbox->GetRect().w + 100);
-	if(p.GetY() - p.hitbox->GetRect().h < -100)
-		p.SetY(p.hitbox->GetRect().h - 100);
-	else if(p.GetY() > level->height_in_pix + 100)
-		p.SetY(level->height_in_pix + 100);
+	if(p.GetX() < -OOB_EXTENT)
+		p.SetX(-OOB_EXTENT);
+	else if(p.GetX() + p.hitbox->GetRect().w > level->width_in_pix + OOB_EXTENT)
+		p.SetX(level->width_in_pix - p.hitbox->GetRect().w + OOB_EXTENT);
+	if(p.GetY() - p.hitbox->GetRect().h < -OOB_EXTENT)
+		p.SetY(p.hitbox->GetRect().h - OOB_EXTENT);
+	else if(p.GetY() > level->height_in_pix + OOB_EXTENT)
+		p.SetY(level->height_in_pix + OOB_EXTENT);
 }
 
 bool HasCollisionWithEntity(Creature &p, Machinery &m, SDL_Rect &result)
@@ -1240,8 +1256,13 @@ void OnHitboxCollision(Creature &c, Pickup &p, Uint32 deltaTicks)
 
 void ApplyKnockback(Creature &p, Creature &e)
 {
-	p.SetStun(200);
+	const int STUN_TIME = 200;
+	const double KNOCKBACK_VELOCITY_X = 300;
+	const double KNOCKBACK_VELOCITY_Y = -100;
+	const double KNOCKBACK_ACCEL_X = -4;
+
+	p.SetStun(STUN_TIME);
 	int knockbackDirection = e.GetX() > p.GetX() ? 1 : -1;
-	p.SetVelocity(-300 * knockbackDirection, -100);
-	p.accel.x = -4 * knockbackDirection;
+	p.SetVelocity(-KNOCKBACK_VELOCITY_X * knockbackDirection, KNOCKBACK_VELOCITY_Y);
+	p.accel.x = KNOCKBACK_ACCEL_X * knockbackDirection;
 }

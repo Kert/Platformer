@@ -6,13 +6,6 @@
 #include "entities.h"
 #include "globals.h"
 
-#define PHYSICS_SPEED_FACTOR 1.0f
-#define PHYSICS_SPEED 0.001 * PHYSICS_SPEED_FACTOR
-
-#define GRAVITY 1500
-#define AIR_RESISTANCE 500
-#define FRICTION 9999
-
 void ApplyForces(Creature &c, Uint32 deltaTicks);
 void DetectAndResolveMapCollisions(Creature &p);
 void DetectAndResolveEntityCollisions(Creature &p);

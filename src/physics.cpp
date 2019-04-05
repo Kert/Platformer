@@ -19,10 +19,6 @@ extern int GameState;
 extern std::vector<Creature*> creatures;
 extern std::vector<Machinery*> machinery;
 
-RandomGenerator *physics_rg = new RandomGenerator();
-
-double platformThreshold = 6;
-
 extern Level *level;
 extern Player *player;
 

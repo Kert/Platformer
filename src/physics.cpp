@@ -115,15 +115,17 @@ void DetectAndResolveEntityCollisions(Creature &p)
 			{
 				// standing on top
 				foundCollision = true;
-				if(p.GetVelocity().y > 0 && abs(y - machy->hitbox->GetPRect().y) < 2)
+				if(abs(y - machy->hitbox->GetPRect().y) < 2)
 				{
+					if(p.GetVelocity().y < 0)
+						continue;
 					p.yNew = machy->hitbox->GetRect().y + 1;
 					p.SetState(CREATURE_STATES::ONGROUND);
 					p.onMachinery = true;
 					p.attached = machy;
 					p.attX = p.xNew - machy->GetX();
 					p.attY = p.yNew - machy->GetY() + machy->hitbox->GetPRect().h;
-					break;
+					continue;
 				}
 				if(machy->hookable)
 				{												
@@ -283,6 +285,13 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 		if(!p.IsAI())
 			DetectAndResolveEntityCollisions(p);
 		CheckSpecialBehaviour(p);
+		if(p.attached)
+		{
+			// TODO: move to a separate func
+			p.attX = p.GetX() - p.attached->GetX();
+			p.attY = p.GetY() - p.attached->GetY() + p.attached->hitbox->GetPRect().h;
+
+		}
 	}
 	else
 		p.SetPos(p.xNew, p.yNew);
@@ -564,13 +573,6 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 
 	p.xNew += vel.x * (deltaTicks * PHYSICS_SPEED);
 	p.yNew += vel.y * (deltaTicks * PHYSICS_SPEED);
-
-	if(p.attached)
-	{
-		// TODO: move to a separate func
-		p.attX = p.xNew - p.attached->GetX();
-		p.attY = p.yNew - p.attached->GetY() + p.attached->hitbox->GetPRect().h;
-	}
 }
 
 extern Camera *camera;

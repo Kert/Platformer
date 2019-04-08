@@ -115,7 +115,7 @@ void DetectAndResolveEntityCollisions(Creature &p)
 			{
 				// standing on top
 				foundCollision = true;
-				if(p.GetVelocity().y > 0 && abs(y - machy->hitbox->GetPRect().y - machy->hitbox->GetPRect().h) < 2)
+				if(p.GetVelocity().y > 0 && abs(y - machy->hitbox->GetPRect().y) < 2)
 				{
 					p.yNew = machy->hitbox->GetRect().y + 1;
 					p.SetState(CREATURE_STATES::ONGROUND);
@@ -358,6 +358,8 @@ bool IsOnPlatform(Creature &c)
 			}
 		}
 	}
+	if(c.onMachinery)
+		return true;
 	return false;
 }
 

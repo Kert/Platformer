@@ -154,7 +154,15 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 				}
 				case BIND_JUMP:
 					if(IsBindPressed(BIND_DOWN) && IsOnPlatform(*p))
+					{
 						p->SetY(p->GetY() + 2);
+						if(p->attached)
+						{
+							p->SetY(p->GetY() + 1);
+							p->onMachinery = false;
+							p->attached = nullptr;
+						}
+					}						
 					else
 						return new JumpingState(cr);
 					break;						

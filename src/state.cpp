@@ -528,25 +528,17 @@ CreatureState* HangingState::HandleInput(int input, int type)
 SlidingState::SlidingState(Creature *cr) : CreatureState(cr)
 {
 	state = CREATURE_STATES::SLIDING;
-	//p->ToggleSliding(true);
 	PrintLog(LOG_INFO, "slide ON");
 	cr->hitbox->SetSize(10, 10);
 	cr->accel.x = 0;
-	//p->sprite->SetSpriteSize(30,10);
-	//p->sprite->SetSpriteY(20);
-	//p->sprite->SetSpriteOffset(-11, -32 + 1);
 }
 
 SlidingState::~SlidingState()
 {
-	//pl->ToggleSliding(false);
 	PrintLog(LOG_INFO, "slide OFF");
 	cr->hitbox->SetSize(10, 30);
 	cr->hitbox->SetPos(cr->GetX(), cr->GetY() - 30);
 	cr->accel.x = 0;
-	//pl->sprite->SetSpriteY(0);
-	//pl->sprite->SetSpriteSize(10,30);
-	//pl->sprite->SetSpriteOffset(-11, -32 + 1);
 }
 
 CreatureState* SlidingState::HandleInput(int input, int type)

@@ -219,3 +219,12 @@ bool GetFolderFileList(std::string folder, std::vector<std::string> &fileList)
 
 	return 1;
 }
+
+bool HasIntersection(PrecisionRect *a, PrecisionRect *b)
+{
+	if((a->x > (b->x + b->w)) || (b->x > (a->x + a->w)))
+		return false;
+	if((a->y > (b->y + b->h)) || (b->y > (a->y + a->h)))
+		return false;
+	return true;
+}

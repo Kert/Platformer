@@ -204,4 +204,12 @@ enum TEXT_ALIGN
 	TEXT_ALIGN_RIGHT
 };
 
+struct PrecisionRect
+{
+	double x;
+	double y;
+	double h;
+	double w;
+};
+
 #endif

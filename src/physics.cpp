@@ -95,7 +95,6 @@ void ProcessShot(WEAPONS weapon, Creature &shooter)
 
 void DetectAndResolveEntityCollisions(Creature &p)
 {
-	SDL_Rect result;
 	Velocity vel;
 	vel = p.GetVelocity();
 	double x, y;
@@ -104,7 +103,7 @@ void DetectAndResolveEntityCollisions(Creature &p)
 	bool foundCollision = false;
 	for(auto &machy : machinery)
 	{
-		if(HasCollisionWithEntity(p, *machy, result))
+		if(HasCollisionWithEntity(p, *machy))
 		{
 			if(p.IsAI())
 			{
@@ -114,28 +113,56 @@ void DetectAndResolveEntityCollisions(Creature &p)
 			}
 			if(machy->isSolid || machy->automatic)
 			{
-				if(p.GetVelocity().y >= 0)
+				// standing on top
+				foundCollision = true;
+				if(p.GetVelocity().y > 0 && abs(y - machy->hitbox->GetPRect().y - machy->hitbox->GetPRect().h) < 2)
 				{
-					if(abs(y - machy->hitbox->GetRect().y) < 6 && result.h < 5)
-					{
-						foundCollision = true;
-						p.yNew = machy->hitbox->GetRect().y + 1.001;
-						p.SetState(CREATURE_STATES::ONGROUND);
-						p.onMachinery = true;
-						p.attached = machy;
-						vel.y = 0;
-						p.externSpeed.x = p.attached->GetVelocity().x;
-						p.externSpeed.y = p.attached->GetVelocity().y;
-						break;
-					}
+					p.yNew = machy->hitbox->GetRect().y + 1;
+					p.SetState(CREATURE_STATES::ONGROUND);
+					p.onMachinery = true;
+					p.attached = machy;
+					p.attX = p.xNew - machy->GetX();
+					p.attY = p.yNew - machy->GetY() + machy->hitbox->GetPRect().h;
+					break;
 				}
+				if(machy->hookable)
+				{												
+					PrecisionRect hook = machy->hitbox->GetPRect();
+					hook.h -= 4;
+					hook.y += 4;
+					PrecisionRect hand;
+					hand.x = p.hitbox->GetPRect().x + 2;
+					hand.y = p.hitbox->GetPRect().y;
+					hand.w = hand.h = 2;
+
+					if(HasIntersection(&hook, &hand))
+					{
+						p.nearhookplatform = true;							
+						if(p.GetVelocity().y > 0 && !p.lefthook)
+						{
+							p.SetState(CREATURE_STATES::HANGING);
+							p.attached = machy;
+							vel.x = 0;
+							p.attX = p.xNew - machy->GetX();
+							p.attY = p.yNew - machy->GetY() + machy->hitbox->GetPRect().h;
+						}
+					}
+					else if(!HasIntersection(&machy->hitbox->GetPRect(), &hand))
+						p.nearhookplatform = false;
+				}
+				
 			}
 		}
 	}
 	if(!foundCollision)
 	{
+		if(p.attached)
+			p.SetState(CREATURE_STATES::INAIR);
 		p.onMachinery = false;
+		p.attached = nullptr;
+		p.nearhookplatform = false;
 	}
+
 	p.SetVelocity(vel.x, vel.y);
 }
 
@@ -183,7 +210,7 @@ void CheckSpecialBehaviour(Creature &p) {
 	//hangRect.x += 5;
 	//hangRect.y += 5;
 
-	p.nearhook = false;
+	bool nearhook = false;
 	head = ConvertToTileCoord(hangRect.y, false);
 	minx = ConvertToTileCoord(hangRect.x, false);
 	maxx = ConvertToTileCoord(hangRect.x + hangRect.w, false);
@@ -218,7 +245,7 @@ void CheckSpecialBehaviour(Creature &p) {
 
 			if(SDL_HasIntersection(&hook, &hand))
 			{
-				p.nearhook = true;
+				nearhook = true;
 
 				if(p.GetVelocity().y > 0 && !p.lefthook)
 				{
@@ -228,7 +255,8 @@ void CheckSpecialBehaviour(Creature &p) {
 			}
 		}
 	}
-	if(p.lefthook && !p.nearhook)
+
+	if(p.lefthook && (!nearhook && !p.nearhookplatform))
 		p.lefthook = false;
 
 	p.SetPos(x, y);
@@ -251,9 +279,9 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 
 	if(!p.ignoreWorld)
 	{
+		DetectAndResolveMapCollisions(p);
 		if(!p.IsAI())
 			DetectAndResolveEntityCollisions(p);
-		DetectAndResolveMapCollisions(p);
 		CheckSpecialBehaviour(p);
 	}
 	else
@@ -449,7 +477,13 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 		p.accel.y = 5 * p.gravityMultiplier;
 	}
 
-	if(p.state->Is(CREATURE_STATES::ONLADDER) || p.onMachinery)
+	if(p.state->Is(CREATURE_STATES::ONLADDER) || p.state->Is(CREATURE_STATES::HANGING))
+	{
+		p.accel.y = 0;
+		p.accel.x = 0;
+	}
+
+	if(p.onMachinery)
 		p.accel.y = 0;
 
 	if(p.jumptime > 0)
@@ -518,19 +552,22 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	// Modifying position
 	vel = p.GetVelocity();
 
-	// Applying external forces
-	if(p.onMachinery)
+	p.xNew = p.GetX();
+	p.yNew = p.GetY();
+	if(p.attached)
 	{
-		vel.x += p.externSpeed.x;
-		//vel.y += p.externSpeed.y;
-		p.SetY(p.attached->hitbox->GetRect().y + 1.001);
+		p.xNew = p.attached->hitbox->GetPRect().x + p.attX;
+		p.yNew = p.attached->hitbox->GetPRect().y + p.attY;
 	}
 
-	if(!p.state->Is(CREATURE_STATES::HANGING))
+	p.xNew += vel.x * (deltaTicks * PHYSICS_SPEED);
+	p.yNew += vel.y * (deltaTicks * PHYSICS_SPEED);
+
+	if(p.attached)
 	{
-		if(!p.state->Is(CREATURE_STATES::ONLADDER))
-			p.xNew = p.GetX() + vel.x * (deltaTicks * PHYSICS_SPEED);
-		p.yNew = p.GetY() + vel.y * (deltaTicks * PHYSICS_SPEED);
+		// TODO: move to a separate func
+		p.attX = p.xNew - p.attached->GetX();
+		p.attY = p.yNew - p.attached->GetY() + p.attached->hitbox->GetPRect().h;
 	}
 }
 
@@ -806,7 +843,6 @@ bool ApplyPhysics(Lightning &l, Uint32 deltaTicks)
 
 void ResolveBottom(Creature &p)
 {
-	Velocity vel = p.GetVelocity(); // Player velocity
 	PrecisionRect ppr = p.hitbox->GetPRect();
 	double x, y;
 	p.GetPos(x, y);
@@ -871,11 +907,11 @@ void ResolveBottom(Creature &p)
 	{
 		if(!p.state->Is(CREATURE_STATES::SLIDING))
 			p.SetState(CREATURE_STATES::ONGROUND);
+
+		p.SetVelocity(p.GetVelocity().x, 0);
 	}
 
 	p.SetY(y);
-	// Refreshing with new data
-	p.SetVelocity(vel.x, vel.y);
 }
 
 void ResolveTop(Creature &p)
@@ -1078,12 +1114,12 @@ void DetectAndResolveMapCollisions(Creature &p)
 		p.SetY(level->height_in_pix + OOB_EXTENT);
 }
 
-bool HasCollisionWithEntity(Creature &p, Machinery &m, SDL_Rect &result)
+bool HasCollisionWithEntity(Creature &p, Machinery &m)
 {
 	bool foundSpecialInteraction = false;
-	SDL_Rect *prect = &p.hitbox->GetRect();
-	SDL_Rect *dyrect = &m.hitbox->GetRect();
-	if(SDL_IntersectRect(prect, dyrect, &result))
+	PrecisionRect *prect = &p.hitbox->GetPRect();
+	PrecisionRect *dyrect = &m.hitbox->GetPRect();
+	if(HasIntersection(prect, dyrect))
 	{
 		if(m.isSolid || m.automatic)
 		{

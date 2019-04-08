@@ -29,14 +29,6 @@ struct DamageSource
 	int immunity;
 };
 
-struct PrecisionRect
-{
-	double x;
-	double y;
-	double h;
-	double w;
-};
-
 class Hitbox
 {
 	private:
@@ -139,7 +131,8 @@ class Machinery : public DynamicEntity
 		double minspeed;
 		SDL_Rect default_pos;
 		SDL_Rect another_pos;
-
+		// TODO: Move to platforms
+		bool hookable = false;
 	public:
 		void Activate();
 		~Machinery();
@@ -198,10 +191,12 @@ class Creature : public DynamicEntity
 		int shottime; // Time in ms
 		int charge_time;
 		bool nearladder;
-		bool nearhook;
+		bool nearhookplatform;
 		bool lefthook;
 		Machinery *attached;
-		Velocity externSpeed;
+		double attX;
+		double attY;
+
 		int interactTarget;
 		BaseAI *AI = nullptr;
 		WEAPONS weapon;

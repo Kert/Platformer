@@ -165,8 +165,7 @@ Player::Player()
 	status = 0;
 	statusTimer = 0;
 	shottime = 0;
-	externSpeed.x = 0;
-	externSpeed.y = 0;
+	attached = nullptr;
 
 	shotLocked = false;
 	charging = false;
@@ -504,11 +503,10 @@ Creature::Creature(std::string type)
 	blinkDamaged = creatureData[type].blinkDamaged;
 	//weapon = WEAPON_ROCKETL;
 
-	attached = false;
+	attached = nullptr;
 	status = 0;
 	AI = nullptr;
 	nearladder = false;
-	nearhook = false;
 	lefthook = false;
 	charge_time = 0;
 	shottime = 0;
@@ -537,7 +535,6 @@ Creature::Creature()
 {
 	AI = nullptr;
 	nearladder = false;
-	nearhook = false;
 	lefthook = false;
 	charge_time = 0;
 	shottime = 0;
@@ -1269,6 +1266,7 @@ Platform::Platform(int x, int y, int x2, int y2, std::string type)
 	std::string graphicsName = platformData[type].graphicsName;
 	hitbox = new Hitbox(entityGraphicsData[graphicsName].hitbox);
 	sprite = new Sprite(entityGraphicsData[graphicsName].sprite);
+	hookable = true;
 
 	SetPos(x, y + 16);
 	SetVelocity(0, 0);

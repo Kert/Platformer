@@ -88,6 +88,11 @@ void LogicUpdate(Uint32 dt)
 
 	//LevelLogic();
 
+	for(auto &m : machinery)
+	{
+		ApplyPhysics(*m, dt);
+	}
+
 	player->HandleStateIdle();
 	ApplyPhysics(*player, dt);
 	//// Updating camera
@@ -107,11 +112,6 @@ void LogicUpdate(Uint32 dt)
 	//if(player->hasState(STATE_DUCKING))
 	//	camera->SetOffsetY(35);
 	camera->Update();
-
-	for(auto &m : machinery)
-	{
-		ApplyPhysics(*m, dt);
-	}
 
 	for(auto &b : bullets)
 	{

@@ -391,6 +391,8 @@ JumpingState::JumpingState(Creature *cr) : CreatureState(cr)
 	state = CREATURE_STATES::JUMPING;
 	PrintLog(LOG_DEBUG, "Switched to JUMPING");
 	cr->jumptime = 210;
+	cr->attached = false;
+	cr->onMachinery = false;
 	//Play the jump sound
 	//if (playSound) PlaySfx("jump");
 }
@@ -482,24 +484,22 @@ CreatureState* HangingState::HandleInput(int input, int type)
 			switch(input)
 			{
 				case BIND_RIGHT:
-					//p->direction = true;
+					p->direction = DIRECTION_RIGHT;
 					break;
 				case BIND_LEFT:
-					//p->direction = false;
+					p->direction = DIRECTION_LEFT;
 					break;
 				case BIND_DOWN:
 					p->lefthook = true;
+					p->attached = nullptr;
 					return new InAirState(cr);
-					break;
 				case BIND_JUMP:
+					p->lefthook = true;
+					p->attached = nullptr;
 					if(IsBindPressed(BIND_DOWN))
-					{
-						p->lefthook = true;
 						return new InAirState(cr);
-					}
 					else
 						return new JumpingState(cr);
-					break;
 				default:
 					CreatureState::HandleInput(input, type);
 			}

@@ -9,7 +9,7 @@
 void ApplyForces(Creature &c, Uint32 deltaTicks);
 void DetectAndResolveMapCollisions(Creature &p);
 void DetectAndResolveEntityCollisions(Creature &p);
-bool HasCollisionWithEntity(Creature &p, Machinery &m, SDL_Rect &result);
+bool HasCollisionWithEntity(Creature &p, Machinery &m);
 
 void ApplyPhysics(Machinery &d, Uint32 deltaTicks);
 void ApplyPhysics(Creature &c, Uint32 deltaTicks);

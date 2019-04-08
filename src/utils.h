@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <random>
 #include <time.h>
+#include "globals.h"
 
 class Timer
 {
@@ -84,5 +85,6 @@ const char* StringToChars(std::string temp);
 const char* ConstCharConcat(const char* first, const char* second);
 void PrintLog(int logLevel, const char *fmt, ...);
 bool GetFolderFileList(std::string folder, std::vector<std::string> &fileList);
+bool HasIntersection(PrecisionRect *a, PrecisionRect *b);
 
 #endif

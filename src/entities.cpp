@@ -11,7 +11,6 @@
 #include "tiles.h"
 #include "utils.h"
 
-extern SDL_Texture *player_texture;
 extern SDL_Surface *lightningSegment;
 extern SDL_Renderer *renderer;
 
@@ -37,6 +36,16 @@ struct PlatformData
 std::map<std::string, CreatureData> creatureData;
 std::map<std::string, PlatformData> platformData;
 std::map<std::string, EntityGraphicsData> entityGraphicsData;
+
+Hitbox* LoadEntityHitbox(std::string entityName)
+{
+	return new Hitbox(entityGraphicsData[entityName].hitbox);
+}
+
+Sprite* LoadEntitySprite(std::string entityName)
+{
+	return new Sprite(entityGraphicsData[entityName].sprite);
+}
 
 void ReadCreatureData()
 {
@@ -102,10 +111,19 @@ void ReadCreatureData()
 		cr.hitbox.SetRect(rect);
 
 		std::map<std::string, ANIMATION_TYPE> animTable = {
-			{"Running", ANIMATION_RUNNING},
-			{"Standing", ANIMATION_STANDING},
-			{"Jumping", ANIMATION_JUMPING},
-			{"Falling", ANIMATION_FALLING}
+			{ "Running", ANIMATION_RUNNING },
+			{ "Standing", ANIMATION_STANDING },
+			{ "Jumping", ANIMATION_JUMPING },
+			{ "Falling", ANIMATION_FALLING },
+			{ "Climbing", ANIMATION_CLIMBING },
+			{ "Ducking", ANIMATION_DUCKING },
+			{ "Hanging", ANIMATION_HANGING },
+			{ "Sliding", ANIMATION_SLIDING },
+			{ "Shooting_Hanging", ANIMATION_SHOOTING_HANGING },
+			{ "Shooting_Standing", ANIMATION_SHOOTING_STANDING },
+			{ "Shooting_Jumping", ANIMATION_SHOOTING_JUMPING },
+			{ "Shooting_Falling", ANIMATION_SHOOTING_FALLING },
+			{ "Shooting_Running", ANIMATION_SHOOTING_RUNNING }
 		};
 
 		for(auto i : animTable)
@@ -177,24 +195,9 @@ Player::Player()
 	//Initialize the velocity
 	SetVelocity(0, 0);
 	
-	hitbox = new Hitbox(0, 0, 30, 10);
-	sprite = new Sprite(&player_texture, 0, 0, 34, 32);
-	sprite->SetSpriteOffset(-11, -32 + 1);
-	sprite->AddAnimation(ANIMATION_RUNNING, 128, 0, 4, 32, 150, ANIM_LOOP_TYPES::LOOP_NORMAL);
-	sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_CLIMBING, 96, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_JUMPING, 32, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_FALLING, 64, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
-	//sprite->AddAnimation(0, 0, 0, 24, 125, ANIM_LOOP_TYPES::LOOP_NONE);		// (9)  knocked backward
-	//sprite->AddAnimation(0, 0, 0, 24, 125, ANIM_LOOP_TYPES::LOOP_NONE);		// (10) knocked forward
-	sprite->AddAnimation(ANIMATION_DUCKING, 0, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_HANGING, 96, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_SLIDING, 0, 33, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_SHOOTING_HANGING, 64, 68, 2, 32, 80, ANIM_LOOP_TYPES::LOOP_NONE); // hang shoot
-	sprite->AddAnimation(ANIMATION_SHOOTING_STANDING, 0, 68, 2, 32, 64, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_SHOOTING_JUMPING, 32, 33, 1, 0, 64, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_SHOOTING_FALLING, 64, 33, 1, 0, 64, ANIM_LOOP_TYPES::LOOP_NONE);
-	sprite->AddAnimation(ANIMATION_SHOOTING_RUNNING, 128, 34, 4, 32, 150, ANIM_LOOP_TYPES::LOOP_NORMAL);
+	hitbox = LoadEntityHitbox("assets/data/graphics/player.ini");
+	sprite = LoadEntitySprite("assets/data/graphics/player.ini");
+
 	state = new OnGroundState(this);
 	InitPlayerTexture();
 }
@@ -333,7 +336,7 @@ Tripod::Tripod()
 	hitbox = new Hitbox(0, 0, 1, 1); // dummy
 	this->SetPos(0, 0);
 	SetVelocity(0, 0);
-	sprite = new Sprite(&player_texture, 0, 0, 0, 0); // dummy
+	//sprite = new Sprite(&player_texture, 0, 0, 0, 0); // dummy
 }
 
 Tripod::~Tripod()
@@ -526,8 +529,9 @@ Creature::Creature(std::string type)
 	SetVelocity(0, 0);
 
 	std::string graphicsName = creatureData[type].graphicsName;
-	hitbox = new Hitbox(entityGraphicsData[graphicsName].hitbox);
-	sprite = new Sprite(entityGraphicsData[graphicsName].sprite);
+	
+	hitbox = LoadEntityHitbox(graphicsName);
+	sprite = LoadEntitySprite(graphicsName);
 	state = new InAirState(this);
 }
 
@@ -804,30 +808,29 @@ Pickup::Pickup(PICKUP_TYPES spawnType)
 
 	type = spawnType;
 
-	SDL_Point offset;
+	std::string pickupName;
 	switch(spawnType)
 	{
-		case PICKUP_AMMO:
-			offset = { 16, 0 };
-			break;
+		/*case PICKUP_AMMO:
+			pickupName = "ammo";
+			break;*/
 		case PICKUP_HEALTH:
-			offset = { 0 + 8, 0 };
+			pickupName = "health";
 			break;
 		case PICKUP_LIGHTNING:
-			offset = { 64 + 8, 0 };
+			pickupName = "lightning";
 			break;
 		case PICKUP_FIREBALL:
-			offset = { 32 + 8, 0 };
+			pickupName = "fireball";
 			break;
-		case PICKUP_GRENADE:
-			offset = { 64, 0 };
-			break;
+		/*case PICKUP_GRENADE:
+			pickupName = "grenade";
+			break;*/
 	}
 
-	sprite = new Sprite(textureManager.GetTexture("assets/sprites/pickups.png"), offset.x, offset.y, 28, 32);
-	sprite->SetSpriteOffset(0, -28);
-	hitbox = new Hitbox(0, 0, 28, 32);
-	sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 24, 125, ANIM_LOOP_TYPES::LOOP_PINGPONG);
+	sprite = LoadEntitySprite("assets/data/graphics/pickup_" + pickupName + ".ini");
+	hitbox = LoadEntityHitbox("assets/data/graphics/pickup_" + pickupName + ".ini");
+
 	deathLength = 0;
 	direction = DIRECTION_RIGHT;
 }
@@ -887,16 +890,6 @@ Effect::~Effect()
 	sprite = NULL;
 }
 
-Effect::Effect()
-{
-	effects.push_back(this);
-	entityID = AssignEntityID(LIST_EFFECTS);
-
-	hitbox = new Hitbox(0, 0, 8, 8);
-	sprite = new Sprite(textureManager.GetTexture("assets/sprites/fireball.png"), 0, 0, 8, 8);
-	sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 8, 125, ANIM_LOOP_TYPES::LOOP_NONE);
-}
-
 Effect::Effect(EFFECT_TYPES type)
 {
 	effects.push_back(this);
@@ -905,34 +898,20 @@ Effect::Effect(EFFECT_TYPES type)
 	switch(type)
 	{
 		case EFFECT_MGUN_HIT:
-			hitbox = new Hitbox(0, 0, 8, 8);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/fireball.png"), 0, 0, 8, 8);
-			sprite->SetSpriteOffset(0, -8);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 8, 94, ANIM_LOOP_TYPES::LOOP_NONE);
+			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
 			status = STATUS_DYING;
 			statusTimer = (int)(0.4 * 1000);
 			break;
 		case EFFECT_ROCKETL_HIT:
-			hitbox = new Hitbox(0, 0, 28, 28);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/effect_rocketl.png"), 0, 0, 28, 28);
-			sprite->SetSpriteOffset(0, -28);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 3, 28, 100, ANIM_LOOP_TYPES::LOOP_NONE);
+			hitbox = LoadEntityHitbox("assets/data/graphics/effect_explosion.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/effect_explosion.ini");
 			status = STATUS_DYING;
 			statusTimer = (int)(0.3 * 1000);
 			break;
-		case EFFECT_ZAP:
-			hitbox = new Hitbox(0, 0, 6, 1);
-			sprite = new Sprite(NULL, 0, 0, 6, 1);
-			sprite->SetSpriteOffset(0, -26);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 999, 100, ANIM_LOOP_TYPES::LOOP_NONE);
-			status = STATUS_DYING;
-			statusTimer = (int)(1 * 1000);
-			break;
 		default:
-			hitbox = new Hitbox(0, 0, 8, 8);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/fireball.png"), 0, 0, 8, 8);
-			sprite->SetSpriteOffset(0, -8);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 8, 94, ANIM_LOOP_TYPES::LOOP_NONE);
+			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
 			break;
 	}
 	direction = DIRECTION_RIGHT;
@@ -943,9 +922,8 @@ Bullet::Bullet()
 	bullets.push_back(this);
 	entityID = AssignEntityID(LIST_BULLETS);
 
-	hitbox = new Hitbox(0, 0, 8, 8);
-	sprite = new Sprite(textureManager.GetTexture("assets/sprites/fireball.png"), 0, 0, 8, 8);
-	sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 8, 125, ANIM_LOOP_TYPES::LOOP_NONE);
+	hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
+	sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
 
 	origin = WEAPON_FLAME;
 	direction = DIRECTION_RIGHT;
@@ -964,10 +942,8 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 	switch(firedFrom)
 	{
 		case WEAPON_ROCKETL:
-			hitbox = new Hitbox(0, 0, 4, 7);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/rocketlbullet.png"), 0, 2, 4, 7);
-			sprite->SetSpriteOffset(0, -4);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
+			hitbox = LoadEntityHitbox("assets/data/graphics/rocket.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/rocket.ini");
 			SetVelocity(400 * (direction ? 1 : -1), 0);
 			accel.y = 0;
 			accel.x = 0;
@@ -976,8 +952,8 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			piercing = false;
 			break;
 		case WEAPON_FLAME:
-			hitbox = new Hitbox(0, 0, 12, 8);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/flamebullet.png"), 0, 0, 14, 8);
+			hitbox = LoadEntityHitbox("assets/data/graphics/flame.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/flame.ini");
 			sprite->SetSpriteOffset(0, -12);
 			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 8, 105, ANIM_LOOP_TYPES::LOOP_NONE);
 			SetVelocity(this->owner->GetVelocity().x + 80 * (direction ? 1 : -1), 0);
@@ -988,10 +964,8 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			piercing = false;
 			break;
 		case WEAPON_GRENADE:
-			hitbox = new Hitbox(0, 0, 7, 7);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/rocketlbullet.png"), 0, 0, 7, 7);
-			sprite->SetSpriteOffset(0, -16);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 7, 105, ANIM_LOOP_TYPES::LOOP_NORMAL);
+			hitbox = LoadEntityHitbox("assets/data/graphics/grenade.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/grenade.ini");
 			if(shooter.state->Is(CREATURE_STATES::ONLADDER))
 				SetVelocity(0, 0);
 			else
@@ -1003,10 +977,8 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			piercing = false;
 			break;
 		case WEAPON_FIREBALL:
-			hitbox = new Hitbox(0, 0, 7, 9);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/fireball.png"), 0, 0, 16, 16);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 16, 90, ANIM_LOOP_TYPES::LOOP_NONE);
-			sprite->SetSpriteOffset(-3, -12);
+			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
 			SetVelocity(240 * (direction ? 1 : -1), 0);
 			accel.y = 0;
 			accel.x = 0;
@@ -1015,10 +987,8 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			piercing = false;
 			break;
 		case WEAPON_BOMBDROP:
-			hitbox = new Hitbox(0, 0, 16, 16);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/bombdrop.png"), 0, 0, 16, 16);
-			sprite->SetSpriteOffset(0, -16);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 0, 125, ANIM_LOOP_TYPES::LOOP_NONE);
+			hitbox = LoadEntityHitbox("assets/data/graphics/bombdrop.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/bombdrop.ini");
 			SetVelocity(0, 100);
 			accel.y = 0.1;
 			accel.x = 0;
@@ -1027,10 +997,9 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			piercing = false;
 			break;
 		case WEAPON_GROUNDSHOCKWAVE:
-			hitbox = new Hitbox(0, 0, 7, 9);
-			sprite = new Sprite(textureManager.GetTexture("assets/sprites/fireball.png"), 0, 0, 16, 16);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 16, 90, ANIM_LOOP_TYPES::LOOP_NONE);
-			sprite->SetSpriteOffset(-3, -12);
+			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
+
 			SetVelocity(240 * (direction ? 1 : -1), 0);
 			accel.y = 0;
 			accel.x = 0;
@@ -1156,8 +1125,8 @@ Door::Door(int x, int y, bool spawnButtons)
 	default_pos.y = y;
 	default_pos.h = 16 * 3;
 	default_pos.w = 16;
-	hitbox = new Hitbox(0, 0, default_pos.h, default_pos.w);
-	sprite = new Sprite(textureManager.GetTexture("assets/textures/tiles1.png"), 10 * 16, 9 * 16, default_pos.h, default_pos.w);
+	hitbox = LoadEntityHitbox("assets/data/graphics/door.ini");
+	sprite = LoadEntitySprite("assets/data/graphics/door.ini");
 	if(spawnButtons)
 	{
 		pairID = doorPairs;
@@ -1211,8 +1180,8 @@ Button::Button(int x, int y, int doorID)
 	default_pos.y = y;
 	default_pos.h = 32;
 	default_pos.w = 16;
-	hitbox = new Hitbox(0, 0, default_pos.h, default_pos.w);
-	sprite = new Sprite(textureManager.GetTexture("assets/textures/tiles1.png"), 10 * 16, 7 * 16, default_pos.h, default_pos.w);
+	hitbox = LoadEntityHitbox("assets/data/graphics/button.ini");
+	sprite = LoadEntitySprite("assets/data/graphics/button.ini");
 	pairID = doorID;
 	SetPos(x, y);
 	SetVelocity(0, 0);
@@ -1271,8 +1240,8 @@ Platform::Platform(int x, int y, int x2, int y2, std::string type)
 	another_pos.w = 16 * 2;
 		
 	std::string graphicsName = platformData[type].graphicsName;
-	hitbox = new Hitbox(entityGraphicsData[graphicsName].hitbox);
-	sprite = new Sprite(entityGraphicsData[graphicsName].sprite);
+	hitbox = LoadEntityHitbox(graphicsName);
+	sprite = LoadEntitySprite(graphicsName);
 	hookable = true;
 
 	SetPos(x, y + 16);
@@ -1411,15 +1380,6 @@ void Creature::Die()
 		this->SetVelocity(-60, -150);
 	else
 		this->SetVelocity(60, -150);
-}
-
-Lightning::Lightning()
-{
-	lightnings.push_back(this);
-
-	hitbox = new Hitbox(0, 0, 8, 8);
-	sprite = new Sprite(textureManager.GetTexture("assets/sprites/fireball.png"), 0, 0, 8, 8);
-	sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 8, 125, ANIM_LOOP_TYPES::LOOP_NONE);
 }
 
 std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
@@ -1595,8 +1555,8 @@ Lava_Floor::Lava_Floor(int x, int y)
 	default_pos.y = y;
 	default_pos.h = 16;
 	default_pos.w = 256;
-	hitbox = new Hitbox(0, 0, default_pos.h, default_pos.w);
-	sprite = new Sprite(textureManager.GetTexture("assets/sprites/lava_floor.png"), 0, 32, default_pos.h, default_pos.w);
+	hitbox = LoadEntityHitbox("assets/sprites/lava_floor.png");
+	sprite = LoadEntitySprite("assets/sprites/lava_floor.png"); 
 	SetPos(x, y);
 	SetVelocity(0, 0);
 	isSolid = false;

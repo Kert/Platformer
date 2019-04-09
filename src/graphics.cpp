@@ -55,8 +55,7 @@ int GAME_SCENE_WIDTH;
 int GAME_SCENE_HEIGHT;
 
 SDL_Renderer *renderer = NULL;
-SDL_Surface *player_surf = NULL;
-SDL_Texture *player_texture = NULL;
+SDL_Surface *player_surface = NULL;
 SDL_Surface *surface_level_textures = NULL;
 SDL_Surface *lightningSegment = NULL;
 SDL_Surface *pov_surface = NULL;
@@ -133,14 +132,16 @@ void TextureManager::Clear()
 
 void InitPlayerTexture()
 {
-	if(player_texture)
-		SDL_DestroyTexture(player_texture);
-	player_texture = SDL_CreateTextureFromSurface(renderer, player_surf);
+	SDL_Texture **ptr = textureManager.GetTexture("assets/sprites/mong.png");
+	if(*ptr)
+		SDL_DestroyTexture(*ptr);
+
+	*ptr = SDL_CreateTextureFromSurface(renderer, player_surface);
 }
 
 void ChangePlayerColor(PLAYER_BODY_PARTS bodyPart, SDL_Color color)
 {
-	player_surf->format->palette->colors[bodyPart] = color;
+	player_surface->format->palette->colors[bodyPart] = color;
 	InitPlayerTexture();
 }
 
@@ -187,7 +188,7 @@ int GraphicsSetup()
 		0x000000FF,
 		0xFF000000);
 
-	player_surf = IMG_Load("assets/sprites/mong.png");
+	player_surface = IMG_Load("assets/sprites/mong.png");
 
 	lightningSegment = IMG_Load("assets/textures/millhilightning.png");
 	
@@ -469,7 +470,6 @@ void GraphicsExit()
 {
 	SDL_FreeSurface(surface_level_textures);
 	SDL_FreeSurface(debug_message);
-	SDL_DestroyTexture(player_texture);
 	textureManager.Clear();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);
@@ -528,6 +528,7 @@ void UpdateAnimation(Bullet &b)
 void UpdateAnimation(Effect &e)
 {
 	e.sprite->SetAnimation(ANIMATION_STANDING);
+	e.sprite->Animate();
 }
 
 bool had_shot_while_jumping = false;

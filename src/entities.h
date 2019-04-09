@@ -163,8 +163,6 @@ class Lightning : public DynamicEntity
 		SDL_Texture *tex;
 
 	public:
-		// Initializes the variables
-		Lightning();
 		~Lightning();
 		Lightning(DynamicEntity &shooter);
 		void Remove();
@@ -302,7 +300,6 @@ class Effect : public StaticEntity
 		EFFECT_TYPES type;
 
 	public:
-		Effect();
 		~Effect();
 		Effect(EFFECT_TYPES type);
 		void Remove();

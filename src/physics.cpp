@@ -115,11 +115,11 @@ void DetectAndResolveEntityCollisions(Creature &p)
 			{
 				// standing on top
 				foundCollision = true;
-				if(abs(y - machy->hitbox->GetPRect().y) < 2)
+				if(abs(y - machy->hitbox->GetPRect().y) < 3)
 				{
 					if(p.GetVelocity().y < 0)
 						continue;
-					p.yNew = machy->hitbox->GetRect().y + 1;
+					p.yNew = machy->hitbox->GetPRect().y + 1;
 					p.SetState(CREATURE_STATES::ONGROUND);
 					p.onMachinery = true;
 					p.AttachTo(machy);

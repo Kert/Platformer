@@ -122,9 +122,7 @@ void DetectAndResolveEntityCollisions(Creature &p)
 					p.yNew = machy->hitbox->GetRect().y + 1;
 					p.SetState(CREATURE_STATES::ONGROUND);
 					p.onMachinery = true;
-					p.attached = machy;
-					p.attX = p.xNew - machy->GetX();
-					p.attY = p.yNew - machy->GetY() + machy->hitbox->GetPRect().h;
+					p.AttachTo(machy);
 					continue;
 				}
 				if(machy->hookable)
@@ -143,10 +141,8 @@ void DetectAndResolveEntityCollisions(Creature &p)
 						if(p.GetVelocity().y > 0 && !p.lefthook)
 						{
 							p.SetState(CREATURE_STATES::HANGING);
-							p.attached = machy;
-							vel.x = 0;
-							p.attX = p.xNew - machy->GetX();
-							p.attY = p.yNew - machy->GetY() + machy->hitbox->GetPRect().h;
+							p.AttachTo(machy);
+							vel.x = 0;							
 						}
 					}
 					else if(!HasIntersection(&machy->hitbox->GetPRect(), &hand))
@@ -290,7 +286,6 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 			// TODO: move to a separate func
 			p.attX = p.GetX() - p.attached->GetX();
 			p.attY = p.GetY() - p.attached->GetY() + p.attached->hitbox->GetPRect().h;
-
 		}
 	}
 	else

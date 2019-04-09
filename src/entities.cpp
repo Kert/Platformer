@@ -565,6 +565,13 @@ bool Creature::IsAI()
 	return !(this->AI == nullptr);
 }
 
+void Creature::AttachTo(Machinery *machy)
+{
+	attached = machy;
+	attX = xNew - machy->GetX();
+	attY = yNew - machy->GetY() + machy->hitbox->GetPRect().h;
+}
+
 void Entity::GetPos(double &x, double &y)
 {
 	x = this->x;

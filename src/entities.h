@@ -235,6 +235,7 @@ class Creature : public DynamicEntity
 		void SetState(CreatureState *newState);
 		void HandleInput(int input, int type);
 		void HandleStateIdle();
+		void AttachTo(Machinery *machy);
 };
 
 struct CreatureData

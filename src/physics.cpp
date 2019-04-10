@@ -116,7 +116,7 @@ void DetectAndResolveEntityCollisions(Creature &p)
 				p.Walk();
 				break;
 			}
-			if(plat->isSolid || plat->automatic)
+			if(plat->isSolid)
 			{
 				// standing on top
 				foundCollision = true;
@@ -130,30 +130,30 @@ void DetectAndResolveEntityCollisions(Creature &p)
 					p.AttachTo(plat);
 					continue;
 				}
-				if(plat->hookable)
+			}
+			if(plat->hookable)
+			{
+				foundCollision = true;
+				PrecisionRect hook = plat->hitbox->GetPRect();
+				hook.h -= 4;
+				hook.y += 4;
+				PrecisionRect hand;
+				hand.x = p.hitbox->GetPRect().x + 2;
+				hand.y = p.hitbox->GetPRect().y;
+				hand.w = hand.h = 2;
+
+				if(HasIntersection(&hook, &hand))
 				{
-					PrecisionRect hook = plat->hitbox->GetPRect();
-					hook.h -= 4;
-					hook.y += 4;
-					PrecisionRect hand;
-					hand.x = p.hitbox->GetPRect().x + 2;
-					hand.y = p.hitbox->GetPRect().y;
-					hand.w = hand.h = 2;
-
-					if(HasIntersection(&hook, &hand))
+					p.nearhookplatform = true;
+					if(p.GetVelocity().y > 0 && !p.lefthook)
 					{
-						p.nearhookplatform = true;
-						if(p.GetVelocity().y > 0 && !p.lefthook)
-						{
-							p.SetState(CREATURE_STATES::HANGING);
-							p.AttachTo(plat);
-							vel.x = 0;
-						}
+						p.SetState(CREATURE_STATES::HANGING);
+						p.AttachTo(plat);
+						vel.x = 0;
 					}
-					else if(!HasIntersection(&plat->hitbox->GetPRect(), &hand))
-						p.nearhookplatform = false;
 				}
-
+				else if(!HasIntersection(&plat->hitbox->GetPRect(), &hand))
+					p.nearhookplatform = false;
 			}
 		}
 	}

@@ -5,7 +5,7 @@
 #include "tiles.h"
 #include "utils.h"
 
-RandomGenerator *ai_rg = new RandomGenerator();
+RandomGenerator ai_rg;
 extern Player *player;
 
 BaseAI::BaseAI(Creature *c)

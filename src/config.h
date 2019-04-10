@@ -22,7 +22,6 @@ enum KEYBINDS
 	BIND_ENTER
 };
 
-#define NUM_BINDS 15
 
 // Number of configurable bindings. The others are hardcoreded and are not saved/loaded from file
 // Put these bindings at the end of the enum

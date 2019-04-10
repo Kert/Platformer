@@ -11,10 +11,7 @@
 #include "tiles.h"
 #include "utils.h"
 
-extern SDL_Surface *lightningSegment;
-extern SDL_Renderer *renderer;
-
-extern RandomGenerator *ai_rg;
+RandomGenerator entity_rg;
 
 std::vector<Bullet*> bullets;
 std::vector<Lightning*> lightnings;
@@ -1342,8 +1339,7 @@ void EntityCleanup()
 	pickups.~vector();
 	effects.~vector();
 	lightnings.~vector();
-	delete ai_rg;
-	ai_rg = NULL;
+	entity_rg.ResetSequence();
 }
 
 void Creature::MoveUp()
@@ -1401,7 +1397,7 @@ std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 		{
 			if(l.lifetime < 1) continue;
 
-			if(ai_rg->Generate(1, 10) == 1 && (int)branches.size() < maxBranches && l.timeUntilBranchable < 0)
+			if(entity_rg.Generate(1, 10) == 1 && (int)branches.size() < maxBranches && l.timeUntilBranchable < 0)
 				l.forkPending = true;
 
 			if(l.forkEscape > 0)
@@ -1416,7 +1412,7 @@ std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 			}
 			else
 			{
-				int rand = ai_rg->Generate(1, 8);
+				int rand = entity_rg.Generate(1, 8);
 				if(rand < 4) l.going = -1;
 				if(rand >= 4 && rand <= 5) l.going = 0;
 				if(rand > 5) l.going = 1;
@@ -1457,7 +1453,7 @@ std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 		}
 
 		int branchFrom = -1;
-		int way = ai_rg->Generate(1, 2) == 1 ? 2 : -2;
+		int way = entity_rg.Generate(1, 2) == 1 ? 2 : -2;
 		for(auto &l : branches)
 		{
 			if(l.forkPending)

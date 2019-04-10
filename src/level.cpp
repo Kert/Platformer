@@ -15,7 +15,6 @@ extern Camera* camera;
 
 Lava_Floor *lava = nullptr;
 
-extern int timeLimit;
 Level *level = nullptr;
 
 extern std::vector<CustomTile> tileset;
@@ -59,8 +58,6 @@ extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 std::vector<std::vector<int>> tiles;
 
-int map_width; // in pixels
-int map_height; // in pixels
 extern SDL_Surface *surface_level_textures;
 
 Level::Level()
@@ -85,8 +82,8 @@ void Level::Init()
 	LoadEnemies();
 	LoadEntities();
 
-	map_width = width_in_pix = width_in_tiles * TILESIZE;
-	map_height = height_in_pix = height_in_tiles * TILESIZE;
+	width_in_pix = width_in_tiles * TILESIZE;
+	height_in_pix = height_in_tiles * TILESIZE;
 
 	// create a deathzone below level
 	deathZones.push_back({ 0, height_in_pix + 50, width_in_pix, 50 });

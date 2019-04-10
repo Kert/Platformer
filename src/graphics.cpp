@@ -59,7 +59,6 @@ SDL_Surface *player_surface = NULL;
 SDL_Surface *surface_level_textures = NULL;
 SDL_Surface *lightningSegment = NULL;
 SDL_Surface *pov_surface = NULL;
-SDL_Surface *fading_surface = NULL;
 
 SDL_Window *win = NULL;
 
@@ -71,7 +70,6 @@ SDL_Color debug_color = { 50, 180, 0 };
 SDL_Color pause_color = { 255, 255, 255 };
 SDL_Color menu_color = { 255, 255, 255 };
 SDL_Color selected_color = { 0, 255, 0 };
-SDL_Surface *debug_message = NULL;
 
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
@@ -181,12 +179,6 @@ int GraphicsSetup()
 		0xFF000000);
 
 	InterfaceSetup();
-
-	fading_surface = SDL_CreateRGBSurface(0, 1, 1, 32,
-		0x00FF0000,
-		0x0000FF00,
-		0x000000FF,
-		0xFF000000);
 
 	player_surface = IMG_Load("assets/sprites/mong.png");
 
@@ -469,7 +461,6 @@ void GraphicsCleanup()
 void GraphicsExit()
 {
 	SDL_FreeSurface(surface_level_textures);
-	SDL_FreeSurface(debug_message);
 	textureManager.Clear();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);
@@ -724,18 +715,18 @@ void ShowDebugInfo(Player &p)
 	recty = p.hitbox->GetRect().y;
 	int status = p.status;
 	int statustimer = p.statusTimer;
-	SDL_FreeSurface(debug_message);
+	
 	int tx, ty;
 	tx = ConvertToTileCoord(x, false);
 	ty = ConvertToTileCoord(y, false);
 	sprintf(debug_str, "nearladder = %d state = %d onMachinery = %d PlayerX = %d | %d. PlayerY = %d | %d VelX: %d VelY: %d HP: %d",
 		player->ammo[WEAPON_FIREBALL], p.state->GetState(), p.onMachinery, x, tx, y, ty,
 		(int)p.GetVelocity().x, (int)p.GetVelocity().y, p.health);
-	debug_message = TTF_RenderText_Solid(debug_font, debug_str, debug_color);
-
-	SDL_Texture* debug_texture = SDL_CreateTextureFromSurface(renderer, debug_message);
+	SDL_Surface *debug_surface = TTF_RenderText_Solid(debug_font, debug_str, debug_color);
+	SDL_Texture* debug_texture = SDL_CreateTextureFromSurface(renderer, debug_surface);
 	SDL_Rect temp;
-	SDL_GetClipRect(debug_message, &temp);
+	SDL_GetClipRect(debug_surface, &temp);
+	SDL_FreeSurface(debug_surface);
 	temp.x = 8 * RENDER_SCALE;
 	temp.y = (GAME_SCENE_HEIGHT - 16) * RENDER_SCALE;
 	//PrintNumToInterface(p.statusTimer, INTERFACE_SCORE, 0);
@@ -935,14 +926,8 @@ void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color,
 
 void DrawFading()
 {
-	// clear with black
-	SDL_FillRect(fading_surface, NULL, SDL_MapRGBA(fading_surface->format, 0, 0, 0, FadingVal));
-	//SDL_SetRenderDrawColor(renderer, 0, 0, 0, FadingVal);
-	//SDL_RenderFillRect(renderer, NULL);
-	SDL_Texture *tmp;
-	tmp = SDL_CreateTextureFromSurface(renderer, fading_surface);
-	SDL_RenderCopy(renderer, tmp, NULL, NULL);
-	SDL_DestroyTexture(tmp);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, FadingVal);
+	SDL_RenderFillRect(renderer, NULL);
 }
 
 void WindowFlush()

@@ -3,8 +3,6 @@
 #include "level.h"
 #include "utils.h"
 
-extern int map_width;
-extern int map_height;
 extern Level *level;
 
 extern int GAME_SCENE_WIDTH;
@@ -190,13 +188,13 @@ void Camera::Update()
 	{
 		y = 0;
 	}
-	if(x > map_width - w)
+	if(x > level->width_in_pix - w)
 	{
-		x = map_width - w;
+		x = level->width_in_pix - w;
 	}
-	if(y > map_height - h)
+	if(y > level->height_in_pix - h)
 	{
-		y = map_height - h;
+		y = level->height_in_pix - h;
 	}
 }
 

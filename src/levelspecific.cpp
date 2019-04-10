@@ -6,7 +6,7 @@
 #include "utils.h"
 
 extern Level* level;
-extern RandomGenerator *ai_rg;
+RandomGenerator level_rg;
 extern Camera* camera;
 extern Lava_Floor *lava;
 
@@ -31,7 +31,7 @@ void LevelLogic()
 			cr->SetAI<AI_Anvil>();
 			cr->AI->SetDistanceToReachX(16 * TILESIZE);
 			cr->AI->SetDistanceToReachY(50 * TILESIZE);
-			int xPos = level->CameraBounds[2].x + TILESIZE * ai_rg->Generate(1, 15);
+			int xPos = level->CameraBounds[2].x + TILESIZE * level_rg.Generate(1, 15);
 			int yPos = level->CameraBounds[2].y + level->CameraBounds[2].h - 17 * TILESIZE;
 			cr->SetPos(xPos, yPos);
 
@@ -44,7 +44,7 @@ void LevelLogic()
 			fr->SetAI<AI_Jumpingfire>();
 			fr->AI->SetDistanceToReachX(16 * TILESIZE);
 			fr->AI->SetDistanceToReachY(50 * TILESIZE);
-			fr->SetPos(level->CameraBounds[2].x + TILESIZE * ai_rg->Generate(1, 15), level->CameraBounds[2].y + level->CameraBounds[2].h + 2 * TILESIZE);
+			fr->SetPos(level->CameraBounds[2].x + TILESIZE * level_rg.Generate(1, 15), level->CameraBounds[2].y + level->CameraBounds[2].h + 2 * TILESIZE);
 		}
 		if(bossLevelTimer.completed)
 		{

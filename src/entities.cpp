@@ -87,8 +87,8 @@ void ReadCreatureData()
 
 		EntityGraphicsData cr;
 
-		std::string textureName = rea.Get("Sprite", "TextureName", "dummy.png");
-		cr.sprite.SetSpriteTexture(textureManager.GetTexture(textureName));
+		cr.textureFile = rea.Get("Sprite", "TextureName", "dummy.png");
+		cr.sprite.SetSpriteTexture(textureManager.GetTexture(cr.textureFile));
 
 		SDL_Rect rect;
 		rect.x = rea.GetInteger("Sprite", "X", 0);
@@ -194,9 +194,9 @@ Player::Player()
 	
 	hitbox = LoadEntityHitbox("assets/data/graphics/player.ini");
 	sprite = LoadEntitySprite("assets/data/graphics/player.ini");
-
-	state = new OnGroundState(this);
 	InitPlayerTexture();
+
+	state = new OnGroundState(this);	
 }
 
 void Player::SwitchWeapon()

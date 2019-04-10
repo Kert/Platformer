@@ -35,6 +35,10 @@ std::vector<Timer*> TimersGraphics{ &timer100, &timerRain };
 
 extern int currentLives;
 
+// TODO: reorganize this
+extern std::map<std::string, CreatureData> creatureData;
+extern std::map<std::string, EntityGraphicsData> entityGraphicsData;
+
 extern std::vector<Bullet*> bullets;
 extern std::vector<Effect*> effects;
 extern std::vector<Creature*> creatures;
@@ -130,10 +134,15 @@ void TextureManager::Clear()
 
 void InitPlayerTexture()
 {
-	SDL_Texture **ptr = textureManager.GetTexture("assets/sprites/mong.png");
+	std::string textureName = entityGraphicsData[creatureData["Player"].graphicsName].textureFile;
+	// Load the image
+	if(!player_surface)
+		player_surface = IMG_Load(textureName.c_str());
+
+	// Replace texture in the manager texture array
+	SDL_Texture **ptr = textureManager.GetTexture(textureName.c_str());
 	if(*ptr)
 		SDL_DestroyTexture(*ptr);
-
 	*ptr = SDL_CreateTextureFromSurface(renderer, player_surface);
 }
 
@@ -179,8 +188,6 @@ int GraphicsSetup()
 		0xFF000000);
 
 	InterfaceSetup();
-
-	player_surface = IMG_Load("assets/sprites/mong.png");
 
 	lightningSegment = IMG_Load("assets/textures/millhilightning.png");
 	

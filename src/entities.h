@@ -251,6 +251,7 @@ struct CreatureData
 
 struct EntityGraphicsData
 {
+	std::string textureFile;
 	Hitbox hitbox = { 0,0,0,0 };
 	Sprite sprite = {};
 	// spriteRect, offsets

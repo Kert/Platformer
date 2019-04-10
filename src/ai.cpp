@@ -1,6 +1,7 @@
 #include "ai.h"
 #include "entities.h"
 #include "level.h"
+#include "physics.h"
 #include "state.h"
 #include "tiles.h"
 #include "utils.h"

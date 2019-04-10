@@ -15,6 +15,8 @@ extern int fullscreenMode;
 extern SDL_DisplayMode displayMode;
 extern int displayIndex;
 
+static const int NUM_BINDS = 15;
+
 const std::map<std::string, int> configNames = {
 	{"UP", 0},
 	{"DOWN", 1},

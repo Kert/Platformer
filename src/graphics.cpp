@@ -315,25 +315,6 @@ void DrawFPS(Uint32 dt)
 	RenderText(10, 10, "fps: " + std::to_string(newfps), debug_font, debug_color);
 }
 
-void BlitTileAt(Tile* tile, int x, int y)
-{
-	if(tile == NULL) return;
-	SDL_Rect rect;
-	SDL_Rect rect2;
-
-	rect.x = tile->tex_x;
-	rect.y = tile->tex_y;
-	rect.w = TILESIZE; rect.h = TILESIZE;
-
-	rect2.x = x * TILESIZE;
-	rect2.y = y * TILESIZE;
-	rect2.w = TILESIZE; rect2.h = TILESIZE;
-
-	//PrintLog(LOG_SUPERDEBUG, "x= %d y= %d ", rect2.x, rect2.y);
-
-	SDL_BlitScaled(tile->src_tex, &rect, pov_surface, &rect2);
-}
-
 void BlitObserveTileAt(Tile* tile, int x, int y)
 {
 	if(tile == NULL) return;
@@ -932,7 +913,6 @@ void DrawFading()
 
 void WindowFlush()
 {
-	// clear the screen
 	SDL_RenderClear(renderer);
 }
 

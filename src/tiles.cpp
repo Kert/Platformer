@@ -216,9 +216,3 @@ PHYSICS_TYPES GetTileTypeAtPos(SDL_Point at)
 {
 	return GetTileTypeAtPos(at.x, at.y);
 }
-
-bool IsSolid(PHYSICS_TYPES type)
-{
-	return type == PHYSICS_BLOCK || type == PHYSICS_ICEBLOCK || type == PHYSICS_ICE;
-}
-

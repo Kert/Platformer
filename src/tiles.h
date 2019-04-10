@@ -15,7 +15,6 @@ PHYSICS_TYPES GetTileTypeAtTiledPos(int x, int y);
 PHYSICS_TYPES GetTileTypeAtTiledPos(SDL_Point at);
 PHYSICS_TYPES GetTileTypeAtPos(int x, int y);
 PHYSICS_TYPES GetTileTypeAtPos(SDL_Point at);
-bool IsSolid(PHYSICS_TYPES type);
 
 class Tile
 {

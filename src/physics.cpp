@@ -430,6 +430,11 @@ bool IsInWater(DynamicEntity &c)
 	return false;
 }
 
+bool IsSolid(PHYSICS_TYPES type)
+{
+	return type == PHYSICS_BLOCK || type == PHYSICS_ICEBLOCK || type == PHYSICS_ICE;
+}
+
 bool HasCeilingRightAbove(DynamicEntity &c)
 {
 	PrecisionRect ppr = c.hitbox->GetPRect();

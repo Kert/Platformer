@@ -27,6 +27,8 @@ extern TextureManager textureManager;
 
 struct PlatformData
 {
+	bool hookable = false;
+	bool isSolid = true;
 	std::string graphicsName;
 };
 
@@ -164,6 +166,8 @@ void ReadPlatformData()
 		PlatformData pl;
 		std::string name = reader.Get("Properties", "Name", "NULL");
 		pl.graphicsName = reader.Get("Properties", "Graphics", "dummy.ini");
+		pl.hookable = reader.GetBoolean("Properties", "Hookable", false);
+		pl.isSolid = reader.GetBoolean("Properties", "IsSolid", true);
 		platformData[name] = pl;
 	}
 	fileList.clear();
@@ -1252,9 +1256,11 @@ Platform::Platform(int x, int y, int x2, int y2, std::string platformType)
 	minspeed = 10;
 	deaccel.x = speed * 1.85;
 	deaccel.y = speed * 1.15;
-	isSolid = false;
+	
 	automatic = true;
 	destructable = false;
+	hookable = platformData[platformType].hookable;
+	isSolid = platformData[platformType].isSolid;
 	direction = DIRECTION_RIGHT;
 }
 

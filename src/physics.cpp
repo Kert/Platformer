@@ -101,9 +101,14 @@ void DetectAndResolveEntityCollisions(Creature &p)
 	p.GetPos(x, y);
 	// Checking for collisions with entities
 	bool foundCollision = false;
+
 	for(auto &machy : machinery)
 	{
-		if(HasCollisionWithEntity(p, *machy))
+		if(machy->type != MACHINERY_TYPES::MACHINERY_PLATFORM)
+			continue;
+
+		Platform *plat = (Platform*)machy;
+		if(HasCollisionWithEntity(p, *plat))
 		{
 			if(p.IsAI())
 			{
@@ -111,23 +116,23 @@ void DetectAndResolveEntityCollisions(Creature &p)
 				p.Walk();
 				break;
 			}
-			if(machy->isSolid || machy->automatic)
+			if(plat->isSolid || plat->automatic)
 			{
 				// standing on top
 				foundCollision = true;
-				if(abs(y - machy->hitbox->GetPRect().y) < 3)
+				if(abs(y - plat->hitbox->GetPRect().y) < 3)
 				{
 					if(p.GetVelocity().y < 0)
 						continue;
-					p.yNew = machy->hitbox->GetPRect().y + 1;
+					p.yNew = plat->hitbox->GetPRect().y + 1;
 					p.SetState(CREATURE_STATES::ONGROUND);
 					p.onMachinery = true;
-					p.AttachTo(machy);
+					p.AttachTo(plat);
 					continue;
 				}
-				if(machy->hookable)
-				{												
-					PrecisionRect hook = machy->hitbox->GetPRect();
+				if(plat->hookable)
+				{
+					PrecisionRect hook = plat->hitbox->GetPRect();
 					hook.h -= 4;
 					hook.y += 4;
 					PrecisionRect hand;
@@ -137,21 +142,22 @@ void DetectAndResolveEntityCollisions(Creature &p)
 
 					if(HasIntersection(&hook, &hand))
 					{
-						p.nearhookplatform = true;							
+						p.nearhookplatform = true;
 						if(p.GetVelocity().y > 0 && !p.lefthook)
 						{
 							p.SetState(CREATURE_STATES::HANGING);
-							p.AttachTo(machy);
-							vel.x = 0;							
+							p.AttachTo(plat);
+							vel.x = 0;
 						}
 					}
-					else if(!HasIntersection(&machy->hitbox->GetPRect(), &hand))
+					else if(!HasIntersection(&plat->hitbox->GetPRect(), &hand))
 						p.nearhookplatform = false;
 				}
-				
+
 			}
 		}
 	}
+
 	if(!foundCollision)
 	{
 		if(p.attached)
@@ -583,26 +589,27 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 	Velocity vel;
 	vel = d.GetVelocity();
 	d.GetPos(x, y);
+	
 	// Doors
-	if(!d.automatic)
+	if(d.type == MACHINERY_TYPES::MACHINERY_DOOR)
 	{
-		if(!d.attachToScreen)
-		{
-			y += vel.y * (deltaTicks * PHYSICS_SPEED);
+		y += vel.y * (deltaTicks * PHYSICS_SPEED);
 
-			// BROKE DOORS
-			if(y < d.default_pos.y - d.default_pos.h)
-			{
-				y = d.default_pos.y - d.default_pos.h;
-				vel.y = 0;
-			}
-			else if(y > d.default_pos.y)
-			{
-				y = d.default_pos.y;
-				vel.y = 0;
-			}
+		// BROKE DOORS
+		if(y < d.default_pos.y - d.default_pos.h)
+		{
+			y = d.default_pos.y - d.default_pos.h;
+			vel.y = 0;
 		}
-		else
+		else if(y > d.default_pos.y)
+		{
+			y = d.default_pos.y;
+			vel.y = 0;
+		}
+	}
+	if(d.type == MACHINERY_TYPES::MACHINERY_LAVAFLOOR)
+	{
+		if(d.attachToScreen)
 		{
 			SDL_Rect rect;
 			rect = camera->GetRect();
@@ -610,77 +617,79 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 			y = rect.y + d.attachScreenY;
 		}
 	}
-	else
+	if(d.type == MACHINERY_TYPES::MACHINERY_PLATFORM)
 	{
+		Platform *plat = (Platform*)&d;
 		// Up-down platform
-		if(d.default_pos.y != d.another_pos.y)
+		if(plat->default_pos.y != plat->another_pos.y)
 		{
 			// Using velocity to determine new pos
 			y += vel.y * (deltaTicks * PHYSICS_SPEED);
 			// Limiting speed
-			if(abs(vel.y) > d.speed)
-				vel.y = d.speed * (vel.y < 0 ? -1 : 1);
+			if(abs(vel.y) > plat->speed)
+				vel.y = plat->speed * (vel.y < 0 ? -1 : 1);
 			// Do stuff when approaching top end point
-			if(abs(y - (d.default_pos.y)) < TILESIZE)
-				vel.y += d.deaccel.y * (deltaTicks * PHYSICS_SPEED);
+			if(abs(y - (plat->default_pos.y)) < TILESIZE)
+				vel.y += plat->deaccel.y * (deltaTicks * PHYSICS_SPEED);
 			// Platform reached top end point
-			if(y < d.default_pos.y)
+			if(y < plat->default_pos.y)
 			{
 				// Let it go the other direction
-				vel.y = d.minspeed;
-				y = d.default_pos.y + 1;
+				vel.y = plat->minspeed;
+				y = plat->default_pos.y + 1;
 			}
 			else
 			{
 				// Do stuff when approaching bottom end point
-				if(abs(y - d.another_pos.y) < TILESIZE)
-					vel.y -= d.deaccel.y * (deltaTicks * PHYSICS_SPEED);
+				if(abs(y - plat->another_pos.y) < TILESIZE)
+					vel.y -= plat->deaccel.y * (deltaTicks * PHYSICS_SPEED);
 				// Platform reached bottom end point
-				if(y > d.another_pos.y)
+				if(y > plat->another_pos.y)
 				{
 					// Let it go the other direction
-					vel.y = -d.minspeed;
-					y = d.another_pos.y - 1;
+					vel.y = -plat->minspeed;
+					y = plat->another_pos.y - 1;
 				}
 			}
 			// Don't stop me now
-			if(abs(vel.y) < d.minspeed)
-				vel.y = d.minspeed * (vel.y > 0 ? 1 : -1);
+			if(abs(vel.y) < plat->minspeed)
+				vel.y = plat->minspeed * (vel.y > 0 ? 1 : -1);
 		}
 		else // Left-right platform
 		{
 			// Using velocity to determine new pos
 			x += vel.x * (deltaTicks * PHYSICS_SPEED);
 			// Limiting speed
-			if(abs(vel.x) > d.speed)
-				vel.x = d.speed * (vel.x < 0 ? -1 : 1);
+			if(abs(vel.x) > plat->speed)
+				vel.x = plat->speed * (vel.x < 0 ? -1 : 1);
 			// Do stuff when approaching left end point
-			if(abs(x - (d.default_pos.x)) < TILESIZE)
-				vel.x += d.deaccel.x * (deltaTicks * PHYSICS_SPEED);
+			if(abs(x - (plat->default_pos.x)) < TILESIZE)
+				vel.x += plat->deaccel.x * (deltaTicks * PHYSICS_SPEED);
 			// Platform reached left end point
-			if(x < d.default_pos.x)
+			if(x < plat->default_pos.x)
 			{
 				// Let it go the other direction
-				vel.x = d.minspeed;
-				x = d.default_pos.x + 1;
+				vel.x = plat->minspeed;
+				x = plat->default_pos.x + 1;
 			}
 			else
 			{
 				// Do stuff when approaching bottom end point
-				if(abs(x - d.another_pos.x) < TILESIZE)
-					vel.x -= d.deaccel.x * (deltaTicks * PHYSICS_SPEED);
+				if(abs(x - plat->another_pos.x) < TILESIZE)
+					vel.x -= plat->deaccel.x * (deltaTicks * PHYSICS_SPEED);
 				// Platform reached right end point
-				if(x > d.another_pos.x)
+				if(x > plat->another_pos.x)
 				{
-					vel.x = -d.minspeed;
-					x = d.another_pos.x - 1;
+					vel.x = -plat->minspeed;
+					x = plat->another_pos.x - 1;
 				}
 			}
 			// Don't stop me now
-			if(abs(vel.x) < d.minspeed)
-				vel.x = d.minspeed * (vel.x > 0 ? 1 : -1);
+			if(abs(vel.x) < plat->minspeed)
+				vel.x = plat->minspeed * (vel.x > 0 ? 1 : -1);
 		}
 	}
+
 	d.SetVelocity(vel);
 	d.SetPos(x, y);
 }
@@ -1125,19 +1134,16 @@ bool HasCollisionWithEntity(Creature &p, Machinery &m)
 	PrecisionRect *dyrect = &m.hitbox->GetPRect();
 	if(HasIntersection(prect, dyrect))
 	{
-		if(m.isSolid || m.automatic)
+		if(m.type == MACHINERY_TYPES::MACHINERY_BUTTON)
 		{
-			return true;
-
-			//	if (result.h > 0 && result.h < result.w && !dy->automatic && !dy->enabled && dy->GetVelocity().y > 0) 
-			//		dy->Activate(); // Door is closing on something, open it back up
-			//	return true;
-		}
-		else
-		{
-			p.interactTarget = m.pairID;
+			Button *btn = (Button*)&m;
+			p.interactTarget = btn->pairID;
 			foundSpecialInteraction = true;
 		}
+		return true;
+		//	if (result.h > 0 && result.h < result.w && !dy->automatic && !dy->enabled && dy->GetVelocity().y > 0) 
+		//		dy->Activate(); // Door is closing on something, open it back up
+		//	return true;
 	}
 	if(!foundSpecialInteraction) p.interactTarget = -1;
 	return false;

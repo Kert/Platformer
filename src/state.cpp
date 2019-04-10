@@ -144,8 +144,13 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 					{
 						for(auto &dy : machinery)
 						{
-							if(p->interactTarget == dy->pairID && dy->isSolid == true)
-								dy->Activate();
+							if(dy->type == MACHINERY_TYPES::MACHINERY_BUTTON)
+							{
+								Button *btn = (Button*)dy;
+								if(p->interactTarget == btn->pairID && btn->isSolid == true)
+									btn->Activate();
+							}
+							
 						}
 					}
 					if(p->nearladder)

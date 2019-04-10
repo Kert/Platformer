@@ -1122,6 +1122,9 @@ Door::Door(int x, int y, bool spawnButtons)
 	default_pos.y = y;
 	default_pos.h = 16 * 3;
 	default_pos.w = 16;
+
+	type = MACHINERY_TYPES::MACHINERY_DOOR;
+
 	hitbox = LoadEntityHitbox("assets/data/graphics/door.ini");
 	sprite = LoadEntitySprite("assets/data/graphics/door.ini");
 	if(spawnButtons)
@@ -1136,7 +1139,6 @@ Door::Door(int x, int y, bool spawnButtons)
 	isSolid = true;
 	enabled = false;
 	destructable = true;
-	automatic = false;
 	direction = DIRECTION_RIGHT;
 }
 
@@ -1173,17 +1175,18 @@ Button::Button(int x, int y, int doorID)
 	machinery.push_back(this);
 	entityID = AssignEntityID(LIST_MACHINERY);
 
+	type = MACHINERY_TYPES::MACHINERY_BUTTON;
+
 	default_pos.x = x;
 	default_pos.y = y;
 	default_pos.h = 32;
 	default_pos.w = 16;
+
 	hitbox = LoadEntityHitbox("assets/data/graphics/button.ini");
 	sprite = LoadEntitySprite("assets/data/graphics/button.ini");
 	pairID = doorID;
 	SetPos(x, y);
 	SetVelocity(0, 0);
-	isSolid = false;
-	automatic = false;
 	destructable = false;
 	direction = DIRECTION_RIGHT;
 }
@@ -1212,10 +1215,12 @@ void Button::Remove()
 	delete this;
 }
 
-Platform::Platform(int x, int y, int x2, int y2, std::string type)
+Platform::Platform(int x, int y, int x2, int y2, std::string platformType)
 {
 	machinery.push_back(this);
 	entityID = AssignEntityID(LIST_MACHINERY);
+
+	this->type = MACHINERY_TYPES::MACHINERY_PLATFORM;
 
 	if(x > x2)
 	{
@@ -1236,7 +1241,7 @@ Platform::Platform(int x, int y, int x2, int y2, std::string type)
 	another_pos.h = 16;
 	another_pos.w = 16 * 2;
 		
-	std::string graphicsName = platformData[type].graphicsName;
+	std::string graphicsName = platformData[platformType].graphicsName;
 	hitbox = LoadEntityHitbox(graphicsName);
 	sprite = LoadEntitySprite(graphicsName);
 	hookable = true;
@@ -1547,16 +1552,19 @@ Lightning::~Lightning()
 Lava_Floor::Lava_Floor(int x, int y)
 {
 	machinery.push_back(this);
+
+	type = MACHINERY_TYPES::MACHINERY_LAVAFLOOR;
+
 	default_pos.x = x;
 	default_pos.y = y;
 	default_pos.h = 16;
 	default_pos.w = 256;
+
 	hitbox = LoadEntityHitbox("assets/sprites/lava_floor.png");
 	sprite = LoadEntitySprite("assets/sprites/lava_floor.png"); 
 	SetPos(x, y);
 	SetVelocity(0, 0);
 	isSolid = false;
-	automatic = false;
 	destructable = false;
 	enabled = false;
 	direction = DIRECTION_RIGHT;

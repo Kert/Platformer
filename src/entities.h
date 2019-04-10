@@ -10,6 +10,7 @@
 
 class CreatureState;
 class Player;
+class Machinery;
 
 struct Velocity
 {
@@ -116,26 +117,6 @@ class Tripod : public DynamicEntity
 	public:
 		Tripod();
 		~Tripod();
-};
-
-class Machinery : public DynamicEntity
-{
-	public:
-		bool isSolid;
-		bool enabled;
-		bool destructable;
-		bool automatic; // moves by itself or not
-		int pairID;
-		double speed;
-		Velocity deaccel;
-		double minspeed;
-		SDL_Rect default_pos;
-		SDL_Rect another_pos;
-		// TODO: Move to platforms
-		bool hookable = false;
-	public:
-		void Activate();
-		~Machinery();
 };
 
 class Bullet : public DynamicEntity
@@ -306,8 +287,31 @@ class Effect : public StaticEntity
 		void Remove();
 };
 
+enum MACHINERY_TYPES
+{
+	MACHINERY_PLATFORM,
+	MACHINERY_DOOR,
+	MACHINERY_BUTTON,
+	MACHINERY_LAVAFLOOR
+};
+
+class Machinery : public DynamicEntity
+{
+	public:
+		MACHINERY_TYPES type;
+		bool enabled;
+		bool isSolid;
+		bool destructable;
+		SDL_Rect default_pos;
+	public:
+		void Activate();
+		~Machinery();
+};
+
 class Button : public Machinery
 {
+	public:
+		int pairID;
 	public:
 		Button(int x, int y, int doorID);
 		void Activate();
@@ -320,7 +324,7 @@ class Door : public Machinery
 	public:
 		Button *leftButton;
 		Button *rightButton;
-
+		int pairID;
 	public:
 		Door(int x, int y, bool spawnButtons);
 		void Open();
@@ -332,7 +336,14 @@ class Door : public Machinery
 class Platform : public Machinery
 {
 	public:
-		Platform(int x, int y, int x2, int y2, std::string type);
+		bool hookable = false;
+		double speed;
+		Velocity deaccel;
+		double minspeed;
+		SDL_Rect another_pos;
+		bool automatic; // moves by itself or not
+	public:
+		Platform(int x, int y, int x2, int y2, std::string platformType);
 		void Remove();
 		~Platform();
 };

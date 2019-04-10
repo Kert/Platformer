@@ -90,7 +90,10 @@ void LogicUpdate(Uint32 dt)
 
 	for(auto &m : machinery)
 	{
-		ApplyPhysics(*m, dt);
+		if(m->type == MACHINERY_TYPES::MACHINERY_PLATFORM)
+		{
+			ApplyPhysics(*(Platform*)m, dt);
+		}
 	}
 
 	player->HandleStateIdle();

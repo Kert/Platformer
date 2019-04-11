@@ -97,8 +97,6 @@ void DetectAndResolveEntityCollisions(Creature &p)
 {
 	Velocity vel;
 	vel = p.GetVelocity();
-	double x, y;
-	p.GetPos(x, y);
 	// Checking for collisions with entities
 	bool foundCollision = false;
 
@@ -116,11 +114,63 @@ void DetectAndResolveEntityCollisions(Creature &p)
 				p.Walk();
 				break;
 			}
-			if(plat->isSolid)
+			
+			if(plat->solid)
+			{
+				double platCenterY = plat->GetY() - plat->hitbox->GetPRect().h / 2;
+				double playerCenterY = p.yNew - p.hitbox->GetPRect().h / 2;
+				double platCenterX = plat->GetX() + plat->hitbox->GetPRect().w / 2;
+				double playerCenterX = p.xNew + p.hitbox->GetPRect().w / 2;
+				if(abs(playerCenterY - platCenterY) > abs(playerCenterX - platCenterX))
+				{
+					if(playerCenterY <= platCenterY)
+					{
+						// standing on top
+						// moving out of platform to properly check for left/right collissions
+						p.yNew = plat->GetY() - plat->hitbox->GetPRect().h - 0.001;
+						foundCollision = true;
+					}
+					else
+					{
+						// ceiling hit
+						p.yNew = plat->GetY() + p.hitbox->GetPRect().h + 0.001;
+					}
+					if(HasCollisionWithEntity(p, *plat))
+					{
+						if(playerCenterX <= platCenterX)
+							p.xNew = plat->GetX() - p.hitbox->GetPRect().w - 0.001;
+						else
+							p.xNew = plat->GetX() + plat->hitbox->GetPRect().w + 0.001;
+					}
+					if(foundCollision)
+					{
+						p.yNew = plat->GetY() - plat->hitbox->GetPRect().h;
+						p.SetState(CREATURE_STATES::ONGROUND);
+						p.onMachinery = true;
+						p.AttachTo(plat);
+					}
+				}
+				else
+				{
+					if(playerCenterX <= platCenterX)
+						p.xNew = plat->GetX() - p.hitbox->GetPRect().w - 0.001;
+					else
+						p.xNew = plat->GetX() + plat->hitbox->GetPRect().w + 0.001;
+					if(HasCollisionWithEntity(p, *plat))
+					{
+						if(playerCenterY <= platCenterY)
+							p.yNew = plat->GetY() - plat->hitbox->GetPRect().h - 0.001;
+						else
+							p.yNew = plat->GetY() + p.hitbox->GetPRect().h + 0.001;
+					}
+				}
+				continue;
+			}
+			if(plat->standable)
 			{
 				// standing on top
 				foundCollision = true;
-				if(abs(y - plat->hitbox->GetPRect().y) < 3)
+				if(abs(p.yNew - plat->hitbox->GetPRect().y) < 3)
 				{
 					if(p.GetVelocity().y < 0)
 						continue;
@@ -128,8 +178,9 @@ void DetectAndResolveEntityCollisions(Creature &p)
 					p.SetState(CREATURE_STATES::ONGROUND);
 					p.onMachinery = true;
 					p.AttachTo(plat);
-					continue;
 				}
+				else
+					foundCollision = false;
 			}
 			if(plat->hookable)
 			{
@@ -138,8 +189,8 @@ void DetectAndResolveEntityCollisions(Creature &p)
 				hook.h -= 4;
 				hook.y += 4;
 				PrecisionRect hand;
-				hand.x = p.hitbox->GetPRect().x + 2;
-				hand.y = p.hitbox->GetPRect().y;
+				hand.x = p.xNew + 2;
+				hand.y = p.yNew - p.hitbox->GetRect().h;
 				hand.w = hand.h = 2;
 
 				if(HasIntersection(&hook, &hand))
@@ -172,57 +223,18 @@ void DetectAndResolveEntityCollisions(Creature &p)
 
 
 void CheckSpecialBehaviour(Creature &p) {
-	PrecisionRect ppr = p.hitbox->GetPRect();
-	double x, y;
-	p.GetPos(x, y);
-	int minx = ConvertToTileCoord(x, false);
-	int head = ConvertToTileCoord(p.hitbox->GetRect().y, false);
-	int maxx = ConvertToTileCoord(x + ppr.w, false);
-	int feet = ConvertToTileCoord(p.GetY(), true);
-	//// Find out if player is intersecting ladder or platform hitbox
-	//// Also setting player's X coord if he's on ladder
-	p.nearladder = false;
-
-	bool flag = false;
-	for(int i = minx; i <= maxx; i++) {
-		if(flag) break;
-		for(int j = head; j <= feet; j++) {
-			if(GetTileTypeAtTiledPos(i, j) == PHYSICS_LADDER) {
-				p.nearladder = true;
-				if(p.state->Is(CREATURE_STATES::ONLADDER))
-					x = i * TILESIZE;
-			}
-		}
-	}
-
-	p.SetPos(x, y);
-
-	if(!p.nearladder)
-	{
-		minx = ConvertToTileCoord(x + 12, false);
-		maxx = ConvertToTileCoord(x + 24, true);
-	}
-	else
-	{
-		minx = ConvertToTileCoord(x - 10, false);
-		maxx = ConvertToTileCoord(x + 30, true);
-	}
-
 	SDL_Rect hangRect = p.hitbox->GetRect();
-	//hangRect.h = 1;
-	//hangRect.w = 3;
-	//hangRect.x += 5;
-	//hangRect.y += 5;
+	hangRect.x = p.xNew;
+	hangRect.y = p.yNew - hangRect.h;
 
 	bool nearhook = false;
-	head = ConvertToTileCoord(hangRect.y, false);
-	minx = ConvertToTileCoord(hangRect.x, false);
-	maxx = ConvertToTileCoord(hangRect.x + hangRect.w, false);
+	int head = ConvertToTileCoord(hangRect.y, false);
+	int minx = ConvertToTileCoord(hangRect.x, false);
+	int maxx = ConvertToTileCoord(hangRect.x + hangRect.w, false);
 
 	//if (minx == maxx)
 	//	maxx++;
 	// checking for hanging
-
 
 	for(int z = minx; z <= maxx; z++)
 	{
@@ -243,8 +255,8 @@ void CheckSpecialBehaviour(Creature &p) {
 				hook.w = hook.h = TILESIZE;
 			}
 			SDL_Rect hand;
-			hand.x = p.hitbox->GetRect().x + 4;
-			hand.y = p.hitbox->GetRect().y + 2;
+			hand.x = p.xNew + 4;
+			hand.y = p.yNew - p.hitbox->GetRect().h + 2;
 			hand.w = hand.h = 3;
 
 			if(SDL_HasIntersection(&hook, &hand))
@@ -262,8 +274,6 @@ void CheckSpecialBehaviour(Creature &p) {
 
 	if(p.lefthook && (!nearhook && !p.nearhookplatform))
 		p.lefthook = false;
-
-	p.SetPos(x, y);
 }
 
 void ApplyPhysics(Creature &p, Uint32 deltaTicks)
@@ -290,12 +300,12 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 		if(p.attached)
 		{
 			// TODO: move to a separate func
-			p.attX = p.GetX() - p.attached->GetX();
-			p.attY = p.GetY() - p.attached->GetY() + p.attached->hitbox->GetPRect().h;
+			p.attX = p.xNew - p.attached->GetX();
+			p.attY = p.yNew - p.attached->GetY() + p.attached->hitbox->GetPRect().h;
 		}
 	}
-	else
-		p.SetPos(p.xNew, p.yNew);
+	p.SetPos(p.xNew, p.yNew);
+	
 
 	if(GameState != STATE_GAME) return; // we hit the exit block, don't process further
 
@@ -316,12 +326,9 @@ bool IsInDeathZone(Creature &c)
 bool IsOnIce(Creature &c)
 {
 	PrecisionRect ppr = c.hitbox->GetPRect();
-	double x, y;
-	c.GetPos(x, y);
-	y = c.yNew;
-	int minx = ConvertToTileCoord(x, false);
-	int maxx = ConvertToTileCoord(ppr.x + ppr.w, true);
-	int feet = ConvertToTileCoord(y, false);
+	int minx = ConvertToTileCoord(c.xNew, false);
+	int maxx = ConvertToTileCoord(c.xNew + ppr.w, true);
+	int feet = ConvertToTileCoord(c.yNew + 1, false);
 
 	// Bugfix for possible skipping of the next loop
 	if(minx == maxx)
@@ -345,12 +352,9 @@ bool IsOnIce(Creature &c)
 bool IsOnPlatform(Creature &c)
 {
 	PrecisionRect ppr = c.hitbox->GetPRect();
-	double x, y;
-	c.GetPos(x, y);
-	y = c.yNew;
-	int minx = ConvertToTileCoord(x, false);
-	int maxx = ConvertToTileCoord(ppr.x + ppr.w, true);
-	int feet = ConvertToTileCoord(y, false);
+	int minx = ConvertToTileCoord(c.xNew, false);
+	int maxx = ConvertToTileCoord(c.xNew + ppr.w, true);
+	int feet = ConvertToTileCoord(c.yNew + 1, false);
 
 	// Bugfix for possible skipping of the next loop
 	if(minx == maxx)
@@ -494,7 +498,7 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 		p.accel.y = 5 * p.gravityMultiplier;
 	}
 
-	if(p.state->Is(CREATURE_STATES::ONLADDER) || p.state->Is(CREATURE_STATES::HANGING))
+	if(p.state->Is(CREATURE_STATES::HANGING))
 	{
 		p.accel.y = 0;
 		p.accel.x = 0;
@@ -741,7 +745,7 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 			complete = true;
 		}
 	}
-	if(wasHit.second != nullptr && wasHit.second->isSolid)
+	if(wasHit.second != nullptr && wasHit.second->solid)
 	{
 		if(wasHit.second->destructable && b.origin == WEAPON_ROCKETL) wasHit.second->~Machinery();
 		complete = true;
@@ -857,13 +861,10 @@ bool ApplyPhysics(Lightning &l, Uint32 deltaTicks)
 void ResolveBottom(Creature &p)
 {
 	PrecisionRect ppr = p.hitbox->GetPRect();
-	double x, y;
-	p.GetPos(x, y);
-	y = p.yNew;
-	int minx = ConvertToTileCoord(x, false);
-	int maxx = ConvertToTileCoord(ppr.x + ppr.w, true);
+	int minx = ConvertToTileCoord(p.GetX(), false);
+	int maxx = ConvertToTileCoord(p.GetX() + ppr.w, true);
 	//int maxx = ceil((ppr.x + ppr.w) / (double)TILESIZE);
-	int feet = ConvertToTileCoord(y, false);
+	int feet = ConvertToTileCoord(p.yNew, false);
 
 	// Bugfix for possible skipping of the next loop
 	if(minx == maxx)
@@ -871,27 +872,16 @@ void ResolveBottom(Creature &p)
 
 	// Bottom
 	bool collisionFound = false;
+	SDL_Rect tileBottom;
 	for(int i = minx; i < maxx; i++)
 	{
-		SDL_Rect tileBottom = GetTileRect(i, feet);
-		SDL_Rect tileTop = GetTileRect(i, feet - 1);
 		if(collisionFound || feet < 1) break;
-		if(GetTileTypeAtTiledPos(i, feet - 1) == PHYSICS_LADDER_TOP)
-		{
-			PrintLog(LOG_SUPERDEBUG, "Tile intersection: Ladder top");
-			if(!p.state->Is(CREATURE_STATES::ONLADDER))
-			{
-				//PrintLog(LOG_SUPERDEBUG, "Intersecting ladder top at %d by %d. Returning back to y = %f", pr.y, result.h, y);
-				y = tileBottom.y - 0.001;
-				collisionFound = true;
-			}
-			break;
-		}
+
+		tileBottom = GetTileRect(i, feet);
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(i, feet);
 		if(IsSolid(type))
 		{
-			y = tileBottom.y - 0.001;
-			//PrintLog(LOG_SUPERDEBUG, "Intersecting block bottom at %d. Returning back to y = %lf", tileBottom.y, y);
+			//PrintLog(LOG_IMPORTANT, "Intersecting block bottom at %d. Returning back to y = %lf", tileBottom.y, p.yNew);
 			collisionFound = true;
 			break;
 		}
@@ -900,10 +890,9 @@ void ResolveBottom(Creature &p)
 			case PHYSICS_PLATFORM: case PHYSICS_HOOK_PLATFORM:
 			{
 				//PrintLog(LOG_SUPERDEBUG, "Tile intersection: Platform");
-				if(p.GetVelocity().y >= 0 && (y - tileBottom.y) < 2)
+				if(p.GetVelocity().y >= 0 && (p.yNew - tileBottom.y) < 2)
 				{
 					//PrintLog(LOG_SUPERDEBUG, "Intersecting platform at %d by %d. Returning back to y = %d", pr.y, result.h, y);
-					y = tileBottom.y - 0.001;
 					collisionFound = true;
 					break;
 				}
@@ -918,86 +907,50 @@ void ResolveBottom(Creature &p)
 	}
 	else
 	{
+		// because we need to be out of the ground for next left/right colission check
+		p.yNew = tileBottom.y - 0.001;
 		if(!p.state->Is(CREATURE_STATES::SLIDING))
 			p.SetState(CREATURE_STATES::ONGROUND);
 
 		p.SetVelocity(p.GetVelocity().x, 0);
 	}
-
-	p.SetY(y);
 }
 
 void ResolveTop(Creature &p)
 {
-	Velocity vel = p.GetVelocity(); // Player velocity
 	PrecisionRect ppr = p.hitbox->GetPRect();
-	double x, y;
-	p.GetPos(x, y);
-	y = p.yNew;
 
-	int minx = ConvertToTileCoord(x, false);
-	int maxx = ConvertToTileCoord(ppr.x + ppr.w, true);
-	int head = ConvertToTileCoord(y - ppr.h, false);
-	int feet = ConvertToTileCoord(y, false);
+	int minx = ConvertToTileCoord(p.GetX(), false);
+	int maxx = ConvertToTileCoord(p.GetX() + ppr.w, true);
+	int head = ConvertToTileCoord(p.yNew - ppr.h, false);
 
 	// Bugfix for possible skipping of the next loop
 	if(minx == maxx)
 		maxx = minx + 1;
 
-	bool collisionFound = false;
 	for(int i = minx; i < maxx; i++)
 	{
-		SDL_Rect tileBottom = GetTileRect(i, feet);
-		SDL_Rect tileTop = GetTileRect(i, head);
-		if(collisionFound) break;
-		if(GetTileTypeAtTiledPos(i, feet) == PHYSICS_LADDER_TOP)
-		{
-			if(p.state->Is(CREATURE_STATES::ONLADDER))
-			{
-				y = (double)tileBottom.y;
-				vel.y = 0;
-				//PrintLog(LOG_SUPERDEBUG, "Reached ladder top end");
-				collisionFound = true;
-				break;
-			}
-		}
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(i, head);
 		if(IsSolid(type))
 		{
-			vel.y = 0;
-			y = p.GetY();
+			p.yNew = p.GetY(); // REVERT 
 			//PrintLog(LOG_SUPERDEBUG, "Hitting ceiling");
 			break;
 		}
 	}
-	// Refreshing with new data
-	p.SetPos(x, y);
-	p.SetVelocity(vel.x, vel.y);
 }
 
 void ResolveRight(Creature &p)
 {
-	double x, y;
-	int minx, maxx;
-
-	SDL_Rect pr; // Player rectangle
-	PrecisionRect ppr;
 	Velocity vel; // Player velocity
-
 	vel = p.GetVelocity();
 
-	// Checking for left/right collisions
-
+	PrecisionRect ppr = p.hitbox->GetPRect();
 	// Converting to coordinates in tiles array
-	pr = p.hitbox->GetRect();
-	ppr = p.hitbox->GetPRect();
-	y = p.GetY();
-	x = p.xNew;
-	minx = ConvertToTileCoord(x, false);
-	maxx = ConvertToTileCoord(x + ppr.w, false);
+	int maxx = ConvertToTileCoord(p.xNew + ppr.w, false);
 
-	int feet = ConvertToTileCoord(y, false);
-	int head = ConvertToTileCoord(p.hitbox->GetRect().y, false);
+	int feet = ConvertToTileCoord(p.yNew, false);
+	int head = ConvertToTileCoord(p.yNew - ppr.h, false);
 
 	bool break_flag = false;
 	for(int j = head; j <= feet; j++)
@@ -1006,7 +959,7 @@ void ResolveRight(Creature &p)
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(maxx, j);
 		if(IsSolid(type))
 		{
-			x = maxx * TILESIZE - p.hitbox->GetPRect().w;
+			p.xNew = p.GetX(); // REVERT
 			p.accel.x = 0;
 			vel.x = 0;
 			//PrintLog(LOG_SUPERDEBUG, "Intersecting wall right at %d. Returning back to x = %d", pr.x, x);	
@@ -1026,43 +979,32 @@ void ResolveRight(Creature &p)
 		}
 	}
 
-	p.SetPos(x, y);
 	// Modify velocity after all collision resolutions
 	p.SetVelocity(vel.x, vel.y);
 }
 
 void ResolveLeft(Creature &p)
 {
-	double x, y;
-	int minx, maxx;
-
-	SDL_Rect result; // Will store instersection rect
-	SDL_Rect pr; // Player rectangle
-	PrecisionRect ppr;
 	Velocity vel; // Player velocity
-
 	vel = p.GetVelocity();
 
+	PrecisionRect ppr = p.hitbox->GetPRect();
 	// Converting to coordinates in tiles array
-	ppr = p.hitbox->GetPRect();
-	y = p.GetY();
-	x = p.xNew;
-	minx = ConvertToTileCoord(x, false);
-	maxx = ConvertToTileCoord(x + ppr.w, false);
-
-	int feet = ConvertToTileCoord(y, false);
-	int head = ConvertToTileCoord(p.hitbox->GetRect().y, false);
+	int minx = ConvertToTileCoord(p.xNew, false);
+	int feet = ConvertToTileCoord(p.yNew, false);
+	int head = ConvertToTileCoord(p.yNew - ppr.h, false);
 
 	// Left
 	bool break_flag = false;
-	for(int j = head; j <= feet; j++) // FOCUS FOCUS FOCUS FOCUS FOCUS FOCUS FOCUS FOCUS 
+	for(int j = head; j <= feet; j++)
 	{
 		if(break_flag) break;
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(minx, j);
 		if(IsSolid(type))
 		{
-			//PrintLog(LOG_SUPERDEBUG, "Intersecting wall left at %d. Returning back to x = %d", ppr.x, x);
-			x = (minx + 1) * TILESIZE;
+			//PrintLog(LOG_INFO, "Intersecting wall left at %lf. Returning back to x = %lf", ppr.x, p.xNew);
+			p.xNew = p.GetX(); // revert
+
 			p.accel.x = 0;
 			vel.x = 0;
 			break;
@@ -1078,25 +1020,9 @@ void ResolveLeft(Creature &p)
 				}
 				break;
 			}
-			case PHYSICS_LADDER:
-			{
-				if(IsSolid(GetTileTypeAtTiledPos(minx - 1, j)))
-				{
-					SDL_IntersectRect(&pr, &GetTileRect(minx, j), &result);
-					if(result.w > 11)
-					{
-						x += TILESIZE - result.w - 4;
-						//p.SetPos(x, y);
-						//PrintLog(LOG_SUPERDEBUG, "EXPECTING DEADEND at %d by %d. Returning back to x = %d", pr.x, 1, x);
-						break_flag = true;
-					}
-				}
-				break;
-			}
 		}
 	}
 
-	p.SetPos(x, y);
 	// Modify velocity after all collision resolutions
 	p.SetVelocity(vel.x, vel.y);
 }
@@ -1130,9 +1056,11 @@ void DetectAndResolveMapCollisions(Creature &p)
 bool HasCollisionWithEntity(Creature &p, Machinery &m)
 {
 	bool foundSpecialInteraction = false;
-	PrecisionRect *prect = &p.hitbox->GetPRect();
+	PrecisionRect prect = p.hitbox->GetPRect();
+	prect.x = p.xNew;
+	prect.y = p.yNew - prect.h;
 	PrecisionRect *dyrect = &m.hitbox->GetPRect();
-	if(HasIntersection(prect, dyrect))
+	if(HasIntersection(&prect, dyrect))
 	{
 		if(m.type == MACHINERY_TYPES::MACHINERY_BUTTON)
 		{

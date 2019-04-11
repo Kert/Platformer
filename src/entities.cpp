@@ -27,8 +27,9 @@ extern TextureManager textureManager;
 
 struct PlatformData
 {
+	bool solid = false;
 	bool hookable = false;
-	bool isSolid = true;
+	bool standable = false;
 	std::string graphicsName;
 };
 
@@ -114,7 +115,6 @@ void ReadCreatureData()
 			{ "Standing", ANIMATION_STANDING },
 			{ "Jumping", ANIMATION_JUMPING },
 			{ "Falling", ANIMATION_FALLING },
-			{ "Climbing", ANIMATION_CLIMBING },
 			{ "Ducking", ANIMATION_DUCKING },
 			{ "Hanging", ANIMATION_HANGING },
 			{ "Sliding", ANIMATION_SLIDING },
@@ -166,8 +166,9 @@ void ReadPlatformData()
 		PlatformData pl;
 		std::string name = reader.Get("Properties", "Name", "NULL");
 		pl.graphicsName = reader.Get("Properties", "Graphics", "dummy.ini");
+		pl.standable = reader.GetBoolean("Properties", "Standable", true);
 		pl.hookable = reader.GetBoolean("Properties", "Hookable", false);
-		pl.isSolid = reader.GetBoolean("Properties", "IsSolid", true);
+		pl.solid = reader.GetBoolean("Properties", "Solid", false);
 		platformData[name] = pl;
 	}
 	fileList.clear();
@@ -176,7 +177,6 @@ void ReadPlatformData()
 Player::Player()
 {
 	move_vel = 110;
-	climb_vel = 95;
 	jumptime = 0;
 	term_vel = 240;
 	health = 100;
@@ -396,9 +396,6 @@ void Creature::SetState(CREATURE_STATES state)
 		case CREATURE_STATES::JUMPING:
 			this->state = new JumpingState(this);
 			break;
-		case CREATURE_STATES::ONLADDER:
-			this->state = new OnLadderState(this);
-			break;
 		case CREATURE_STATES::DUCKING:
 			this->state = new DuckingState(this);
 			break;
@@ -475,10 +472,8 @@ void Creature::Walk(DIRECTIONS direction)
 {
 	Velocity vel;
 	vel = this->GetVelocity();
-	if(!this->state->Is(CREATURE_STATES::ONLADDER))
-		this->direction = direction;
 
-	if(this->state->Is(CREATURE_STATES::ONGROUND) && !this->state->Is(CREATURE_STATES::ONLADDER)) {
+	if(this->state->Is(CREATURE_STATES::ONGROUND)) {
 		this->accel.x = 1 * (direction ? 1 : -1);
 		if(IsOnIce(*this))
 			this->accel.x = 0.35 * (direction ? 1 : -1);
@@ -510,7 +505,6 @@ Creature::Creature(std::string type)
 	attached = nullptr;
 	status = 0;
 	AI = nullptr;
-	nearladder = false;
 	lefthook = false;
 	charge_time = 0;
 	shottime = 0;
@@ -539,7 +533,6 @@ Creature::Creature(std::string type)
 Creature::Creature()
 {
 	AI = nullptr;
-	nearladder = false;
 	lefthook = false;
 	charge_time = 0;
 	shottime = 0;
@@ -967,10 +960,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 		case WEAPON_GRENADE:
 			hitbox = LoadEntityHitbox("assets/data/graphics/grenade.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/grenade.ini");
-			if(shooter.state->Is(CREATURE_STATES::ONLADDER))
-				SetVelocity(0, 0);
-			else
-				SetVelocity(150 * (direction ? 1 : -1), -200);
+			SetVelocity(150 * (direction ? 1 : -1), -200);
 			accel.y = 5;
 			accel.x = 0;
 			lifetime = (int)(1.8 * 1000);
@@ -1140,7 +1130,7 @@ Door::Door(int x, int y, bool spawnButtons)
 	}
 	SetPos(x, y);
 	SetVelocity(0, 0);
-	isSolid = true;
+	solid = true;
 	enabled = false;
 	destructable = true;
 	direction = DIRECTION_RIGHT;
@@ -1259,8 +1249,9 @@ Platform::Platform(int x, int y, int x2, int y2, std::string platformType)
 	
 	automatic = true;
 	destructable = false;
+	standable = platformData[platformType].standable;
 	hookable = platformData[platformType].hookable;
-	isSolid = platformData[platformType].isSolid;
+	solid = platformData[platformType].solid;
 	direction = DIRECTION_RIGHT;
 }
 
@@ -1570,7 +1561,7 @@ Lava_Floor::Lava_Floor(int x, int y)
 	sprite = LoadEntitySprite("assets/sprites/lava_floor.png"); 
 	SetPos(x, y);
 	SetVelocity(0, 0);
-	isSolid = false;
+	solid = false;
 	destructable = false;
 	enabled = false;
 	direction = DIRECTION_RIGHT;

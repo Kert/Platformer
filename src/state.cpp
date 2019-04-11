@@ -59,7 +59,7 @@ CreatureState* CreatureState::HandleInput(int input, int type)
 					}*/
 					//if (pl->hasState(STATE_SHOOTING))
 					//{
-					//	if (pl->ammo[pl->weapon] && !pl->hasState(STATE_ONLADDER) && (pl->weapon != WEAPON_GRENADE))
+					//	if (pl->ammo[pl->weapon] && (pl->weapon != WEAPON_GRENADE))
 					//	{
 					//		pl->ammo[pl->weapon]--;
 					//		ProcessShot(pl->weapon, *pl);
@@ -132,7 +132,7 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 			switch(input)
 			{
 				case BIND_DOWN:
-					//if (!p->nearladder && p->state->Is(CREATURE_STATES::ONGROUND))
+					//if (p->state->Is(CREATURE_STATES::ONGROUND))
 					//	return new DuckingState();
 					if(IsOnIce(*p))
 						if((p->GetVelocity().x > 80 && p->direction) || (p->GetVelocity().x < -80 && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
@@ -147,14 +147,12 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 							if(dy->type == MACHINERY_TYPES::MACHINERY_BUTTON)
 							{
 								Button *btn = (Button*)dy;
-								if(p->interactTarget == btn->pairID && btn->isSolid == true)
+								if(p->interactTarget == btn->pairID && btn->solid == true)
 									btn->Activate();
 							}
 							
 						}
 					}
-					if(p->nearladder)
-						return new OnLadderState(cr);
 					break;
 				}
 				case BIND_JUMP:
@@ -163,7 +161,7 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 						p->SetY(p->GetY() + 2);
 						if(p->attached)
 						{
-							p->SetY(p->GetY() + 1);
+							p->SetY(p->GetY() + 2);
 							p->onMachinery = false;
 							p->attached = nullptr;
 						}
@@ -181,7 +179,7 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 			switch(input)
 			{
 				/*case BIND_DOWN:
-					if (!p->nearladder && p->state->Is(CREATURE_STATES::ONGROUND))
+					if (p->state->Is(CREATURE_STATES::ONGROUND))
 						return new DuckingState();
 					break;*/
 				case BIND_RIGHT:
@@ -248,7 +246,7 @@ CreatureState* InAirState::HandleInput(int input, int type)
 			switch(input)
 			{
 				/*case BIND_DOWN:
-				if (!p->nearladder && p->hasState(STATE_ONGROUND))
+				if (p->hasState(STATE_ONGROUND))
 				return new DuckingState();
 				break;*/
 				case BIND_RIGHT:
@@ -274,71 +272,6 @@ CreatureState* InAirState::HandleInput(int input, int type)
 			{
 				case BIND_RIGHT: case BIND_LEFT:
 					p->accel.x = 0;
-					break;
-				default:
-					CreatureState::HandleInput(input, type);
-			}
-		}
-	}
-	return nullptr;
-}
-
-OnLadderState::OnLadderState(Creature *cr) : CreatureState(cr)
-{
-	state = CREATURE_STATES::ONLADDER;
-	PrintLog(LOG_DEBUG, "Switched to LADDER");
-	cr->direction = DIRECTION_RIGHT;
-}
-
-OnLadderState::~OnLadderState()
-{
-
-}
-
-CreatureState* OnLadderState::HandleInput(int input, int type)
-{
-	// if creature == player do
-	Player *p = (Player*)cr;
-	switch(type)
-	{
-		case 0:
-		{
-			switch(input)
-			{
-				case BIND_LEFT:
-					break;
-				case BIND_RIGHT:
-					break;
-				default:
-					CreatureState::HandleInput(input, type);
-			}
-			break;
-		}
-		case 1: // hold
-		{
-			switch(input)
-			{
-				case BIND_UP:
-					p->SetVelocity(0, -p->climb_vel);
-					if(!p->nearladder)
-						return new OnGroundState(cr);
-					break;
-				case BIND_DOWN:
-					p->SetVelocity(0, p->climb_vel);
-					if(!p->nearladder /*|| p->hasState(STATE_ONGROUND)*/)
-						return new OnGroundState(cr);
-					break;
-				default:
-					CreatureState::HandleInput(input, type);
-			}
-			break;
-		}
-		case 2:
-		{
-			switch(input)
-			{
-				case BIND_UP: case BIND_DOWN:
-					p->SetVelocity(0, 0);
 					break;
 				default:
 					CreatureState::HandleInput(input, type);

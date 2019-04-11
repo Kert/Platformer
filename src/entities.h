@@ -166,10 +166,8 @@ class Creature : public DynamicEntity
 		int jumptime; // Time in ms
 		double term_vel;
 		double move_vel;
-		double climb_vel;
 		int shottime; // Time in ms
 		int charge_time;
-		bool nearladder;
 		bool nearhookplatform;
 		bool lefthook;
 		Machinery *attached;
@@ -300,7 +298,7 @@ class Machinery : public DynamicEntity
 	public:
 		MACHINERY_TYPES type;
 		bool enabled;
-		bool isSolid;
+		bool solid;
 		bool destructable;
 		SDL_Rect default_pos;
 	public:
@@ -336,6 +334,7 @@ class Door : public Machinery
 class Platform : public Machinery
 {
 	public:
+		bool standable = true;
 		bool hookable = false;
 		double speed;
 		Velocity deaccel;

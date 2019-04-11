@@ -571,15 +571,6 @@ void UpdateAnimation(Player &p)
 			p.sprite->Animate();
 			return;
 		}
-		case CREATURE_STATES::ONLADDER:
-		{
-			if(p.GetVelocity().y > 0 || p.GetVelocity().y < 0)
-			{
-				p.sprite->SetAnimation(ANIMATION_CLIMBING);
-				p.sprite->Animate();
-			}
-			return;
-		}
 	}
 
 	if(p.state->Is(CREATURE_STATES::ONGROUND))
@@ -707,8 +698,8 @@ void ShowDebugInfo(Player &p)
 	int tx, ty;
 	tx = ConvertToTileCoord(x, false);
 	ty = ConvertToTileCoord(y, false);
-	sprintf(debug_str, "nearladder = %d state = %d onMachinery = %d PlayerX = %d | %d. PlayerY = %d | %d VelX: %d VelY: %d HP: %d",
-		player->ammo[WEAPON_FIREBALL], p.state->GetState(), p.onMachinery, x, tx, y, ty,
+	sprintf(debug_str, "state = %d onMachinery = %d PlayerX = %d | %d. PlayerY = %d | %d VelX: %d VelY: %d HP: %d",
+		p.state->GetState(), p.onMachinery, x, tx, y, ty,
 		(int)p.GetVelocity().x, (int)p.GetVelocity().y, p.health);
 	SDL_Surface *debug_surface = TTF_RenderText_Solid(debug_font, debug_str, debug_color);
 	SDL_Texture* debug_texture = SDL_CreateTextureFromSurface(renderer, debug_surface);

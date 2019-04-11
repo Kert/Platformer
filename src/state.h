@@ -41,14 +41,6 @@ public:
 	~JumpingState();
 };
 
-class OnLadderState : public CreatureState
-{
-	virtual CreatureState* HandleInput(int input, int type);
-public:
-	OnLadderState(Creature *cr);
-	~OnLadderState();
-};
-
 class DuckingState : public CreatureState
 {
 	virtual CreatureState* HandleInput(int input, int type);

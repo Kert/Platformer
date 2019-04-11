@@ -99,19 +99,8 @@ void LogicUpdate(Uint32 dt)
 	player->HandleStateIdle();
 	ApplyPhysics(*player, dt);
 	//// Updating camera
-	//if(player->hasState(STATE_ONLADDER))
-	//{
-	//	if(player->GetVelocity().y > 0)
-	//		camera->SetOffsetY(30);
-	//	else if(player->GetVelocity().y < 0)
-	//		camera->SetOffsetY(-10);
-	//	else
-	//		camera->SetOffsetY(10);
-	//}
 	//if(player->hasState(STATE_LOOKINGUP))
 	//	camera->SetOffsetY(-20);
-	//else if(!player->hasState(STATE_ONLADDER))
-	//	camera->SetOffsetY(15);
 	//if(player->hasState(STATE_DUCKING))
 	//	camera->SetOffsetY(35);
 	camera->Update();

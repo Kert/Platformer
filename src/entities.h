@@ -173,7 +173,6 @@ class Creature : public DynamicEntity
 		Machinery *attached;
 		double attX;
 		double attY;
-
 		int interactTarget;
 		BaseAI *AI = nullptr;
 		WEAPONS weapon;
@@ -183,6 +182,14 @@ class Creature : public DynamicEntity
 		bool shotLocked;
 		bool charging;
 		bool onMachinery;
+		struct
+		{
+			bool left;
+			bool right;
+			bool top;
+			bool bottom;
+		} pushedFrom;
+
 	public:
 		Creature();
 		Creature(std::string type);
@@ -213,6 +220,7 @@ class Creature : public DynamicEntity
 		void HandleInput(int input, int type);
 		void HandleStateIdle();
 		void AttachTo(Machinery *machy);
+		void Crush();
 };
 
 struct CreatureData

@@ -515,6 +515,7 @@ Creature::Creature(std::string type)
 	shotLocked = false;
 	charging = false;
 	onMachinery = false;
+	pushedFrom = {};
 
 	creatures.push_back(this);
 	entityID = AssignEntityID(LIST_CREATURES);
@@ -568,6 +569,11 @@ void Creature::AttachTo(Machinery *machy)
 	attached = machy;
 	attX = xNew - machy->GetX();
 	attY = yNew - machy->GetY() + machy->hitbox->GetPRect().h;
+}
+
+void Creature::Crush()
+{
+	this->TakeDamage(25);
 }
 
 void Entity::GetPos(double &x, double &y)

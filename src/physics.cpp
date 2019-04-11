@@ -100,6 +100,7 @@ void DetectAndResolveEntityCollisions(Creature &p)
 	// Checking for collisions with entities
 	bool foundCollision = false;
 
+	p.pushedFrom.left = p.pushedFrom.right = p.pushedFrom.top = p.pushedFrom.bottom = false;
 	for(auto &machy : machinery)
 	{
 		if(machy->type != MACHINERY_TYPES::MACHINERY_PLATFORM)
@@ -125,22 +126,28 @@ void DetectAndResolveEntityCollisions(Creature &p)
 				{
 					if(playerCenterY <= platCenterY)
 					{
-						// standing on top
 						// moving out of platform to properly check for left/right collissions
+						p.pushedFrom.bottom = true;
 						p.yNew = plat->GetY() - plat->hitbox->GetPRect().h - 0.001;
 						foundCollision = true;
 					}
 					else
 					{
-						// ceiling hit
+						p.pushedFrom.top = true;
 						p.yNew = plat->GetY() + p.hitbox->GetPRect().h + 0.001;
 					}
 					if(HasCollisionWithEntity(p, *plat))
 					{
 						if(playerCenterX <= platCenterX)
+						{
+							p.pushedFrom.right = true;
 							p.xNew = plat->GetX() - p.hitbox->GetPRect().w - 0.001;
+						}							
 						else
+						{
+							p.pushedFrom.left = true;
 							p.xNew = plat->GetX() + plat->hitbox->GetPRect().w + 0.001;
+						}							
 					}
 					if(foundCollision)
 					{
@@ -153,15 +160,27 @@ void DetectAndResolveEntityCollisions(Creature &p)
 				else
 				{
 					if(playerCenterX <= platCenterX)
+					{
+						p.pushedFrom.right = true;
 						p.xNew = plat->GetX() - p.hitbox->GetPRect().w - 0.001;
+					}						
 					else
+					{
+						p.pushedFrom.left = true;
 						p.xNew = plat->GetX() + plat->hitbox->GetPRect().w + 0.001;
+					}						
 					if(HasCollisionWithEntity(p, *plat))
 					{
 						if(playerCenterY <= platCenterY)
+						{
+							p.pushedFrom.bottom = true;
 							p.yNew = plat->GetY() - plat->hitbox->GetPRect().h - 0.001;
+						}							
 						else
+						{
+							p.pushedFrom.top = true;
 							p.yNew = plat->GetY() + p.hitbox->GetPRect().h + 0.001;
+						}							
 					}
 				}
 				continue;
@@ -913,6 +932,10 @@ void ResolveBottom(Creature &p)
 			p.SetState(CREATURE_STATES::ONGROUND);
 
 		p.SetVelocity(p.GetVelocity().x, 0);
+		if(p.pushedFrom.top)
+		{
+			p.Crush();
+		}
 	}
 }
 
@@ -928,14 +951,23 @@ void ResolveTop(Creature &p)
 	if(minx == maxx)
 		maxx = minx + 1;
 
+	bool collisionFound = false;
 	for(int i = minx; i < maxx; i++)
 	{
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(i, head);
 		if(IsSolid(type))
 		{
-			p.yNew = p.GetY(); // REVERT 
+			p.yNew = p.GetY(); // REVERT
+			collisionFound = true;
 			//PrintLog(LOG_SUPERDEBUG, "Hitting ceiling");
 			break;
+		}
+	}
+	if(collisionFound)
+	{
+		if(p.pushedFrom.bottom)
+		{
+			p.Crush();
 		}
 	}
 }
@@ -953,15 +985,16 @@ void ResolveRight(Creature &p)
 	int head = ConvertToTileCoord(p.yNew - ppr.h, false);
 
 	bool break_flag = false;
+	bool collisionFound = false;
 	for(int j = head; j <= feet; j++)
 	{
 		if(break_flag) break;
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(maxx, j);
 		if(IsSolid(type))
 		{
-			p.xNew = p.GetX(); // REVERT
+			collisionFound = true;
 			p.accel.x = 0;
-			vel.x = 0;
+			vel.x = 0;			
 			//PrintLog(LOG_SUPERDEBUG, "Intersecting wall right at %d. Returning back to x = %d", pr.x, x);	
 			break;
 		}
@@ -981,6 +1014,15 @@ void ResolveRight(Creature &p)
 
 	// Modify velocity after all collision resolutions
 	p.SetVelocity(vel.x, vel.y);
+
+	if(collisionFound)
+	{
+		p.xNew = maxx * TILESIZE - ppr.w - 0.001;
+		if(p.pushedFrom.left)
+		{
+			p.Crush();
+		}
+	}
 }
 
 void ResolveLeft(Creature &p)
@@ -996,6 +1038,7 @@ void ResolveLeft(Creature &p)
 
 	// Left
 	bool break_flag = false;
+	bool collisionFound = false;
 	for(int j = head; j <= feet; j++)
 	{
 		if(break_flag) break;
@@ -1003,10 +1046,9 @@ void ResolveLeft(Creature &p)
 		if(IsSolid(type))
 		{
 			//PrintLog(LOG_INFO, "Intersecting wall left at %lf. Returning back to x = %lf", ppr.x, p.xNew);
-			p.xNew = p.GetX(); // revert
-
 			p.accel.x = 0;
 			vel.x = 0;
+			collisionFound = true;
 			break;
 		}
 		switch(type)
@@ -1025,22 +1067,25 @@ void ResolveLeft(Creature &p)
 
 	// Modify velocity after all collision resolutions
 	p.SetVelocity(vel.x, vel.y);
-}
 
+	if(collisionFound)
+	{
+		p.xNew = (minx + 1) * TILESIZE + 0.001;
+		if(p.pushedFrom.right)
+		{
+			p.Crush();
+		}
+	}
+}
 
 void DetectAndResolveMapCollisions(Creature &p)
 {
 	const double OOB_EXTENT = 100;
 
-	if(p.yNew >= p.GetY())
-		ResolveBottom(p);
-	else
-		ResolveTop(p);
-
-	if(p.xNew >= p.GetX())
-		ResolveRight(p);
-	else
-		ResolveLeft(p);
+	ResolveBottom(p);
+	ResolveTop(p);
+	ResolveRight(p);
+	ResolveLeft(p);
 
 	//Allow out of bounds coords, but not much
 	if(p.GetX() < -OOB_EXTENT)

@@ -100,6 +100,24 @@ void Level::LoadLevelFromFile(std::string filename)
 	TiXmlNode* node = doc.FirstChild("map");
 
 	TiXmlElement* mapProperties = node->ToElement();
+	
+	TiXmlNode* props = mapProperties->FirstChild();
+	for(TiXmlElement* prop = props->FirstChildElement(); prop != NULL; prop = prop->NextSiblingElement())
+	{
+		const char *name = prop->Attribute("name");
+		if(name)
+		{
+			std::string	name_string = name;
+			if(name_string == "music")
+			{
+				const char* tmp = prop->Attribute("value");
+				if(tmp)
+					musicFileName = tmp;
+				else
+					musicFileName = "1.ogg";
+			}
+		}		
+	}
 
 	std::string colorstr = mapProperties->Attribute("backgroundcolor");
 	sscanf(colorstr.c_str(), "#%02hhx%02hhx%02hhx%02hhx", &this->bgColor.r, &this->bgColor.g, &this->bgColor.b, &this->bgColor.a);

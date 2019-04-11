@@ -63,15 +63,12 @@ void PlaySfx(char* soundName)
 	Mix_PlayChannel(-1, activeSound, 0);
 }
 
-void PlayMusic(char* musicName)
+void PlayMusic(std::string musicName)
 {
-	char musicFile[50];
+	std::string musicFile;
+	musicFile = "assets/music/" + musicName;
 
-	strcpy(musicFile, "assets/music/");
-	strcat(musicFile, musicName);
-	strcat(musicFile, ".ogg");
-
-	activeMusic = Mix_LoadMUS(musicFile);
+	activeMusic = Mix_LoadMUS(musicFile.c_str());
 	if(!activeMusic) {
 		PrintLog(LOG_IMPORTANT, "Mix_LoadMUS: %s\n", Mix_GetError());
 	}

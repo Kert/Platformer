@@ -11,6 +11,7 @@ class Level
 {
 	public:
 		std::string fileName;
+		std::string musicFileName;
 		bool loaded;
 		SDL_Point playerSpawn = { 200, 70 };
 		SDL_Point exit;

@@ -46,7 +46,7 @@ void StartGame()
 
 	min = timeLimit / 60;
 	sec = timeLimit % 60;
-	PlayMusic("1");
+	PlayMusic(level->musicFileName);
 	camera->Attach(*player);
 }
 

@@ -145,7 +145,10 @@ class AI_Hypno: public BaseAI
 	SDL_Point center;
 	int curDegree = 0;
 	public:
-		AI_Hypno(Creature *c) : BaseAI(c) {};
+		AI_Hypno(Creature *c) : BaseAI(c) {
+			timeToTrigger = std::vector<int>{ 0 };
+			timerTime = std::vector<int>{ 0 };
+		};
 
 	private:
 		void OnTimerTimeup(int id);

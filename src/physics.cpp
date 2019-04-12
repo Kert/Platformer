@@ -1271,12 +1271,10 @@ void OnHitboxCollision(Creature &c, Pickup &p, Uint32 deltaTicks)
 
 void ApplyKnockback(Creature &p, Creature &e)
 {
-	const int STUN_TIME = 200;
 	const double KNOCKBACK_VELOCITY_X = 300;
 	const double KNOCKBACK_VELOCITY_Y = -100;
 	const double KNOCKBACK_ACCEL_X = -4;
 
-	p.SetStun(STUN_TIME);
 	int knockbackDirection = e.GetX() > p.GetX() ? 1 : -1;
 	p.SetVelocity(-KNOCKBACK_VELOCITY_X * knockbackDirection, KNOCKBACK_VELOCITY_Y);
 	p.accel.x = KNOCKBACK_ACCEL_X * knockbackDirection;

@@ -1083,10 +1083,11 @@ void Creature::SetInvulnerability(int milliseconds)
 
 void Creature::TakeDamage(int damage)
 {
+	const int STUN_TIME = 200;
 	if(status == STATUS_DYING || status == STATUS_INVULN || status == STATUS_STUN)
 		return;
 	health -= damage;
-	SetInvulnerability(500);
+	SetStun(STUN_TIME);
 	if(health <= 0)
 	{
 		PlaySfx("death");

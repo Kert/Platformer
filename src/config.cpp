@@ -1,6 +1,7 @@
 #include "config.h"
 #include <SDL.h>
-#include <deque>
+#include <algorithm>
+#include <map>
 #include <fstream>
 #include <string>
 #include "INIReader.h"
@@ -8,26 +9,52 @@
 #include "sound.h"
 #include "utils.h"
 
-// Pretending joystick input codes never overlap keyboard's
-std::deque<int> bindList;
+std::map<KEYBINDS, SDL_Keycode> bindsKeyboard;
+std::map<KEYBINDS, Uint8> bindsController;
 
 extern int fullscreenMode;
 extern SDL_DisplayMode displayMode;
 extern int displayIndex;
 
-static const int NUM_BINDS = 15;
-
-const std::map<std::string, int> configNames = {
-	{"UP", 0},
-	{"DOWN", 1},
-	{"LEFT", 2},
-	{"RIGHT", 3},
-	{"JUMP", 4},
-	{"FIRE", 5},
-	{"SWITCH WEAPON", 6},
-	{"OK", 7},
-	{"BACK", 8}
+const std::map<KEYBINDS, std::string> bindNames = {
+	{ BIND_UP,        "UP"},
+	{ BIND_DOWN,      "DOWN" },
+	{ BIND_LEFT,      "LEFT"},
+	{ BIND_RIGHT,     "RIGHT"},
+	{ BIND_JUMP,      "JUMP" },
+	{ BIND_FIRE,      "FIRE" },
+	{ BIND_SWITCH,    "SWITCH" },
+	{ BIND_OK,        "OK" },
+	{ BIND_BACK,      "BACK" },
+	{ BIND_ARROWUP,   "ARROWUP" },
+	{ BIND_ARROWDOWN, "ARROWDOWN" },
+	{ BIND_ARROWL,    "ARROWL" },
+	{ BIND_ARROWR,    "ARROWR" },
+	{ BIND_ESCAPE,    "ESCAPE" },
+	{ BIND_ENTER,     "BIND_ENTER" }
 };
+
+const std::vector<KEYBINDS> bindableKeys = {
+	BIND_UP,
+	BIND_DOWN,
+	BIND_LEFT,
+	BIND_RIGHT,
+	BIND_JUMP,
+	BIND_FIRE,
+	BIND_SWITCH,
+	BIND_OK,
+	BIND_BACK
+};
+
+int GetNumConfigurableBinds()
+{
+	return bindableKeys.size();
+}
+
+std::vector<KEYBINDS> GetBindables()
+{
+	return bindableKeys;
+}
 
 std::map<std::string, int> fullscreenModes = {
 	{"Off", 0},
@@ -37,42 +64,38 @@ std::map<std::string, int> fullscreenModes = {
 
 void InitConfig()
 {
-	LoadDefaultBindings();
+	LoadDefaultBinds();
 	LoadConfig();
 }
 
-void LoadDefaultBindings()
+void LoadDefaultBinds()
 {
-	// reserve memory for binds
-	for(int i = 0; i < NUM_BINDS; i++)
-		bindList.push_back(0);
-	SetBinding(SDLK_UP, BIND_UP);
-	SetBinding(SDLK_DOWN, BIND_DOWN);
-	SetBinding(SDLK_LEFT, BIND_LEFT);
-	SetBinding(SDLK_RIGHT, BIND_RIGHT);
-	SetBinding(SDLK_z, BIND_JUMP);
-	SetBinding(SDLK_x, BIND_FIRE);
-	SetBinding(SDLK_c, BIND_SWITCH);
-	SetBinding(SDLK_RETURN2, BIND_OK);
-	SetBinding(SDLK_ESCAPE, BIND_BACK);
-	SetBinding(SDLK_UP, BIND_ARROWUP);
-	SetBinding(SDLK_DOWN, BIND_ARROWDOWN);
-	SetBinding(SDLK_LEFT, BIND_ARROWL);
-	SetBinding(SDLK_RIGHT, BIND_ARROWR);
-	SetBinding(SDLK_ESCAPE, BIND_ESCAPE);
-	SetBinding(SDLK_RETURN2, BIND_ENTER);
-	/*
-	// Joystick default binds
-	SetBinding(0, BIND_UP);
-	SetBinding(1, BIND_DOWN);
-	SetBinding(2, BIND_LEFT);
-	SetBinding(3, BIND_RIGHT);
-	SetBinding(10, BIND_JUMP);
-	SetBinding(12, BIND_FIRE);
-	SetBinding(13, BIND_SWITCH);
-	SetBinding(6, BIND_OK);
-	SetBinding(5, BIND_BACK);
-	*/
+	SetKeyboardBind(SDLK_UP, BIND_UP);
+	SetKeyboardBind(SDLK_DOWN, BIND_DOWN);
+	SetKeyboardBind(SDLK_LEFT, BIND_LEFT);
+	SetKeyboardBind(SDLK_RIGHT, BIND_RIGHT);
+	SetKeyboardBind(SDLK_z, BIND_JUMP);
+	SetKeyboardBind(SDLK_x, BIND_FIRE);
+	SetKeyboardBind(SDLK_c, BIND_SWITCH);
+	SetKeyboardBind(SDLK_RETURN, BIND_OK);
+	SetKeyboardBind(SDLK_ESCAPE, BIND_BACK);
+	SetKeyboardBind(SDLK_UP, BIND_ARROWUP);
+	SetKeyboardBind(SDLK_DOWN, BIND_ARROWDOWN);
+	SetKeyboardBind(SDLK_LEFT, BIND_ARROWL);
+	SetKeyboardBind(SDLK_RIGHT, BIND_ARROWR);
+	SetKeyboardBind(SDLK_ESCAPE, BIND_ESCAPE);
+	SetKeyboardBind(SDLK_RETURN2, BIND_ENTER);
+	
+	SetControllerBind(SDL_CONTROLLER_BUTTON_DPAD_RIGHT, BIND_RIGHT);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_DPAD_LEFT, BIND_LEFT);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_DPAD_UP, BIND_UP);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_DPAD_DOWN, BIND_DOWN);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_A, BIND_JUMP);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_X, BIND_FIRE);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_B, BIND_SWITCH);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_A, BIND_OK);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_BACK, BIND_BACK);
+	SetControllerBind(SDL_CONTROLLER_BUTTON_START, BIND_ESCAPE);
 }
 
 void LoadConfig()
@@ -85,16 +108,18 @@ void LoadConfig()
 		return;
 	}
 
-	for(auto &i : configNames)
+	for(auto &i : bindNames)
 	{
-		std::string keyName = reader.Get("Keys", i.first, "");
+		std::string keyName = reader.Get("KeysKeyboard", i.second, "");
 		if(keyName == "")
 			PrintLog(LOG_IMPORTANT, "Wrong bind");
 		else
-		{
-			int keycode = SDL_GetKeyFromName(keyName.c_str());
-			SetBinding(keycode, i.second);
-		}
+			SetKeyboardBind(atoi(keyName.c_str()), i.first);
+		keyName = reader.Get("KeysController", i.second, "");
+		if(keyName == "")
+			PrintLog(LOG_IMPORTANT, "Wrong bind");
+		else
+			SetControllerBind(atoi(keyName.c_str()), i.first);
 	}
 
 	fullscreenMode = fullscreenModes[reader.Get("Video", "Fullscreen", "Off")];
@@ -117,10 +142,15 @@ void SaveConfig()
 		PrintLog(LOG_IMPORTANT, "File saving failed wtf");
 		return;
 	}
-	file << "[Keys]" << std::endl;
-	for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+	file << "[KeysKeyboard]" << std::endl;
+	for(auto i : bindsKeyboard)
 	{
-		file << GetBindingName(i) << "=" << GetDeviceBindName(bindList[i]) << std::endl;
+		file << GetBindingName(i.first) << "=" << i.second << std::endl;
+	}
+	file << "[KeysController]" << std::endl;
+	for(auto i : bindsController)
+	{
+		file << GetBindingName(i.first) << "=" << (int)i.second << std::endl;
 	}
 
 	file << "[Video]" << std::endl;
@@ -136,61 +166,59 @@ void SaveConfig()
 	file << "Sfx=" << GetSfxVolume() << std::endl;
 }
 
-void SetBinding(int code, int bind)
+void SetKeyboardBind(SDL_Keycode code, KEYBINDS bind)
 {
-	bindList[bind] = code;
+	bindsKeyboard[bind] = code;
 }
 
-int GetBindingFromCode(int code)
+void SetControllerBind(Uint8 code, KEYBINDS bind)
 {
-	int bind = 0;
-	bool found = false;
-	for(auto i : bindList)
+	bindsController[bind] = code;
+}
+
+int GetKeyboardBindFromCode(SDL_Keycode code)
+{
+	for(auto i : bindsKeyboard)
 	{
-		if(i == code)
-		{
-			found = true;
-			break;
-		}
-		bind++;
+		if (i.second == code)
+			return i.first;
 	}
-	return found ? bind : -1;
+	return -1;
 }
 
-int GetBindingCode(int bind)
+SDL_Keycode GetKeyboardCodeFromBind(KEYBINDS bind)
 {
-	return bindList.at(bind);
+	if (bindsKeyboard.find(bind) != bindsKeyboard.end())
+		return bindsKeyboard[bind];
+	return -1;
 }
 
-const char *GetBindingName(int bind)
+int GetControllerBindFromCode(Uint8 code)
 {
-	switch(bind)
+	for(auto i : bindsController)
 	{
-		case 0:
-			return "UP";
-		case 1:
-			return "DOWN";
-		case 2:
-			return "LEFT";
-		case 3:
-			return "RIGHT";
-		case 4:
-			return "JUMP";
-		case 5:
-			return "FIRE";
-		case 6:
-			return "SWITCH WEAPON";
-		case 7:
-			return "OK";
-		case 8:
-			return "BACK";
-		default:
-			return "";
-			break;
+		if (i.second == code)
+			return i.first;
 	}
+	return -1;
 }
 
-const char *GetFullscreenMode(int code)
+Uint8 GetControllerCodeFromBind(KEYBINDS bind)
+{
+	if (bindsController.find(bind) != bindsController.end())
+		return bindsController[bind];
+	return -1;
+}
+
+std::string GetBindingName(KEYBINDS bind)
+{
+	if (bindNames.find(bind) != bindNames.end())
+		return bindNames.at(bind);
+	else
+		return "---";
+}
+
+std::string GetFullscreenMode(int code)
 {
 	switch(code)
 	{
@@ -205,17 +233,34 @@ const char *GetFullscreenMode(int code)
 	}
 }
 
-std::string GetDeviceBindName(int code)
+std::string GetKeyboardKeyName(SDL_Keycode code)
 {
-	std::string str;
-	if(code < 15)
-		str = "Joy " + std::to_string(code);
+	const char* name = SDL_GetKeyName(code);
+	if (name)
+	{
+		std::string str = name;
+		std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+		return str;
+	}
 	else
-		str.append(SDL_GetKeyName(code));
-	return str;
+		return "---";
 }
 
-void BindingsCleanup()
+std::string GetControllerKeyName(Uint8 code)
 {
-	std::deque<int>().swap(bindList); // forcibly deallocate memory
+	const char* name = SDL_GameControllerGetStringForButton((SDL_GameControllerButton)code);
+	if (name)
+	{
+		std::string str = name;
+		std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+		return str;
+	}
+	else
+		return "---";
+}
+	
+void BindsCleanup()
+{
+	std::map<KEYBINDS, SDL_Keycode>().swap(bindsKeyboard); // forcibly deallocate memory
+	std::map<KEYBINDS, Uint8>().swap(bindsController); // forcibly deallocate memory
 }

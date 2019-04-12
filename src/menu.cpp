@@ -9,7 +9,7 @@
 // TODO: go cross-platform
 #include <Windows.h>
 
-int BindingKey;
+KEYBINDS BindingKey;
 MENUS CurrentMenu;
 std::map<MENUS, Menu*> menus;
 
@@ -32,12 +32,18 @@ int RefreshDisplayModeMenus();
 int CreateDisplayMenu();
 int CreateMapSelectMenu();
 
-void DoMenuAction(int code, int bind)
+void DoMenuAction(int kbkey, int jbutton, int bind)
 {
 	if(CurrentMenu == MENU_BINDKEY) // special case for keybind screen
 	{
 		if(bind != BIND_ESCAPE)
-			SetBinding(code, BindingKey);
+		{
+			if(jbutton != 255)
+				SetControllerBind(jbutton, (KEYBINDS)BindingKey);
+			else
+				SetKeyboardBind(kbkey, (KEYBINDS)BindingKey);
+		}
+			
 		SetCurrentMenu(MENU_BINDS);
 	}
 	else
@@ -107,13 +113,13 @@ void DoMenuAction(int code, int bind)
 				{
 					if(SelectedItem < (menus.at(CurrentMenu)->GetItemCount() - 2))
 					{
-						BindingKey = SelectedItem; // the enums match up, so we can do this mini-optimization :D
+						BindingKey = static_cast<KEYBINDS>(SelectedItem); // the enums match up, so we can do this mini-optimization :D
 						SetCurrentMenu(MENU_BINDKEY);
 					}
 					else
 					{
 						if(SelectedItem == (menus.at(CurrentMenu)->GetItemCount() - 2))
-							LoadDefaultBindings();
+							LoadDefaultBinds();
 						SetCurrentMenu(MENU_OPTIONS);
 					}
 				}
@@ -400,15 +406,20 @@ void LoadMenus()
 	CreateMapSelectMenu();
 	
 	menu = new Menu();
-	int half = (NUM_CONFIGURABLE_BINDS + 2) / 2;
-	for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+	
+	int half = (GetNumConfigurableBinds() + 2) / 2;
+	int i = 0;
+	std::vector<KEYBINDS> bindables = GetBindables();
+	for(auto bind : bindables)
 	{
-		int x = GetWindowNormalizedX(0.5) - 32;
+		int x = GetWindowNormalizedX(0.3) - 32;
 		int y = GetWindowNormalizedY(0.5) - 32 * (half - i) * 2;
-		menu->AddMenuItem(new MenuItem(x, y, GetBindingName(i), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+		menu->AddMenuItem(new MenuItem(x, y, GetBindingName(bind), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+		i++;
 	}
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - NUM_CONFIGURABLE_BINDS) * 2, "RESET TO DEFAULT", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - NUM_CONFIGURABLE_BINDS - 1) * 2, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - GetNumConfigurableBinds()) * 2, "RESET TO DEFAULT", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - GetNumConfigurableBinds() - 1) * 2, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
 	menus[MENU_BINDS] = menu;
 
 	menu = new Menu();

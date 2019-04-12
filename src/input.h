@@ -2,6 +2,7 @@
 #define _input_h_ 
 
 #include <SDL.h>
+#include "globals.h"
 
 int GetCodeFromInputEvent(SDL_Keycode key, Uint8 jbutton);
 
@@ -12,12 +13,12 @@ void OnBindUnpress(int bind);
 void OnKeyPress(SDL_Keycode key, Uint8 jbutton);
 void OnKeyHold(SDL_Keycode key, Uint8 jbutton);
 void OnKeyUnpress(SDL_Keycode key, Uint8 jbutton);
-void OnHardcodedKeyPress(SDL_Keycode key);
+void OnHardcodedKeyPress(SDL_Keycode key, Uint8 jbutton);
 
 void InputUpdate();
 void InitInput();
 void InputCleanup();
 
-bool IsBindPressed(int bind);
+bool IsBindPressed(KEYBINDS bind);
 
 #endif

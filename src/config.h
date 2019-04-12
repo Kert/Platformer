@@ -1,42 +1,29 @@
 #ifndef _config_h_
 #define _config_h_
 
+#include <SDL.h>
+#include <set>
 #include <string>
+#include "globals.h"
 
-enum KEYBINDS
-{
-	BIND_UP,
-	BIND_DOWN,
-	BIND_LEFT,
-	BIND_RIGHT,
-	BIND_JUMP,
-	BIND_FIRE,
-	BIND_SWITCH,
-	BIND_OK,
-	BIND_BACK,
-	BIND_ARROWUP,
-	BIND_ARROWDOWN,
-	BIND_ARROWL,
-	BIND_ARROWR,
-	BIND_ESCAPE,
-	BIND_ENTER
-};
-
-
-// Number of configurable bindings. The others are hardcoreded and are not saved/loaded from file
-// Put these bindings at the end of the enum
-#define NUM_CONFIGURABLE_BINDS 9
+int GetNumConfigurableBinds();
+std::vector<KEYBINDS> GetBindables();
 
 void InitConfig();
-void LoadDefaultBindings();
+void LoadDefaultBinds();
 void LoadConfig();
 void SaveConfig();
-void BindingsCleanup();
-void SetBinding(int code, int bind);
-int GetBindingFromCode(int code);
-const char *GetBindingName(int bind);
-const char *GetFullscreenMode(int code);
-std::string GetDeviceBindName(int code);
-int GetBindingCode(int bind);
+void BindsCleanup();
+void SetKeyboardBind(SDL_Keycode code, KEYBINDS bind);
+void SetControllerBind(Uint8 code, KEYBINDS bind);
+int GetKeyboardBindFromCode(SDL_Keycode code);
+int GetControllerBindFromCode(Uint8 code);
+SDL_Keycode GetKeyboardCodeFromBind(KEYBINDS bind);
+Uint8 GetControllerCodeFromBind(KEYBINDS bind);
+
+std::string GetBindingName(KEYBINDS bind);
+std::string GetFullscreenMode(int code);
+std::string GetKeyboardKeyName(SDL_Keycode code);
+std::string GetControllerKeyName(Uint8 code);
 
 #endif

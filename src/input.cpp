@@ -16,11 +16,10 @@ extern int GameState;
 extern bool IsDebugMode;
 extern int FadingState;
 
-std::map<SDL_Keycode, int> mkeys;
-std::map<Uint8, int> jbuttons;
+std::map<KEYBINDS, bool> kb_keys;
+std::map<KEYBINDS, bool> j_buttons;
 
-//Game Controller 1 handler
-SDL_Joystick* gamepad = NULL;
+SDL_GameController *controller = nullptr;
 
 // ends gameloop
 extern bool GameEndFlag;
@@ -35,27 +34,24 @@ enum
 
 void InitInput()
 {
-	// Check for joysticks
-	if(SDL_NumJoysticks() < 1)
+	for(int i = 0; i < SDL_NumJoysticks(); i++)
+	{
+		if(SDL_IsGameController(i))
+		{
+			controller = SDL_GameControllerOpen(i);
+			break;
+		}		
+	}
+	if(!controller)
 	{
 		PrintLog(LOG_INFO, "Warning: No joysticks connected!");
-	}
-	else
-	{
-		// Load joystick
-		// For now use only 1 joystick, first found
-		gamepad = SDL_JoystickOpen(0);
-		if(gamepad == NULL)
-		{
-			PrintLog(LOG_IMPORTANT, "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError());
-		}
+		return;
 	}
 }
 
-bool IsBindPressed(int bind)
+bool IsBindPressed(KEYBINDS bind)
 {
-	int code = GetBindingCode(bind);
-	if(mkeys[code])
+	if(kb_keys[bind] || j_buttons[bind])
 		return true;
 	return false;
 }
@@ -129,16 +125,20 @@ void OnBindHold(int bind)
 	}
 }
 
-void OnHardcodedKeyPress(SDL_Keycode key)
+void OnHardcodedKeyPress(SDL_Keycode key, Uint8 jbutton)
 {
 	if(FadingState == FADING_STATE_BLACKNBACK)
 		return;
-	int bind = GetBindingFromCode(key);
+	int bind;
+	if(jbutton != 255)
+		bind = GetControllerBindFromCode(jbutton);
+	else
+		bind = GetKeyboardBindFromCode(key);
 
 	if(GameState == STATE_GAME)
 	{
 		// debug!!
-		if(IsDebugMode || mkeys[SDLK_LSHIFT] || mkeys[SDLK_RSHIFT])
+		/*if(IsDebugMode || kb_keys[SDLK_LSHIFT] || kb_keys[SDLK_RSHIFT])
 		{
 			if(key == SDLK_KP_4 || key == SDLK_j)
 			{
@@ -198,11 +198,11 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 				player->GiveWeapon(WEAPON_ROCKETL);
 				player->ammo[WEAPON_ROCKETL] += 50;
 			}
-		}
+		}*/
 	}
 	else if(GameState == STATE_MENU || GameState == STATE_PAUSED)
 	{
-		DoMenuAction(key, bind);
+		DoMenuAction(key, jbutton, bind);
 	}
 	else if(GameState == STATE_TRANSITION)
 	{
@@ -210,43 +210,45 @@ void OnHardcodedKeyPress(SDL_Keycode key)
 	}
 }
 
-int GetCodeFromInputEvent(SDL_Keycode key, Uint8 jbutton)
-{
-	int code;
-	if(key != -1)
-	{
-		// Enter is a default hardcoded binding, but its code matches a joy button
-		// This makes sure there are no conflicts relating to that
-		if(key == SDLK_RETURN) key = SDLK_RETURN2;
-
-		code = key;
-	}
-	else code = jbutton;
-	return code;
-}
-
 void OnKeyPress(SDL_Keycode key, Uint8 jbutton)
 {
 	PrintLog(LOG_SUPERDEBUG, "Pressed key %d jbutton %u", key, jbutton);
+	
+	int bind;
+	if(jbutton != 255)
+		bind = GetControllerBindFromCode(jbutton);
+	else
+		bind = GetKeyboardBindFromCode(key);
+
 	bool inputHandled = false;
-	int code = GetCodeFromInputEvent(key, jbutton);
-	int bind = GetBindingFromCode(code);
-
 	if(bind != -1)
+	{
 		inputHandled = OnBindPress(bind);
-
+		if(jbutton != 255)
+			j_buttons[(KEYBINDS)bind] = KEYSTATE_PRESSED;
+		else
+			kb_keys[(KEYBINDS)bind] = KEYSTATE_PRESSED;
+	}
+	
 	//inputEvents.push_back(bind, KEYSTATE_PRESSED);
 
-	if(!inputHandled)
-		OnHardcodedKeyPress(code);
+	if (!inputHandled)
+		OnHardcodedKeyPress(key, jbutton);
 }
 
 void OnKeyUnpress(SDL_Keycode key, Uint8 jbutton)
 {
 	PrintLog(LOG_SUPERDEBUG, "Unpressed key %d jbutton %u", key, jbutton);
-	int code, bind;
-	code = GetCodeFromInputEvent(key, jbutton);
-	bind = GetBindingFromCode(code);
+	int bind;
+	if(jbutton != 255)
+		bind = GetControllerBindFromCode(jbutton);
+	else
+		bind = GetKeyboardBindFromCode(key);
+
+	if(jbutton != 255)
+		j_buttons[(KEYBINDS)bind] = KEYSTATE_UNPRESSED;
+	else
+		kb_keys[(KEYBINDS)bind] = KEYSTATE_UNPRESSED;
 
 	//inputEvents.push_back(bind, KEYSTATE_UNPRESSED);
 
@@ -255,9 +257,11 @@ void OnKeyUnpress(SDL_Keycode key, Uint8 jbutton)
 
 void OnKeyHold(SDL_Keycode key, Uint8 jbutton)
 {
-	int code, bind;
-	code = GetCodeFromInputEvent(key, jbutton);
-	bind = GetBindingFromCode(code);
+	int bind;
+	if(jbutton != 255)
+		bind = GetControllerBindFromCode(jbutton);
+	else
+		bind = GetKeyboardBindFromCode(key);
 	OnBindHold(bind);
 }
 
@@ -271,48 +275,46 @@ void InputUpdate()
 			switch(e.type)
 			{
 				case SDL_EventType::SDL_KEYDOWN:
-					mkeys[e.key.keysym.sym] = KEYSTATE_PRESSED;
 					OnKeyPress(e.key.keysym.sym, 255);
 					break;
 				case SDL_EventType::SDL_KEYUP:
-					mkeys[e.key.keysym.sym] = KEYSTATE_UNPRESSED;
 					OnKeyUnpress(e.key.keysym.sym, 255);
 					break;
 			}
 		}
 		switch(e.type)
 		{
-			case SDL_EventType::SDL_JOYBUTTONDOWN:
-				jbuttons[e.jbutton.button] = KEYSTATE_PRESSED;
-				OnKeyPress(-1, e.jbutton.button);
+			case SDL_CONTROLLERBUTTONDOWN:
+				OnKeyPress(-1, e.cbutton.button);
 				break;
-			case SDL_EventType::SDL_JOYBUTTONUP:
-				jbuttons[e.jbutton.button] = KEYSTATE_UNPRESSED;
-				OnKeyUnpress(-1, e.jbutton.button);
+			case SDL_CONTROLLERBUTTONUP:
+				OnKeyUnpress(-1, e.cbutton.button);
 				break;
 		}
-		if(e.window.event == SDL_WINDOWEVENT_CLOSE)
-			GameEndFlag = true;
+		if(e.type == SDL_WINDOWEVENT)
+		{
+			if(e.window.event == SDL_WINDOWEVENT_CLOSE)
+				GameEndFlag = true;
+		}
 	}
-	for(auto key : mkeys)
+	for(auto key : kb_keys)
 	{
 		if(key.second == KEYSTATE_PRESSED)
-			OnKeyHold(key.first, 255);
+			OnBindHold(key.first);
 	}
-	for(auto jbutton : jbuttons)
+	for(auto jbutton : j_buttons)
 	{
 		if(jbutton.second == KEYSTATE_PRESSED)
-			OnKeyHold(-1, jbutton.first);
+			OnBindHold(jbutton.first);
 	}
 }
 
 void InputCleanup()
 {
-	//Close game controller
-	SDL_JoystickClose(gamepad);
-	gamepad = NULL;
+	SDL_GameControllerClose(controller);
+	controller = NULL;
 
 	// forcibly deallocate memory
-	std::map<SDL_Keycode, int>().swap(mkeys);
-	std::map<Uint8, int>().swap(jbuttons);
+	std::map<KEYBINDS, bool>().swap(kb_keys);
+	std::map<KEYBINDS, bool>().swap(j_buttons);
 }

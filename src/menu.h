@@ -7,7 +7,7 @@
 #include "config.h"
 #include "globals.h"
 
-void DoMenuAction(int code, int bind);
+void DoMenuAction(int kbkey, int jbutton, int bind);
 void NavigateMenu(int bind);
 void LoadMenus();
 void SetCurrentMenu(MENUS menu);

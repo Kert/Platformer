@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	IsDebugMode = CheckDebugConfig();
 	//VLDEnable();
 	// Initialize SDL.
-	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK) < 0)
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
 		return 1;
 
 	// Initialize gamepad support
@@ -141,7 +141,7 @@ void Cleanup()
 		LevelCleanup();
 		EntityCleanup();
 		InputCleanup();
-		BindingsCleanup();
+		BindsCleanup();
 		TilesCleanup();
 		InterfaceCleanup();
 		MenusCleanup();

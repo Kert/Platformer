@@ -20,7 +20,7 @@ bool graphicsLoaded = false;
 
 extern int TransitionID;
 extern std::map<MENUS, Menu*> menus;
-extern int BindingKey;
+extern KEYBINDS BindingKey;
 extern GAME_OVER_REASONS gameOverReason;
 
 std::map<int, std::vector<SDL_DisplayMode>> displayModes;
@@ -806,11 +806,18 @@ void RenderMenu()
 		}
 		case MENU_BINDS:
 		{
-			for(int i = 0; i < NUM_CONFIGURABLE_BINDS; i++)
+			RenderText(GetWindowNormalizedX(0.3) + 32 * 2, menus.at(MENU_BINDS)->GetItemInfo(0)->pos.y - 32 * 2, "KEYBOARD", menu_font, menu_color, TEXT_ALIGN_LEFT);
+			RenderText(GetWindowNormalizedX(0.3) + 32 * 13, menus.at(MENU_BINDS)->GetItemInfo(0)->pos.y - 32 * 2, "GAMEPAD", menu_font, menu_color, TEXT_ALIGN_LEFT);
+			int i = 0;
+			std::vector<KEYBINDS> bindables = GetBindables();
+			for(auto bind : bindables)
 			{
-				int x = GetWindowNormalizedX(0.5) + 32;
+				int x = GetWindowNormalizedX(0.3) + 32 * 2;
 				int y = menus.at(MENU_BINDS)->GetItemInfo(i)->pos.y;
-				RenderText(x, y, GetDeviceBindName(GetBindingCode(static_cast<KEYBINDS>(i))).c_str(), menu_font, menu_color, TEXT_ALIGN_LEFT);
+				RenderText(x, y, GetKeyboardKeyName(GetKeyboardCodeFromBind(bind)).c_str(), menu_font, menu_color, TEXT_ALIGN_LEFT);
+				x += 32 * 11;
+				RenderText(x, y, GetControllerKeyName(GetControllerCodeFromBind(bind)).c_str(), menu_font, menu_color, TEXT_ALIGN_LEFT);
+				i++;
 			}
 			break;
 		}

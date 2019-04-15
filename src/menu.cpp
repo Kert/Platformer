@@ -5,9 +5,7 @@
 #include "level.h"
 #include "sound.h"
 #include "transition.h"
-
-// TODO: go cross-platform
-#include <Windows.h>
+#include "utils.h"
 
 KEYBINDS BindingKey;
 MENUS CurrentMenu;
@@ -512,18 +510,13 @@ int CreateDisplayMenu()
 std::vector<std::string> GetAllTiledMaps()
 {
 	std::vector<std::string> names;
-	std::string search_path = "assets/levels/*.tmx";
-	WIN32_FIND_DATA fd;
-	HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
-	if(hFind != INVALID_HANDLE_VALUE) {
-		do {
-			// read all (real) files in current folder
-			// , delete '!' read other 2 default folder . and ..
-			if(!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-				names.push_back(fd.cFileName);
-			}
-		} while(::FindNextFile(hFind, &fd));
-		::FindClose(hFind);
+	GetFolderFileList("assets/levels", names);
+	for(auto i = names.begin(); i != names.end();)
+	{
+		if(!HasEnding(*i, ".tmx"))
+			i = names.erase(i);
+		else
+			++i;
 	}
 	return names;
 }

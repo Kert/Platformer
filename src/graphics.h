@@ -22,10 +22,9 @@ public:
 
 namespace Graphics
 {
-	int GraphicsSetup();
-	void GraphicsUpdate();
-	void GraphicsCleanup();
-	void GraphicsExit();
+	int Init();
+	void Update();
+	void Cleanup();
 
 	void Render(Entity &e);
 	void DrawHitbox(Entity &e);

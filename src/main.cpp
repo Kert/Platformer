@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 	InitConfig();
 	
 	// Loading textures and tilesets
-	Graphics::GraphicsSetup();
+	Graphics::Init();
 
 	// Load creature properties and their sprite data
 	ReadCreatureData();
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
 		{
 			Graphics::WindowFlush();
 			if(GameState == STATE_GAME || GameState == STATE_PAUSED)
-				Graphics::GraphicsUpdate();
+				Graphics::Update();
 			else
 			{
 				if(GameState == STATE_MENU)
@@ -137,7 +137,7 @@ void Cleanup()
 	// let each file handle their own disposing (avoids giant bulky function)
 	try
 	{
-		Graphics::GraphicsCleanup();
+		Graphics::Cleanup();
 		LevelCleanup();
 		EntityCleanup();
 		InputCleanup();

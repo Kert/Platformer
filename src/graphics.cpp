@@ -148,7 +148,7 @@ namespace Graphics
 		InitPlayerTexture();
 	}
 
-	int GraphicsSetup()
+	int Init()
 	{
 		if(graphicsLoaded) return 0;
 
@@ -387,7 +387,7 @@ namespace Graphics
 		SDL_DestroyTexture(pov_texture);
 	}
 
-	void GraphicsUpdate()
+	void Update()
 	{
 		for(auto &t : TimersGraphics)
 		{
@@ -434,12 +434,7 @@ namespace Graphics
 		if(IsDebugMode) ShowDebugInfo(*player);
 	}
 
-	void GraphicsCleanup()
-	{
-		GraphicsExit();
-	}
-
-	void GraphicsExit()
+	void Cleanup()
 	{
 		SDL_FreeSurface(surface_level_textures);
 		textureManager.Clear();

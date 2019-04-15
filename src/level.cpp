@@ -353,7 +353,7 @@ void Level::Cleanup()
 	levelPlatforms.clear();
 	CameraBounds.clear();
 	deathZones.clear();
-	ResetLogic();
+	Game::Reset();
 }
 
 Level::~Level()

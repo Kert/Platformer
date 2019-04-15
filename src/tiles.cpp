@@ -9,8 +9,6 @@
 
 extern std::vector<std::vector<int>> tiles;
 
-extern Level *level;
-
 std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 std::vector<CustomTile> tileset;
@@ -200,9 +198,12 @@ PHYSICS_TYPES GetTileTypeAtTiledPos(int x, int y)
 
 PHYSICS_TYPES GetTileTypeAtTiledPos(SDL_Point at)
 {
-	if(at.x < 0 || at.x >= level->width_in_tiles || at.y < 0 || at.y >= level->height_in_tiles)
-		return PHYSICS_TYPES::PHYSICS_OB;
-	return static_cast<PHYSICS_TYPES>(tiles[at.x][at.y]);
+	if(at.x >= 0 && at.x < (int)tiles.size())
+	{
+		if(at.y >= 0 && at.y < (int)tiles[at.x].size())
+			return static_cast<PHYSICS_TYPES>(tiles[at.x][at.y]);
+	}
+	return PHYSICS_TYPES::PHYSICS_OB;	
 }
 
 PHYSICS_TYPES GetTileTypeAtPos(int x, int y)

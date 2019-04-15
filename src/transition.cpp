@@ -15,18 +15,18 @@ void ProgressTransition()
 	switch(TransitionID)
 	{
 		case TRANSITION_TITLE:
-			ChangeGamestate(STATE_MENU);
+			Game::ChangeState(STATE_MENU);
 			SetCurrentMenu(MENU_MAIN);
 			break;
 		case TRANSITION_LEVELSTART:
 			if(level->loaded)
 			{
-				ChangeGamestate(STATE_GAME);
+				Game::ChangeState(STATE_GAME);
 			}
 			break;
 		case TRANSITION_LEVELCLEAR:
 			SetCurrentTransition(TRANSITION_LEVELSTART);
-			ChangeGamestate(STATE_TRANSITION);
+			Game::ChangeState(STATE_TRANSITION);
 			// force the loading screen to draw for one frame before we start loading
 			Graphics::RenderTransition();
 			Graphics::WindowUpdate();

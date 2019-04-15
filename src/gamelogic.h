@@ -4,13 +4,31 @@
 #include <SDL.h>
 #include "globals.h"
 
-void LogicUpdate(Uint32 dt);
-void ResetLogic();
-void AddTime();
-void OnLevelExit();
-void GameOver(GAME_OVER_REASONS reason);
-void SetGamestate(int state);
-void ChangeGamestate(int state);
-void FadingUpdate();
+namespace Game
+{
+	GAMESTATES GetState();
+	void SetState(GAMESTATES state);
+	void ChangeState(GAMESTATES state);
+	void Start();
+	GAME_OVER_REASONS GetGameOverReason();
+	void GameOver(GAME_OVER_REASONS reason);
+	void Update(Uint32 dt);
+	void Reset();
+	void AddTime();
+	void OnLevelExit();
+	int GetTimeLimit();
+	int GetPlayerLivesLeft();
+	void ResetPlayerLives();
+}
+
+namespace Fading
+{
+	int GetVal();
+	FADING_STATES GetState();
+	void Update();
+	void Remove();
+	void Init(FADING_STATES state, int start, int end, int speed);
+	void Init(FADING_STATES state, int start, int end, int speed, GAMESTATES to);
+}
 
 #endif

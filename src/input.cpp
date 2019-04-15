@@ -11,10 +11,7 @@
 #include "utils.h"
 
 extern Player *player;
-extern std::vector<Machinery*> machinery;
-extern int GameState;
 extern bool IsDebugMode;
-extern int FadingState;
 
 std::map<KEYBINDS, bool> kb_keys;
 std::map<KEYBINDS, bool> j_buttons;
@@ -58,60 +55,57 @@ bool IsBindPressed(KEYBINDS bind)
 
 bool OnBindPress(int bind)
 {
-	if(FadingState == FADING_STATE_BLACKNBACK)
+	if(Fading::GetState() == FADING_STATE_BLACKNBACK)
 		return true;
-	if(GameState == STATE_GAME)
+	switch(Game::GetState())
 	{
-		player->HandleInput(bind, 0);
+		case STATE_GAME:
+			player->HandleInput(bind, 0);
 
-		// end inputs affected by player state
-		switch(bind)
-		{
-			case BIND_RIGHT:
-				break;
-			case BIND_LEFT:
-				break;
-			case BIND_JUMP:
-				break;
-			case BIND_UP:
-				break;
-			case BIND_DOWN:
-				break;
-			case BIND_BACK: case BIND_ESCAPE:
-				ChangeGamestate(STATE_PAUSED);
-				break;
-		}
-	}
-	else if(GameState == STATE_PAUSED)
-	{
-		return false;
-	}
-	else if(GameState == STATE_MENU)
-	{
-		return false;
-	}
-	else if(GameState == STATE_TRANSITION)
-	{
-		switch(bind)
-		{
-			case BIND_RIGHT:
-				break;
-			case BIND_LEFT:
-				break;
-			case BIND_UP: case BIND_DOWN:
-				NavigateMenu(bind);
-				break;
-			case BIND_JUMP: case BIND_OK: case BIND_ENTER:
-				ProgressTransition();
-				break;
-		}
+			// end inputs affected by player state
+			switch(bind)
+			{
+				case BIND_RIGHT:
+					break;
+				case BIND_LEFT:
+					break;
+				case BIND_JUMP:
+					break;
+				case BIND_UP:
+					break;
+				case BIND_DOWN:
+					break;
+				case BIND_BACK: case BIND_ESCAPE:
+					Game::ChangeState(STATE_PAUSED);
+					break;
+			}
+			break;
+		case STATE_PAUSED:
+			return false;
+		case STATE_MENU:
+			return false;
+		case STATE_TRANSITION:
+			switch(bind)
+			{
+				case BIND_RIGHT:
+					break;
+				case BIND_LEFT:
+					break;
+				case BIND_UP: case BIND_DOWN:
+					NavigateMenu(bind);
+					break;
+				case BIND_JUMP: case BIND_OK: case BIND_ENTER:
+					ProgressTransition();
+					break;
+			}
+			break;
 	}
 	return true;
 }
 
 void OnBindUnpress(int bind)
 {
-	if(GameState == STATE_GAME)
+	if(Game::GetState() == STATE_GAME)
 	{
 		player->HandleInput(bind, 2);
 	}
@@ -119,7 +113,7 @@ void OnBindUnpress(int bind)
 
 void OnBindHold(int bind)
 {
-	if(GameState == STATE_GAME)
+	if(Game::GetState() == STATE_GAME)
 	{
 		player->HandleInput(bind, 1);
 	}
@@ -127,7 +121,7 @@ void OnBindHold(int bind)
 
 void OnHardcodedKeyPress(SDL_Keycode key, Uint8 jbutton)
 {
-	if(FadingState == FADING_STATE_BLACKNBACK)
+	if(Fading::GetState() == FADING_STATE_BLACKNBACK)
 		return;
 	int bind;
 	if(jbutton != 255)
@@ -135,8 +129,9 @@ void OnHardcodedKeyPress(SDL_Keycode key, Uint8 jbutton)
 	else
 		bind = GetKeyboardBindFromCode(key);
 
-	if(GameState == STATE_GAME)
+	switch(Game::GetState())
 	{
+		case STATE_GAME:
 		// debug!!
 		/*if(IsDebugMode || kb_keys[SDLK_LSHIFT] || kb_keys[SDLK_RSHIFT])
 		{
@@ -199,14 +194,13 @@ void OnHardcodedKeyPress(SDL_Keycode key, Uint8 jbutton)
 				player->ammo[WEAPON_ROCKETL] += 50;
 			}
 		}*/
-	}
-	else if(GameState == STATE_MENU || GameState == STATE_PAUSED)
-	{
-		DoMenuAction(key, jbutton, bind);
-	}
-	else if(GameState == STATE_TRANSITION)
-	{
-		ProgressTransition();
+			break;
+		case STATE_MENU: case STATE_PAUSED:
+			DoMenuAction(key, jbutton, bind);
+			break;
+		case STATE_TRANSITION:
+			ProgressTransition();
+			break;
 	}
 }
 
@@ -270,7 +264,7 @@ void InputUpdate()
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
 	{
-		if(!e.key.repeat || (e.key.repeat && GameState == GAMESTATES::STATE_MENU))
+		if(!e.key.repeat || (e.key.repeat && Game::GetState() == GAMESTATES::STATE_MENU))
 		{
 			switch(e.type)
 			{

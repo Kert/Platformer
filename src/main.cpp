@@ -15,11 +15,10 @@
 #include "sound.h"
 #include "tiles.h"
 #include "transition.h"
+#include "utils.h"
 
 bool GameEndFlag = false;
 bool IsDebugMode; // loads if "debugme" file exists
-int GameState;
-extern int FadingState;
 
 bool CheckDebugConfig();
 void Cleanup();
@@ -51,7 +50,7 @@ int main(int argc, char* argv[])
 
 	// Setting game state
 	SetCurrentTransition(TRANSITION_TITLE);
-	SetGamestate(STATE_TRANSITION);
+	Game::SetState(STATE_TRANSITION);
 
 	// Fixed time step game loop wizardry
 	using namespace std::chrono_literals;
@@ -63,6 +62,7 @@ int main(int argc, char* argv[])
 	auto timeStart_logic = clock::now();
 	auto timeStart_graphics = clock::now();
 	// main loop
+	int times = 0;
 	while(!GameEndFlag)
 	{
 		auto deltaTime_logic = clock::now() - timeStart_logic;
@@ -76,12 +76,12 @@ int main(int argc, char* argv[])
 			//previous_state = current_state;
 			//update(&current_state); // update at a fixed rate each time
 			lag_logic -= timestep;
-			if(FadingState != FADING_STATE_NONE)
-				FadingUpdate();
-			if(GameState == STATE_GAME && FadingState != FADING_STATE_BLACKNBACK)
+			if(Fading::GetState() != FADING_STATE_NONE)
+				Fading::Update();
+			if(Game::GetState() == STATE_GAME && Fading::GetState() != FADING_STATE_BLACKNBACK)
 			{
-				if(GameState != STATE_MENU)
-					LogicUpdate(8);
+				if(Game::GetState() != STATE_MENU)
+					Game::Update(8);
 			}
 		}
 
@@ -94,18 +94,18 @@ int main(int argc, char* argv[])
 		if(deltaTime_graphics >= timestepGraphics) // 125fps draw ONE frame
 		{
 			Graphics::WindowFlush();
-			if(GameState == STATE_GAME || GameState == STATE_PAUSED)
+			if(Game::GetState() == STATE_GAME || Game::GetState() == STATE_PAUSED)
 				Graphics::Update();
 			else
 			{
-				if(GameState == STATE_MENU)
+				if(Game::GetState() == STATE_MENU)
 					Graphics::RenderMenu();
-				if(GameState == STATE_TRANSITION)
+				if(Game::GetState() == STATE_TRANSITION)
 					Graphics::RenderTransition();
 			}
-			if(FadingState != FADING_STATE_NONE)
+			if(Fading::GetState() != FADING_STATE_NONE)
 				Graphics::DrawFading();
-			if(GameState == STATE_PAUSED)
+			if(Game::GetState() == STATE_PAUSED)
 				Graphics::RenderMenuItems(MENU_PAUSE);
 			//DrawFPS(dtG);
 			Graphics::WindowUpdate();

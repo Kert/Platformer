@@ -14,8 +14,6 @@ static double PHYSICS_SPEED = 0.001 * PHYSICS_SPEED_FACTOR;
 
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
-extern int GameState;
-
 extern std::vector<Creature*> creatures;
 extern std::vector<Machinery*> machinery;
 
@@ -304,7 +302,7 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 	if(IsInDeathZone(p) && !p.ignoreGravity)
 	{
 		if(&p == player)
-			GameOver(GAME_OVER_REASON_DIED);
+			Game::GameOver(GAME_OVER_REASON_DIED);
 		else
 			p.REMOVE_ME = true;
 		return;
@@ -326,7 +324,7 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 	p.SetPos(p.xNew, p.yNew);
 	
 
-	if(GameState != STATE_GAME) return; // we hit the exit block, don't process further
+	if(Game::GetState() != STATE_GAME) return; // we hit the exit block, don't process further
 
 	//DetectAndResolveEntityCollisions(p);
 	UpdateStatus(p, deltaTicks);
@@ -1004,7 +1002,7 @@ void ResolveRight(Creature &p)
 			{
 				if(!p.IsAI()) // only the player
 				{
-					OnLevelExit(); // EXIT LEVEL
+					Game::OnLevelExit(); // EXIT LEVEL
 					return;
 				}
 				break;
@@ -1057,7 +1055,7 @@ void ResolveLeft(Creature &p)
 			{
 				if(!p.IsAI()) // only the player
 				{
-					OnLevelExit(); // EXIT LEVEL
+					Game::OnLevelExit(); // EXIT LEVEL
 					return;
 				}
 				break;

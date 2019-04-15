@@ -86,5 +86,16 @@ const char* ConstCharConcat(const char* first, const char* second);
 void PrintLog(int logLevel, const char *fmt, ...);
 bool GetFolderFileList(std::string folder, std::vector<std::string> &fileList);
 bool HasIntersection(PrecisionRect *a, PrecisionRect *b);
+template<typename T>
+void CleanFromNullPointers(std::vector<T> *collection)
+{
+	for(auto j = collection->begin(); j != collection->end();)
+	{
+		if(*j == nullptr)
+			j = collection->erase(j);
+		else
+			++j;
+	}
+}
 
 #endif

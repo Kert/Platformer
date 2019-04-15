@@ -14,16 +14,12 @@ MENUS CurrentMenu;
 std::map<MENUS, Menu*> menus;
 
 extern Level *level;
-extern int currentLives;
-extern int playerLives;
 extern bool GameEndFlag;
 extern TTF_Font *menu_font;
 extern TTF_Font *game_font;
 extern SDL_Color menu_color;
 extern SDL_Color selected_color;
 extern SDL_Color pause_color;
-
-extern std::map<int, std::vector<SDL_DisplayMode>> displayModes;
 
 int RefreshDisplayModeMenus();
 int CreateDisplayMenu();
@@ -71,12 +67,12 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 				{
 					std::string currentLevel = menus.at(MENU_MAPSELECT)->GetItemInfo(SelectedItem)->text;
 					SetCurrentTransition(TRANSITION_LEVELSTART);
-					ChangeGamestate(STATE_TRANSITION);
+					Game::ChangeState(STATE_TRANSITION);
 					// force the loading screen to draw for one frame before we start loading
 					Graphics::RenderTransition();
 					Graphics::WindowUpdate();
 					level = new Level(currentLevel);
-					currentLives = playerLives;
+					Game::ResetPlayerLives();
 				}
 				else if(CurrentMenu == MENU_OPTIONS)
 				{
@@ -124,14 +120,14 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 				{
 					if(SelectedItem == 0)
 					{
-						ChangeGamestate(STATE_GAME);
+						Game::ChangeState(STATE_GAME);
 						Sound::ResumeMusic();
 					}
 					else if(SelectedItem == 1)
 					{
 						delete level;
 						level = nullptr;
-						ChangeGamestate(STATE_MENU);
+						Game::ChangeState(STATE_MENU);
 						SetCurrentMenu(MENU_MAIN);
 						Sound::StopMusic();
 					}
@@ -142,20 +138,20 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					{
 						level->Reload();
 						SetCurrentTransition(TRANSITION_LEVELSTART);
-						ChangeGamestate(STATE_TRANSITION);
+						Game::ChangeState(STATE_TRANSITION);
 					}
 					else if(SelectedItem == 1)
 					{
 						level->Reload();
 						SetCurrentTransition(TRANSITION_LEVELSTART);
-						ChangeGamestate(STATE_TRANSITION);
-						currentLives = playerLives;
+						Game::ChangeState(STATE_TRANSITION);
+						Game::ResetPlayerLives();
 					}
 					else if(SelectedItem == 2)
 					{
 						delete level;
 						level = nullptr;
-						ChangeGamestate(STATE_MENU);
+						Game::ChangeState(STATE_MENU);
 						SetCurrentMenu(MENU_MAIN);
 					}
 				}
@@ -165,14 +161,14 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					{
 						level->Reload();
 						SetCurrentTransition(TRANSITION_LEVELSTART);
-						ChangeGamestate(STATE_TRANSITION);
-						currentLives = playerLives;
+						Game::ChangeState(STATE_TRANSITION);
+						Game::ResetPlayerLives();
 					}
 					else if(SelectedItem == 1)
 					{
 						delete level;
 						level = nullptr;
-						ChangeGamestate(STATE_MENU);
+						Game::ChangeState(STATE_MENU);
 						SetCurrentMenu(MENU_MAIN);
 					}
 				}
@@ -192,7 +188,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					SetCurrentMenu(MENU_MAIN);
 				if(CurrentMenu == MENU_PAUSE)
 				{
-					ChangeGamestate(STATE_GAME);
+					Game::ChangeState(STATE_GAME);
 					Sound::ResumeMusic();
 				}
 				break;

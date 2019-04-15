@@ -3,6 +3,7 @@
 #include "animation.h"
 #include "camera.h"
 #include "entities.h"
+#include "gamelogic.h"
 #include "interface.h"
 #include "level.h"
 #include "state.h"
@@ -64,8 +65,6 @@ extern Player *player;
 extern int TransitionID;
 extern std::map<MENUS, Menu*> menus;
 extern KEYBINDS BindingKey;
-extern GAME_OVER_REASONS gameOverReason;
-extern int currentLives;
 
 // TODO: reorganize this
 extern std::map<std::string, CreatureData> creatureData;
@@ -79,9 +78,6 @@ extern std::vector<Machinery*> machinery;
 extern std::vector<Lightning*> lightnings;
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 extern std::vector<CustomTile> tileset;
-
-extern int timeLimit;
-extern int FadingVal;
 
 extern Level *level;
 
@@ -752,13 +748,13 @@ namespace Graphics
 			{
 				// Show level info
 				int min, sec;
-				min = timeLimit / 60;
-				sec = timeLimit % 60;
+				min = Game::GetTimeLimit() / 60;
+				sec = Game::GetTimeLimit() % 60;
 
 				char str[64];
 				sprintf(str, "Time: %2d min %2d sec", min, sec);
 				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2), str, game_font, selected_color, TEXT_ALIGN_CENTER);
-				sprintf(str, "Lives left: %d", currentLives);
+				sprintf(str, "Lives left: %d", Game::GetPlayerLivesLeft());
 				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2) + 100, str, game_font, selected_color, TEXT_ALIGN_CENTER);
 
 				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADED! PRESS A KEY TO START", menu_font, menu_color, TEXT_ALIGN_CENTER);
@@ -842,7 +838,7 @@ namespace Graphics
 			case MENU_PLAYER_FAILED: case MENU_PLAYER_FAILED_NO_ESCAPE:
 			{
 				std::string text;
-				switch(gameOverReason)
+				switch(Game::GetGameOverReason())
 				{
 					case GAME_OVER_REASON_DIED:
 						text = "YOU DIED!";
@@ -854,7 +850,7 @@ namespace Graphics
 
 				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 9, text, menu_font, menu_color, TEXT_ALIGN_CENTER);
 
-				text = "LIVES LEFT: " + std::to_string(currentLives);
+				text = "LIVES LEFT: " + std::to_string(Game::GetPlayerLivesLeft());
 				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 7, text, menu_font, menu_color, TEXT_ALIGN_CENTER);
 				break;
 			}
@@ -923,7 +919,7 @@ namespace Graphics
 
 	void DrawFading()
 	{
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, FadingVal);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, Fading::GetVal());
 		SDL_RenderFillRect(renderer, NULL);
 	}
 

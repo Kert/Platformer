@@ -14,9 +14,9 @@
 // SDL_Texture* - the actual texture being drawn
 std::map<int, InterfacePiece> interfaces;
 
-std::map<int, InterfacePiece> GetInterfaces()
+std::map<int, InterfacePiece>* GetInterfaces()
 {
-	return interfaces;
+	return &interfaces;
 }
 
 void InterfaceSetup()

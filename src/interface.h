@@ -21,7 +21,7 @@ void PrintToInterface(const char* data, int part);
 void ChangeInterfaceFrame(int frame, int part);
 void BuildInterface(int h, int w, int x, int y, const char* content, int frame, int part);
 void InterfaceCleanup();
-std::map<int, InterfacePiece> GetInterfaces();
+std::map<int, InterfacePiece>* GetInterfaces();
 
 enum INTERFACE_PARTS
 {

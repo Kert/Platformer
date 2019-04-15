@@ -722,8 +722,8 @@ namespace Graphics
 		ChangeInterfaceFrame(healthFrame, INTERFACE_LIFE);
 
 		SDL_Color interface_color = { 50, 180, 0 };
-		std::map<int, InterfacePiece> interfaces = GetInterfaces();
-		for(auto iter : interfaces)
+		std::map<int, InterfacePiece> *interfaces = GetInterfaces();
+		for(auto iter : *interfaces)
 		{
 			if(iter.second.tex == NULL)
 				RenderText(iter.second.location.x, iter.second.location.y, iter.second.text, interface_font, interface_color);

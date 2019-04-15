@@ -59,7 +59,6 @@ namespace Graphics
 	SDL_DisplayMode GetDisplayMode(int dispIndex, int modeIndex);
 	std::map<int, std::vector<SDL_DisplayMode>> GetDisplayModes();
 	int SetDisplayMode(SDL_DisplayMode mode);
-	//void SetDisplayMode(SDL_DisplayMode mode);
 	int GetDisplayIndex();
 	void SetDisplayIndex(int index);
 	int GetGameSceneWidth();

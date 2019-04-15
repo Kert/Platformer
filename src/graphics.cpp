@@ -431,9 +431,6 @@ namespace Graphics
 
 		RenderInterface();
 
-		int healthFrame = ((100 - player->health) / 25);
-		ChangeInterfaceFrame(healthFrame, INTERFACE_LIFE);
-
 		if(IsDebugMode) ShowDebugInfo(*player);
 	}
 
@@ -719,8 +716,11 @@ namespace Graphics
 
 	void RenderInterface()
 	{
+		int healthFrame = ((100 - player->health) / 25);
+		ChangeInterfaceFrame(healthFrame, INTERFACE_LIFE);
+
 		SDL_Color interface_color = { 50, 180, 0 };
-		std::map<int, InterfacePiece> interfaces;
+		std::map<int, InterfacePiece> interfaces = GetInterfaces();
 		for(auto iter : interfaces)
 		{
 			if(iter.second.tex == NULL)

@@ -61,7 +61,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 				{
 					if(SelectedItem == 0)
 					{
-						SetCurrentMenu(MENU_MAPSELECT);						
+						SetCurrentMenu(MENU_MAPSELECT);
 					}
 					if(SelectedItem == 1)
 					{
@@ -169,7 +169,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 						level->Reload();
 						SetCurrentTransition(TRANSITION_LEVELSTART);
 						ChangeGamestate(STATE_TRANSITION);
-						currentLives = playerLives;						
+						currentLives = playerLives;
 					}
 					else if(SelectedItem == 1)
 					{
@@ -178,6 +178,25 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 						ChangeGamestate(STATE_MENU);
 						SetCurrentMenu(MENU_MAIN);
 					}
+				}
+				break;
+			case BIND_BACK: case BIND_ESCAPE:
+				if(CurrentMenu == MENU_MAIN)
+					GameEndFlag = true;
+				if(CurrentMenu == MENU_OPTIONS)
+					SetCurrentMenu(MENU_MAIN);
+				if(CurrentMenu == MENU_VIDEO_OPTIONS)
+					SetCurrentMenu(MENU_OPTIONS);
+				if(CurrentMenu == MENU_SOUND_OPTIONS)
+					SetCurrentMenu(MENU_OPTIONS);
+				if(CurrentMenu == MENU_BINDS)
+					SetCurrentMenu(MENU_OPTIONS);
+				if(CurrentMenu == MENU_MAPSELECT)
+					SetCurrentMenu(MENU_MAIN);
+				if(CurrentMenu == MENU_PAUSE)
+				{
+					ChangeGamestate(STATE_GAME);
+					ResumeMusic();
 				}
 				break;
 		}

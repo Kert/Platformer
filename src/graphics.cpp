@@ -12,7 +12,6 @@
 #include "transition.h"
 #include "utils.h"
 
-Camera* camera;
 TextureManager textureManager;
 
 bool TextureManager::IsLoaded(std::string filename)
@@ -60,12 +59,6 @@ void TextureManager::Clear()
 	textures.clear();
 }
 
-extern bool IsDebugMode;
-extern Player *player;
-extern int TransitionID;
-extern std::map<MENUS, Menu*> menus;
-extern KEYBINDS BindingKey;
-
 // TODO: reorganize this
 extern std::map<std::string, CreatureData> creatureData;
 extern std::map<std::string, EntityGraphicsData> entityGraphicsData;
@@ -78,8 +71,6 @@ extern std::vector<Machinery*> machinery;
 extern std::vector<Lightning*> lightnings;
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 extern std::vector<CustomTile> tileset;
-
-extern Level *level;
 
 SDL_Color debug_color = { 50, 180, 0 };
 SDL_Color pause_color = { 255, 255, 255 };
@@ -122,7 +113,25 @@ namespace Graphics
 	TTF_Font *minor_font = NULL;
 	TTF_Font *interface_font = NULL;
 
+	Camera* camera;
+
 	int FindDisplayModes();
+
+	Camera* GetCamera()
+	{
+		return camera;
+	}
+
+	void CreateCamera()
+	{
+		camera = new Camera(0, 0, GetGameSceneWidth(), GetGameSceneHeight());
+	}
+
+	void RemoveCamera()
+	{
+		delete camera;
+		camera = nullptr;
+	}
 
 	void InitPlayerTexture()
 	{
@@ -342,6 +351,7 @@ namespace Graphics
 		w = ConvertToTileCoord(prect.w, true);
 		h = ConvertToTileCoord(prect.h, true);
 
+		Level *level = Game::GetLevel();
 		// range checks
 		if(x < 0) x = 0;
 		if(y < 0) y = 0;
@@ -412,6 +422,7 @@ namespace Graphics
 			//UpdateAnimation(*l);
 			Render(*l);
 		}
+		Player *player = Game::GetPlayer();
 		UpdateAnimation(*player);
 		Render(*player);
 		for(auto &b : bullets)
@@ -427,7 +438,7 @@ namespace Graphics
 
 		RenderInterface();
 
-		if(IsDebugMode) ShowDebugInfo(*player);
+		if(Game::IsDebug()) ShowDebugInfo(*player);
 	}
 
 	void Cleanup()
@@ -478,7 +489,7 @@ namespace Graphics
 			flip = SDL_FLIP_HORIZONTAL;
 		SDL_RenderCopyEx(renderer, e.sprite->GetSpriteSheet(), &e.sprite->GetTextureCoords(), &realpos, NULL, NULL, flip);
 
-		if(IsDebugMode)
+		if(Game::IsDebug())
 			DrawHitbox(e);
 	}
 
@@ -707,7 +718,7 @@ namespace Graphics
 
 	void RenderInterface()
 	{
-		int healthFrame = ((100 - player->health) / 25);
+		int healthFrame = ((100 - Game::GetPlayer()->health) / 25);
 		ChangeInterfaceFrame(healthFrame, INTERFACE_LIFE);
 
 		SDL_Color interface_color = { 50, 180, 0 };
@@ -733,36 +744,37 @@ namespace Graphics
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderFillRect(renderer, NULL);
 
-		if(TransitionID == TRANSITION_TITLE)
+		TRANSITIONS transition = GetCurrentTransition();
+		switch(transition)
 		{
-			SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/title.png"), NULL, NULL);
-		}
-		else if(TransitionID == TRANSITION_LEVELSTART)
-		{
-			//if (!level->loaded)
-			if(level == nullptr)
-			{
-				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADING LEVEL...", menu_font, menu_color, TEXT_ALIGN_CENTER);
-			}
-			else
-			{
-				// Show level info
-				int min, sec;
-				min = Game::GetTimeLimit() / 60;
-				sec = Game::GetTimeLimit() % 60;
+			case TRANSITION_TITLE:
+				SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/title.png"), NULL, NULL);
+				break;
+			case TRANSITION_LEVELSTART:
+				//if (!level->loaded)
+				if(Game::GetLevel() == nullptr)
+				{
+					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADING LEVEL...", menu_font, menu_color, TEXT_ALIGN_CENTER);
+				}
+				else
+				{
+					// Show level info
+					int min, sec;
+					min = Game::GetTimeLimit() / 60;
+					sec = Game::GetTimeLimit() % 60;
 
-				char str[64];
-				sprintf(str, "Time: %2d min %2d sec", min, sec);
-				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2), str, game_font, selected_color, TEXT_ALIGN_CENTER);
-				sprintf(str, "Lives left: %d", Game::GetPlayerLivesLeft());
-				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2) + 100, str, game_font, selected_color, TEXT_ALIGN_CENTER);
+					char str[64];
+					sprintf(str, "Time: %2d min %2d sec", min, sec);
+					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2), str, game_font, selected_color, TEXT_ALIGN_CENTER);
+					sprintf(str, "Lives left: %d", Game::GetPlayerLivesLeft());
+					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2) + 100, str, game_font, selected_color, TEXT_ALIGN_CENTER);
 
-				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADED! PRESS A KEY TO START", menu_font, menu_color, TEXT_ALIGN_CENTER);
-			}
-		}
-		else if(TransitionID == TRANSITION_LEVELCLEAR)
-		{
-			RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LEVEL CLEAR!", game_font, menu_color, TEXT_ALIGN_CENTER);
+					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADED! PRESS A KEY TO START", menu_font, menu_color, TEXT_ALIGN_CENTER);
+				}
+				break;
+			case TRANSITION_LEVELCLEAR:
+				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LEVEL CLEAR!", game_font, menu_color, TEXT_ALIGN_CENTER);
+				break;
 		}
 	}
 
@@ -813,14 +825,14 @@ namespace Graphics
 			}
 			case MENU_BINDS:
 			{
-				RenderText(GetWindowNormalizedX(0.3) + 32 * 2, menus.at(MENU_BINDS)->GetItemInfo(0)->pos.y - 32 * 2, "KEYBOARD", menu_font, menu_color, TEXT_ALIGN_LEFT);
-				RenderText(GetWindowNormalizedX(0.3) + 32 * 13, menus.at(MENU_BINDS)->GetItemInfo(0)->pos.y - 32 * 2, "GAMEPAD", menu_font, menu_color, TEXT_ALIGN_LEFT);
+				RenderText(GetWindowNormalizedX(0.3) + 32 * 2, GetMenus()->at(MENU_BINDS)->GetItemInfo(0)->pos.y - 32 * 2, "KEYBOARD", menu_font, menu_color, TEXT_ALIGN_LEFT);
+				RenderText(GetWindowNormalizedX(0.3) + 32 * 13, GetMenus()->at(MENU_BINDS)->GetItemInfo(0)->pos.y - 32 * 2, "GAMEPAD", menu_font, menu_color, TEXT_ALIGN_LEFT);
 				int i = 0;
 				std::vector<KEYBINDS> bindables = GetBindables();
 				for(auto bind : bindables)
 				{
 					int x = GetWindowNormalizedX(0.3) + 32 * 2;
-					int y = menus.at(MENU_BINDS)->GetItemInfo(i)->pos.y;
+					int y = GetMenus()->at(MENU_BINDS)->GetItemInfo(i)->pos.y;
 					RenderText(x, y, GetKeyboardKeyName(GetKeyboardCodeFromBind(bind)).c_str(), menu_font, menu_color, TEXT_ALIGN_LEFT);
 					x += 32 * 11;
 					RenderText(x, y, GetControllerKeyName(GetControllerCodeFromBind(bind)).c_str(), menu_font, menu_color, TEXT_ALIGN_LEFT);
@@ -831,7 +843,7 @@ namespace Graphics
 			case MENU_BINDKEY:
 			{
 				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 3, "PRESS THE KEY YOU WISH TO USE FOR", menu_font, menu_color, TEXT_ALIGN_CENTER);
-				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), GetBindingName(BindingKey), menu_font, selected_color, TEXT_ALIGN_CENTER);
+				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), GetBindingName(GetCurrentKeyToBind()), menu_font, selected_color, TEXT_ALIGN_CENTER);
 				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "(OR PRESS ESC TO CANCEL)", menu_font, menu_color, TEXT_ALIGN_CENTER);
 				break;
 			}
@@ -862,9 +874,9 @@ namespace Graphics
 	void RenderMenuItems(MENUS id)
 	{
 		Menu *menu;
-		if(menus.find(id) == menus.end())
+		if(GetMenus()->find(id) == GetMenus()->end())
 			return;
-		menu = menus.at(id);
+		menu = GetMenus()->at(id);
 
 		for(int i = 0; i < menu->GetItemCount(); i++)
 		{

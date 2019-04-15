@@ -2,7 +2,6 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <chrono>
-#include <fstream>
 #include <thread>
 //#include <vld.h>
 #include "config.h"
@@ -17,15 +16,12 @@
 #include "transition.h"
 #include "utils.h"
 
-bool GameEndFlag = false;
-bool IsDebugMode; // loads if "debugme" file exists
 
-bool CheckDebugConfig();
 void Cleanup();
 
 int main(int argc, char* argv[])
 {
-	IsDebugMode = CheckDebugConfig();
+	Game::CheckDebugMode();
 	//VLDEnable();
 	// Initialize SDL.
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
@@ -62,8 +58,7 @@ int main(int argc, char* argv[])
 	auto timeStart_logic = clock::now();
 	auto timeStart_graphics = clock::now();
 	// main loop
-	int times = 0;
-	while(!GameEndFlag)
+	while(!Game::IsGameEndRequested())
 	{
 		auto deltaTime_logic = clock::now() - timeStart_logic;
 		timeStart_logic = clock::now();
@@ -126,19 +121,13 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-bool CheckDebugConfig()
-{
-	std::ifstream infile("debugme");
-	return infile.good();
-}
-
 void Cleanup()
 {
 	// let each file handle their own disposing (avoids giant bulky function)
 	try
 	{
 		Graphics::Cleanup();
-		LevelCleanup();
+		Game::RemoveLevel();
 		EntityCleanup();
 		InputCleanup();
 		BindsCleanup();

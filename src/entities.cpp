@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "INIReader.h"
 #include "SDL_mixer.h"
-#include "camera.h"
+#include "gamelogic.h"
 #include "graphics.h"
 #include "interface.h"
 #include "physics.h"
@@ -21,8 +21,6 @@ std::vector<Pickup*> pickups;
 std::vector<Effect*> effects;
 
 int doorPairs = 0;
-extern Player *player;
-extern Camera *camera;
 extern TextureManager textureManager;
 
 struct PlatformData
@@ -431,13 +429,13 @@ void Creature::SetState(CreatureState *newState)
 
 void Creature::HandleInput(int input, int type)
 {
-	if(player->status == STATUS_STUN)
+	if(Game::GetPlayer()->status == STATUS_STUN)
 		return;
 
 	CreatureState *newState = this->state->HandleInput(input, type);
 	if(newState != nullptr)
 	{
-		player->SetState(newState);
+		Game::GetPlayer()->SetState(newState);
 	}
 }
 
@@ -446,7 +444,7 @@ void Creature::HandleStateIdle()
 	CreatureState *newState = this->state->HandleIdle();
 	if(newState != nullptr)
 	{
-		player->SetState(newState);
+		Game::GetPlayer()->SetState(newState);
 	}
 }
 
@@ -768,6 +766,7 @@ void Pickup::OnPickup()
 		this->status = STATUS_DYING;
 		this->statusTimer = this->deathLength;
 
+		Player *player = Game::GetPlayer();
 		switch(this->type)
 		{
 			case PICKUP_AMMO:
@@ -852,8 +851,8 @@ void Effect::Remove()
 
 void Bullet::Remove()
 {
-	if(origin == WEAPON_FIREBALL && owner == player)
-		player->ammo[WEAPON_FIREBALL]++;
+	if(origin == WEAPON_FIREBALL && owner == Game::GetPlayer())
+		Game::GetPlayer()->ammo[WEAPON_FIREBALL]++;
 	delete this;
 }
 
@@ -864,6 +863,7 @@ Player::~Player()
 
 DynamicEntity::~DynamicEntity()
 {
+	Camera* camera = Graphics::GetCamera();
 	if(camera && camera->IsAttachedTo(this))
 		camera->Detach();
 	delete hitbox;
@@ -1065,7 +1065,7 @@ void Creature::ProcessBulletHit(Bullet *b)
 		}
 	}
 	this->TakeDamage(damage);
-	if(this == player)
+	if(this == Game::GetPlayer())
 		ApplyKnockback(*this, *(Creature*)b->owner);
 }
 
@@ -1091,7 +1091,7 @@ void Creature::TakeDamage(int damage)
 	if(health <= 0)
 	{
 		Sound::PlaySfx("death");
-		if(this != player) // TODO: remove this walkaround
+		if(this != Game::GetPlayer()) // TODO: remove this walkaround
 			this->Die();
 	}
 }
@@ -1381,7 +1381,7 @@ void Creature::Die()
 	accel.x = 0;
 	accel.y = 0;
 	gravityMultiplier = 1;
-	if(player->GetX() > GetX())
+	if(Game::GetPlayer()->GetX() > GetX())
 		this->SetVelocity(-60, -150);
 	else
 		this->SetVelocity(60, -150);

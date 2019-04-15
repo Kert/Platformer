@@ -1,7 +1,7 @@
 #include "gamelogic.h"
 #include <SDL.h>
+#include <fstream>
 #include <vector>
-#include "camera.h"
 #include "entities.h"
 #include "graphics.h"
 #include "interface.h"
@@ -13,13 +13,6 @@
 #include "transition.h"
 #include "utils.h"
 
-Player *player;
-
-extern int TransitionID;
-
-extern Level *level;
-extern Camera *camera;
-
 extern std::vector<Bullet*> bullets;
 extern std::vector<Effect*> effects;
 extern std::vector<Creature*> creatures;
@@ -27,10 +20,10 @@ extern std::vector<Pickup*> pickups;
 extern std::vector<Machinery*> machinery;
 extern std::vector<Lightning*> lightnings;
 
-extern Camera* camera;
-
 namespace Game
 {
+	bool GameEndFlag = false;
+	bool Debug = false;
 	GAMESTATES GameState;
 	GAME_OVER_REASONS gameOverReason;
 	int min, sec;
@@ -38,6 +31,48 @@ namespace Game
 	Timer gameTimer{ 1000 };
 	int playerLives = 3;
 	int currentLives;
+	Player *player;
+	Level *level = nullptr;
+
+	Player* GetPlayer()
+	{
+		return player;
+	}
+
+	Player* CreatePlayer()
+	{
+		player = new Player();
+		return player;
+	}
+
+	void RemovePlayer()
+	{
+		delete player;
+		player = nullptr;
+	}
+
+	Level* GetLevel()
+	{
+		return level;
+	}
+
+	void CreateLevel(std::string fileName)
+	{
+		level = new Level(fileName);
+	}
+
+	void RemoveLevel()
+	{
+		if(level != nullptr)
+			delete level;
+		level = nullptr;
+	}
+
+	void CheckDebugMode()
+	{
+		std::ifstream infile("debugme");
+		Debug = infile.good();
+	}
 
 	GAMESTATES GetState()
 	{
@@ -48,7 +83,7 @@ namespace Game
 	{
 		if(state == STATE_TRANSITION)
 		{
-			if(TransitionID == TRANSITION_LEVELCLEAR)
+			if(GetCurrentTransition() == TRANSITION_LEVELCLEAR)
 			{
 				Sound::PlaySfx("level_clear");
 				Graphics::RenderTransition(); // don't make player wait for the level to unload to see his astonishing victory
@@ -102,7 +137,7 @@ namespace Game
 		min = timeLimit / 60;
 		sec = timeLimit % 60;
 		Sound::PlayMusic(level->musicFileName);
-		camera->Attach(*player);
+		Graphics::GetCamera()->Attach(*player);
 	}
 
 	GAME_OVER_REASONS GetGameOverReason()
@@ -164,7 +199,7 @@ namespace Game
 		//	camera->SetOffsetY(-20);
 		//if(player->hasState(STATE_DUCKING))
 		//	camera->SetOffsetY(35);
-		camera->Update();
+		Graphics::GetCamera()->Update();
 
 		for(auto &b : bullets)
 		{
@@ -267,6 +302,21 @@ namespace Game
 	void ResetPlayerLives()
 	{
 		currentLives = playerLives;
+	}
+
+	bool IsGameEndRequested()
+	{
+		return GameEndFlag;
+	}
+
+	void SetGameEndFlag()
+	{
+		GameEndFlag = true;
+	}
+
+	bool IsDebug()
+	{
+		return Debug;
 	}
 }
 

@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <iostream>
+#include "camera.h"
 #include "entities.h"
 #include "globals.h"
 
@@ -25,6 +26,10 @@ namespace Graphics
 	int Init();
 	void Update();
 	void Cleanup();
+
+	Camera* GetCamera();
+	void CreateCamera();
+	void RemoveCamera();
 
 	void Render(Entity &e);
 	void DrawHitbox(Entity &e);

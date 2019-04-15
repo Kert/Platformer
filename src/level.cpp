@@ -1,7 +1,6 @@
 #include "level.h"
 #include <SDL_image.h>
 #include <vector>
-#include "camera.h"
 #include "entities.h"
 #include "globals.h"
 #include "gamelogic.h"
@@ -10,12 +9,7 @@
 #include "tinyxml.h"
 #include "utils.h"
 
-extern Player *player;
-extern Camera* camera;
-
 Lava_Floor *lava = nullptr;
-
-Level *level = nullptr;
 
 extern std::vector<CustomTile> tileset;
 
@@ -364,10 +358,7 @@ Level::~Level()
 void Level::UnloadEntities()
 {
 	DeleteAllEntities();
-	delete camera;
-	camera = nullptr;
-	delete player;
-	player = nullptr;
+	Game::RemovePlayer();
 }
 
 void Level::LoadEnemies()
@@ -452,7 +443,7 @@ void Level::LoadEntities()
 
 void Level::LoadPlayer()
 {
-	player = new Player();
+	Player* player = Game::CreatePlayer();
 	player->SetPos(playerSpawn.x, playerSpawn.y);
 	player->GiveWeapon(WEAPON_FIREBALL);
 }
@@ -461,17 +452,10 @@ void Level::LoadNonRandomElements()
 {
 	// Loading player here because game camera needs its position to work with
 	LoadPlayer();
-
-	camera = new Camera(0, 0, Graphics::GetGameSceneWidth(), Graphics::GetGameSceneHeight());
+	Graphics::CreateCamera();
 }
 
 void Level::MakeDoorWithButtons(int x, int y)
 {
 	new Door(x, y, true);
-}
-
-void LevelCleanup()
-{
-	if(level != nullptr)
-		delete level;
 }

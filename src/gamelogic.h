@@ -2,10 +2,19 @@
 #define _gamelogic_h_
 
 #include <SDL.h>
+#include "entities.h"
 #include "globals.h"
+#include "level.h"
 
 namespace Game
 {
+	Player* GetPlayer();
+	Player* CreatePlayer();
+	void RemovePlayer();
+	Level* GetLevel();
+	void CreateLevel(std::string fileName);
+	void RemoveLevel();
+	void CheckDebugMode();
 	GAMESTATES GetState();
 	void SetState(GAMESTATES state);
 	void ChangeState(GAMESTATES state);
@@ -19,6 +28,9 @@ namespace Game
 	int GetTimeLimit();
 	int GetPlayerLivesLeft();
 	void ResetPlayerLives();
+	bool IsGameEndRequested();
+	void SetGameEndFlag();
+	bool IsDebug();
 }
 
 namespace Fading

@@ -10,18 +10,10 @@
 #include "transition.h"
 #include "utils.h"
 
-extern Player *player;
-extern bool IsDebugMode;
-
 std::map<KEYBINDS, bool> kb_keys;
 std::map<KEYBINDS, bool> j_buttons;
 
 SDL_GameController *controller = nullptr;
-
-// ends gameloop
-extern bool GameEndFlag;
-
-extern Level *level;
 
 enum
 {
@@ -60,7 +52,7 @@ bool OnBindPress(int bind)
 	switch(Game::GetState())
 	{
 		case STATE_GAME:
-			player->HandleInput(bind, 0);
+			Game::GetPlayer()->HandleInput(bind, 0);
 
 			// end inputs affected by player state
 			switch(bind)
@@ -107,7 +99,7 @@ void OnBindUnpress(int bind)
 {
 	if(Game::GetState() == STATE_GAME)
 	{
-		player->HandleInput(bind, 2);
+		Game::GetPlayer()->HandleInput(bind, 2);
 	}
 }
 
@@ -115,7 +107,7 @@ void OnBindHold(int bind)
 {
 	if(Game::GetState() == STATE_GAME)
 	{
-		player->HandleInput(bind, 1);
+		Game::GetPlayer()->HandleInput(bind, 1);
 	}
 }
 
@@ -288,7 +280,7 @@ void InputUpdate()
 		if(e.type == SDL_WINDOWEVENT)
 		{
 			if(e.window.event == SDL_WINDOWEVENT_CLOSE)
-				GameEndFlag = true;
+				Game::SetGameEndFlag();
 		}
 	}
 	for(auto key : kb_keys)

@@ -1,11 +1,11 @@
 #include "utils.h"
 #include <sstream>
 #include "dirent.h"
+#include "gamelogic.h"
 #include "globals.h"
 #include "level.h"
 
 SDL_RWops *logfile;
-extern Level *level;
 
 RandomGenerator::RandomGenerator()
 {
@@ -86,6 +86,8 @@ int ConvertToTileCoord(double z, bool mode)
 		result = (int)floor(z / (double)TILESIZE);
 
 	if(result < 0) result = 0;
+	
+	Level *level = Game::GetLevel();
 	if(result >= level->width_in_tiles) result = level->width_in_tiles - 1;
 	return result;
 }

@@ -9,6 +9,7 @@ enum TRANSITIONS
 };
 
 void ProgressTransition();
+TRANSITIONS GetCurrentTransition();
 void SetCurrentTransition(TRANSITIONS transition);
 
 #endif

@@ -1,5 +1,6 @@
 #include "ai.h"
 #include "entities.h"
+#include "gamelogic.h"
 #include "level.h"
 #include "physics.h"
 #include "state.h"
@@ -7,7 +8,6 @@
 #include "utils.h"
 
 RandomGenerator ai_rg;
-extern Player *player;
 
 BaseAI::BaseAI(Creature *c)
 {
@@ -15,7 +15,7 @@ BaseAI::BaseAI(Creature *c)
 		timerTime.push_back(0);
 	distanceReached = false;
 	me = c;
-	target = player;
+	target = Game::GetPlayer();
 }
 
 void BaseAI::RunAI()

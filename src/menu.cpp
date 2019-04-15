@@ -13,8 +13,6 @@ KEYBINDS BindingKey;
 MENUS CurrentMenu;
 std::map<MENUS, Menu*> menus;
 
-extern Level *level;
-extern bool GameEndFlag;
 extern TTF_Font *menu_font;
 extern TTF_Font *game_font;
 extern SDL_Color menu_color;
@@ -61,7 +59,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 						SetCurrentMenu(MENU_OPTIONS);
 					}
 					if(SelectedItem == 2)
-						GameEndFlag = true;
+						Game::SetGameEndFlag();
 				}
 				else if(CurrentMenu == MENU_MAPSELECT)
 				{
@@ -71,7 +69,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					// force the loading screen to draw for one frame before we start loading
 					Graphics::RenderTransition();
 					Graphics::WindowUpdate();
-					level = new Level(currentLevel);
+					Game::CreateLevel(currentLevel);
 					Game::ResetPlayerLives();
 				}
 				else if(CurrentMenu == MENU_OPTIONS)
@@ -125,8 +123,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					}
 					else if(SelectedItem == 1)
 					{
-						delete level;
-						level = nullptr;
+						Game::RemoveLevel();
 						Game::ChangeState(STATE_MENU);
 						SetCurrentMenu(MENU_MAIN);
 						Sound::StopMusic();
@@ -136,21 +133,20 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 				{
 					if(SelectedItem == 0)
 					{
-						level->Reload();
+						Game::GetLevel()->Reload();
 						SetCurrentTransition(TRANSITION_LEVELSTART);
 						Game::ChangeState(STATE_TRANSITION);
 					}
 					else if(SelectedItem == 1)
 					{
-						level->Reload();
+						Game::GetLevel()->Reload();
 						SetCurrentTransition(TRANSITION_LEVELSTART);
 						Game::ChangeState(STATE_TRANSITION);
 						Game::ResetPlayerLives();
 					}
 					else if(SelectedItem == 2)
 					{
-						delete level;
-						level = nullptr;
+						Game::RemoveLevel();
 						Game::ChangeState(STATE_MENU);
 						SetCurrentMenu(MENU_MAIN);
 					}
@@ -159,15 +155,14 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 				{
 					if(SelectedItem == 0)
 					{
-						level->Reload();
+						Game::GetLevel()->Reload();
 						SetCurrentTransition(TRANSITION_LEVELSTART);
 						Game::ChangeState(STATE_TRANSITION);
 						Game::ResetPlayerLives();
 					}
 					else if(SelectedItem == 1)
 					{
-						delete level;
-						level = nullptr;
+						Game::RemoveLevel();
 						Game::ChangeState(STATE_MENU);
 						SetCurrentMenu(MENU_MAIN);
 					}
@@ -175,7 +170,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 				break;
 			case BIND_BACK: case BIND_ESCAPE:
 				if(CurrentMenu == MENU_MAIN)
-					GameEndFlag = true;
+					Game::SetGameEndFlag();
 				if(CurrentMenu == MENU_OPTIONS)
 					SetCurrentMenu(MENU_MAIN);
 				if(CurrentMenu == MENU_VIDEO_OPTIONS)
@@ -568,4 +563,14 @@ int RefreshDisplayModeMenus()
 	menus.at(MENU_SELECTION_FULLSCREEN)->selected = Graphics::GetFullscreenMode();
 	menus.at(MENU_SELECTION_DISPLAY)->selected = Graphics::GetDisplayIndex();
 	return 0;
+}
+
+KEYBINDS GetCurrentKeyToBind()
+{
+	return BindingKey;
+}
+
+std::map<MENUS, Menu*>* GetMenus()
+{
+	return &menus;
 }

@@ -1,8 +1,8 @@
 #include "physics.h"
 
 #include <SDL.h>
-#include "camera.h"
 #include "gamelogic.h"
+#include "graphics.h"
 #include "level.h"
 #include "sound.h"
 #include "state.h"
@@ -16,9 +16,6 @@ extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 extern std::vector<Creature*> creatures;
 extern std::vector<Machinery*> machinery;
-
-extern Level *level;
-extern Player *player;
 
 std::pair<double, double> GetAngleSinCos(DynamicEntity &shooter)
 {
@@ -301,7 +298,7 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 	ApplyForces(p, deltaTicks);
 	if(IsInDeathZone(p) && !p.ignoreGravity)
 	{
-		if(&p == player)
+		if(&p == Game::GetPlayer())
 			Game::GameOver(GAME_OVER_REASON_DIED);
 		else
 			p.REMOVE_ME = true;
@@ -332,7 +329,7 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 
 bool IsInDeathZone(Creature &c)
 {
-	for(auto i : level->deathZones)
+	for(auto i : Game::GetLevel()->deathZones)
 	{
 		if(SDL_HasIntersection(&c.hitbox->GetRect(), &i))
 			return true;
@@ -602,8 +599,6 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	p.yNew += vel.y * (deltaTicks * PHYSICS_SPEED);
 }
 
-extern Camera *camera;
-
 void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 {
 	double x, y;
@@ -633,7 +628,7 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 		if(d.attachToScreen)
 		{
 			SDL_Rect rect;
-			rect = camera->GetRect();
+			rect = Graphics::GetCamera()->GetRect();
 			x = rect.x + d.attachScreenX;
 			y = rect.y + d.attachScreenY;
 		}
@@ -754,6 +749,7 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 	std::pair<Creature*, Machinery*> wasHit;
 	wasHit = CheckForCollision(&b);
 	// do not allow enemies to damage other enemies
+	Player *player = Game::GetPlayer();
 	if(b.owner == player || b.owner != player && wasHit.first == player)
 	{
 		if(wasHit.first != nullptr && wasHit.first != b.owner)
@@ -771,6 +767,7 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 	int tileX = (int)(ceil((double)(x + (b.hitbox->GetRect().w * b.direction)) / (TILESIZE)) - 0.5);
 	int tileY = ConvertToTileCoord(y - b.hitbox->GetRect().h / 2, 0);
 
+	Level* level = Game::GetLevel();
 	PHYSICS_TYPES type = GetTileTypeAtTiledPos(tileX, tileY);
 	if(tileX >= level->width_in_tiles || tileX < 0 || tileY >= level->height_in_tiles || tileY < 0)
 		complete = true;
@@ -1085,6 +1082,7 @@ void DetectAndResolveMapCollisions(Creature &p)
 	ResolveRight(p);
 	ResolveLeft(p);
 
+	Level *level = Game::GetLevel();
 	//Allow out of bounds coords, but not much
 	if(p.GetX() < -OOB_EXTENT)
 		p.SetX(-OOB_EXTENT);
@@ -1234,6 +1232,7 @@ std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity)
 			break;
 		}
 	}
+	Player *player = Game::GetPlayer();
 	if(entity->hitbox->HasCollision(player->hitbox))
 		c = player;
 	for(auto &ma : machinery)

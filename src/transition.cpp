@@ -6,9 +6,7 @@
 #include "menu.h"
 #include "input.h"
 
-int TransitionID;
-
-extern Level *level;
+TRANSITIONS TransitionID;
 
 void ProgressTransition()
 {
@@ -19,7 +17,7 @@ void ProgressTransition()
 			SetCurrentMenu(MENU_MAIN);
 			break;
 		case TRANSITION_LEVELSTART:
-			if(level->loaded)
+			if(Game::GetLevel()->loaded)
 			{
 				Game::ChangeState(STATE_GAME);
 			}
@@ -30,10 +28,15 @@ void ProgressTransition()
 			// force the loading screen to draw for one frame before we start loading
 			Graphics::RenderTransition();
 			Graphics::WindowUpdate();
-			delete level;
-			level = new Level();
+			Game::RemoveLevel();
+			Game::GetLevel()->Reload();
 			break;
 	}
+}
+
+TRANSITIONS GetCurrentTransition()
+{
+	return TransitionID;
 }
 
 void SetCurrentTransition(TRANSITIONS transition)

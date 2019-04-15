@@ -1,13 +1,11 @@
 #include "levelspecific.h"
 
-#include "camera.h"
 #include "entities.h"
-#include "level.h"
+#include "gamelogic.h"
+#include "graphics.h"
 #include "utils.h"
 
-extern Level* level;
 RandomGenerator level_rg;
-extern Camera* camera;
 extern Lava_Floor *lava;
 
 Timer bossLevelTimer{ 80 }, anvilTimer{ 600 }, fireTimer{ 1200 }, bossStartTimer{ 7000 };
@@ -22,6 +20,7 @@ void LevelLogic()
 	}
 	if(bossBattleActivated)
 	{
+		Level *level = Game::GetLevel();
 		bossLevelTimer.Run();
 		anvilTimer.Run();
 		fireTimer.Run();
@@ -49,7 +48,7 @@ void LevelLogic()
 		if(bossLevelTimer.completed)
 		{
 			lava->Activate();
-			camera->Detach();
+			Graphics::GetCamera()->Detach();
 			if(level->CameraBounds[2].h > 15 * TILESIZE)
 				level->CameraBounds[2].h--;
 			SDL_Rect rect;
@@ -58,7 +57,7 @@ void LevelLogic()
 			rect.h = 15 * TILESIZE;
 			rect.y = level->CameraBounds[2].y + level->CameraBounds[2].h - 15 * TILESIZE;
 
-			camera->SetRect(rect);
+			Graphics::GetCamera()->SetRect(rect);
 		}
 	}
 }

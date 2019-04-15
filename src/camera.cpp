@@ -1,9 +1,8 @@
 #include "camera.h"
+#include "gamelogic.h"
 #include "graphics.h"
 #include "level.h"
 #include "utils.h"
-
-extern Level *level;
 
 const int VIRTUAL_CAM_WIDTH = 22 * TILESIZE;
 const int VIRTUAL_CAM_HEIGHT = 18 * TILESIZE;
@@ -74,7 +73,7 @@ void Camera::Attach(Entity &p)
 
 	// Fit into bounds
 	SDL_Rect entityRect = p.hitbox->GetRect();
-	for(auto bound : level->CameraBounds)
+	for(auto bound : Game::GetLevel()->CameraBounds)
 	{
 		if(SDL_HasIntersection(&entityRect, &bound))
 		{
@@ -126,6 +125,7 @@ void Camera::Update()
 	bool xFine, yFine;
 	xFine = yFine = false;
 
+	Level *level = Game::GetLevel();
 	for(auto bound : level->CameraBounds)
 	{
 		if(!xFine)

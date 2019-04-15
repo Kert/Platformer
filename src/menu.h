@@ -3,9 +3,12 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <map>
 #include <vector>
 #include "config.h"
 #include "globals.h"
+
+class Menu;
 
 void DoMenuAction(int kbkey, int jbutton, int bind);
 void NavigateMenu(int bind);
@@ -13,6 +16,8 @@ void LoadMenus();
 void SetCurrentMenu(MENUS menu);
 MENUS GetCurrentMenu();
 void MenusCleanup();
+KEYBINDS GetCurrentKeyToBind();
+std::map<MENUS, Menu*>* GetMenus();
 
 class MenuItem;
 

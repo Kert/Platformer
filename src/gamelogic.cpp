@@ -46,7 +46,7 @@ void StartGame()
 
 	min = timeLimit / 60;
 	sec = timeLimit % 60;
-	PlayMusic(level->musicFileName);
+	Sound::PlayMusic(level->musicFileName);
 	camera->Attach(*player);
 }
 
@@ -197,7 +197,7 @@ void OnLevelExit()
 void GameOver(GAME_OVER_REASONS reason)
 {
 	gameOverReason = reason;
-	StopMusic();
+	Sound::StopMusic();
 	if(reason == GAME_OVER_REASON_WIN)
 	{
 		SetCurrentTransition(TRANSITION_LEVELCLEAR);
@@ -205,9 +205,9 @@ void GameOver(GAME_OVER_REASONS reason)
 	}
 	else
 	{
-		PlaySfx("game_over");
+		Sound::PlaySfx("game_over");
 		InitFading(FADING_STATE_BLACKNBACK, 150, 0, 3, STATE_MENU);
-		StopMusic();
+		Sound::StopMusic();
 		currentLives -= 1;
 		if(currentLives < 1)
 			SetCurrentMenu(MENU_PLAYER_FAILED_NO_ESCAPE);
@@ -291,7 +291,7 @@ void SetGamestate(int state)
 	{
 		if(TransitionID == TRANSITION_LEVELCLEAR)
 		{
-			PlaySfx("level_clear");
+			Sound::PlaySfx("level_clear");
 			RenderTransition(); // don't make player wait for the level to unload to see his astonishing victory
 			delete level;
 			level = nullptr;
@@ -300,7 +300,7 @@ void SetGamestate(int state)
 	if(state == STATE_PAUSED)
 	{
 		SetCurrentMenu(MENU_PAUSE);
-		PauseMusic();
+		Sound::PauseMusic();
 	}
 	GameState = state;
 }

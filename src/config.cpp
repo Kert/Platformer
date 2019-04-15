@@ -128,8 +128,8 @@ void LoadConfig()
 	displayMode.h = atoi(reader.Get("Video", "Height", "480").c_str());
 	displayMode.refresh_rate = atoi(reader.Get("Video", "RefreshRate", "60").c_str());
 	displayMode.format = std::stoul(reader.Get("Video", "Format", "0").c_str());
-	SetMusicVolume(atoi(reader.Get("Sound", "Music", "100").c_str()));
-	SetSfxVolume(atoi(reader.Get("Sound", "Sfx", "100").c_str()));
+	Sound::SetMusicVolume(atoi(reader.Get("Sound", "Music", "100").c_str()));
+	Sound::SetSfxVolume(atoi(reader.Get("Sound", "Sfx", "100").c_str()));
 }
 
 void SaveConfig()
@@ -162,8 +162,8 @@ void SaveConfig()
 	file << "Format=" << displayMode.format << std::endl;
 
 	file << "[Sound]" << std::endl;
-	file << "Music=" << GetMusicVolume() << std::endl;
-	file << "Sfx=" << GetSfxVolume() << std::endl;
+	file << "Music=" << Sound::GetMusicVolume() << std::endl;
+	file << "Sfx=" << Sound::GetSfxVolume() << std::endl;
 }
 
 void SetKeyboardBind(SDL_Keycode code, KEYBINDS bind)

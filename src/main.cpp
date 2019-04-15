@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	InitInput();
 
 	// Music and SFX support
-	InitSound();
+	Sound::Init();
 
 	// Initialize config settings
 	InitConfig();
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 		}
 
 		// Workaround to allow for gapless ogg looping without bugs
-		ProcessMusic();
+		Sound::ProcessMusic();
 		// prevent 100% usage of cpu
 		std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 	}
@@ -145,7 +145,7 @@ void Cleanup()
 		TilesCleanup();
 		InterfaceCleanup();
 		MenusCleanup();
-		SoundCleanup();
+		Sound::Cleanup();
 	}
 	catch(...) {};
 	// close SDL

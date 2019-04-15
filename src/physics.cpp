@@ -77,17 +77,17 @@ void ProcessShot(WEAPONS weapon, Creature &shooter)
 	{
 		case WEAPONS::WEAPON_ROCKETL:
 		{
-			PlaySfx("rocketl_shot");
+			Sound::PlaySfx("rocketl_shot");
 			break;
 		}
 		case WEAPONS::WEAPON_FLAME:
 		{
-			PlaySfx("flame_shot");
+			Sound::PlaySfx("flame_shot");
 			break;
 		}
 		case WEAPONS::WEAPON_GRENADE:
 		{
-			//PlaySfx("rocketl_shot");
+			//Sound::PlaySfx("rocketl_shot");
 			break;
 		}
 	}
@@ -836,7 +836,7 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 			case WEAPON_BOMBDROP:
 				effect = new Effect(EFFECT_ROCKETL_HIT);
 				effect->SetPos(x - 11, y + 11);
-				PlaySfx("rocketl_explode");
+				Sound::PlaySfx("rocketl_explode");
 				b.Remove();
 				return false;
 			case WEAPON_LIGHTNING:
@@ -1254,7 +1254,7 @@ void OnHitboxCollision(Creature &c, Creature &e, Uint32 deltaTicks)
 	if(c.status == STATUS_NORMAL && e.status != STATUS_DYING)
 	{
 		c.SetState(CREATURE_STATES::INAIR);
-		PlaySfx("player_hit");
+		Sound::PlaySfx("player_hit");
 		c.TakeDamage(25);
 		ApplyKnockback(c, e);
 	}

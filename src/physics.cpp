@@ -592,6 +592,13 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	if(p.attached)
 	{
 		p.xNew = p.attached->hitbox->GetPRect().x + p.attX;
+		// fixing jitter in rendering when standing on a horizontal moving platform
+		if(vel.x == 0)
+		{
+			double f, i;
+			f = modf(p.attached->hitbox->GetPRect().x, &i);
+			p.xNew = truncf(p.xNew) + f;
+		}
 		p.yNew = p.attached->hitbox->GetPRect().y + p.attY;
 	}
 

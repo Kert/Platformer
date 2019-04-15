@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 	InitConfig();
 	
 	// Loading textures and tilesets
-	GraphicsSetup();
+	Graphics::GraphicsSetup();
 
 	// Load creature properties and their sprite data
 	ReadCreatureData();
@@ -93,22 +93,22 @@ int main(int argc, char* argv[])
 		auto deltaTime_graphics = clock::now() - timeStart_graphics;
 		if(deltaTime_graphics >= timestepGraphics) // 125fps draw ONE frame
 		{
-			WindowFlush();
+			Graphics::WindowFlush();
 			if(GameState == STATE_GAME || GameState == STATE_PAUSED)
-				GraphicsUpdate();
+				Graphics::GraphicsUpdate();
 			else
 			{
 				if(GameState == STATE_MENU)
-					RenderMenu();
+					Graphics::RenderMenu();
 				if(GameState == STATE_TRANSITION)
-					RenderTransition();
+					Graphics::RenderTransition();
 			}
 			if(FadingState != FADING_STATE_NONE)
-				DrawFading();
+				Graphics::DrawFading();
 			if(GameState == STATE_PAUSED)
-				RenderMenuItems(MENU_PAUSE);
+				Graphics::RenderMenuItems(MENU_PAUSE);
 			//DrawFPS(dtG);
-			WindowUpdate();
+			Graphics::WindowUpdate();
 			timeStart_graphics = clock::now();
 		}
 
@@ -137,7 +137,7 @@ void Cleanup()
 	// let each file handle their own disposing (avoids giant bulky function)
 	try
 	{
-		GraphicsCleanup();
+		Graphics::GraphicsCleanup();
 		LevelCleanup();
 		EntityCleanup();
 		InputCleanup();

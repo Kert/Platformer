@@ -28,8 +28,8 @@ void ProgressTransition()
 			SetCurrentTransition(TRANSITION_LEVELSTART);
 			ChangeGamestate(STATE_TRANSITION);
 			// force the loading screen to draw for one frame before we start loading
-			RenderTransition();
-			WindowUpdate();
+			Graphics::RenderTransition();
+			Graphics::WindowUpdate();
 			delete level;
 			level = new Level();
 			break;

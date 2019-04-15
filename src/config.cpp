@@ -6,15 +6,12 @@
 #include <string>
 #include "INIReader.h"
 #include "globals.h"
+#include "graphics.h"
 #include "sound.h"
 #include "utils.h"
 
 std::map<KEYBINDS, SDL_Keycode> bindsKeyboard;
 std::map<KEYBINDS, Uint8> bindsController;
-
-extern int fullscreenMode;
-extern SDL_DisplayMode displayMode;
-extern int displayIndex;
 
 const std::map<KEYBINDS, std::string> bindNames = {
 	{ BIND_UP,        "UP"},
@@ -56,7 +53,7 @@ std::vector<KEYBINDS> GetBindables()
 	return bindableKeys;
 }
 
-std::map<std::string, int> fullscreenModes = {
+std::map<std::string, int> fullscreenModeNames = {
 	{"Off", 0},
 	{"On", 1},
 	{"Borderless", 2}
@@ -122,12 +119,14 @@ void LoadConfig()
 			SetControllerBind(atoi(keyName.c_str()), i.first);
 	}
 
-	fullscreenMode = fullscreenModes[reader.Get("Video", "Fullscreen", "Off")];
-	displayIndex = atoi(reader.Get("Video", "Display", "0").c_str());
-	displayMode.w = atoi(reader.Get("Video", "Width", "640").c_str());
-	displayMode.h = atoi(reader.Get("Video", "Height", "480").c_str());
-	displayMode.refresh_rate = atoi(reader.Get("Video", "RefreshRate", "60").c_str());
-	displayMode.format = std::stoul(reader.Get("Video", "Format", "0").c_str());
+	Graphics::SetFullscreenMode(fullscreenModeNames[reader.Get("Video", "Fullscreen", "Off")]);
+	Graphics::SetDisplayIndex(atoi(reader.Get("Video", "Display", "0").c_str()));
+	SDL_DisplayMode mode;
+	mode.w = atoi(reader.Get("Video", "Width", "640").c_str());
+	mode.h = atoi(reader.Get("Video", "Height", "480").c_str());
+	mode.refresh_rate = atoi(reader.Get("Video", "RefreshRate", "60").c_str());
+	mode.format = std::stoul(reader.Get("Video", "Format", "0").c_str());
+	Graphics::SetDisplayMode(mode);
 	Sound::SetMusicVolume(atoi(reader.Get("Sound", "Music", "100").c_str()));
 	Sound::SetSfxVolume(atoi(reader.Get("Sound", "Sfx", "100").c_str()));
 }
@@ -154,8 +153,9 @@ void SaveConfig()
 	}
 
 	file << "[Video]" << std::endl;
-	file << "Fullscreen=" << GetFullscreenMode(fullscreenMode) << std::endl;
-	file << "Display=" << displayIndex << std::endl;
+	file << "Fullscreen=" << GetFullscreenModeName(Graphics::GetFullscreenMode()) << std::endl;
+	file << "Display=" << Graphics::GetDisplayIndex() << std::endl;
+	SDL_DisplayMode displayMode = Graphics::GetDisplayMode();
 	file << "Width=" << displayMode.w << std::endl;
 	file << "Height=" << displayMode.h << std::endl;
 	file << "RefreshRate=" << displayMode.refresh_rate << std::endl;
@@ -218,7 +218,7 @@ std::string GetBindingName(KEYBINDS bind)
 		return "---";
 }
 
-std::string GetFullscreenMode(int code)
+std::string GetFullscreenModeName(int code)
 {
 	switch(code)
 	{

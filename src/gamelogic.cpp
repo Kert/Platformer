@@ -292,7 +292,7 @@ void SetGamestate(int state)
 		if(TransitionID == TRANSITION_LEVELCLEAR)
 		{
 			Sound::PlaySfx("level_clear");
-			RenderTransition(); // don't make player wait for the level to unload to see his astonishing victory
+			Graphics::RenderTransition(); // don't make player wait for the level to unload to see his astonishing victory
 			delete level;
 			level = nullptr;
 		}

@@ -5,9 +5,6 @@
 
 extern Level *level;
 
-extern int GAME_SCENE_WIDTH;
-extern int GAME_SCENE_HEIGHT;
-
 const int VIRTUAL_CAM_WIDTH = 22 * TILESIZE;
 const int VIRTUAL_CAM_HEIGHT = 18 * TILESIZE;
 
@@ -72,8 +69,8 @@ void Camera::Attach(Entity &p)
 	at = &p;
 	SetOffsetX(0);
 	SetOffsetY(0);
-	x = at->hitbox->GetPRect().x - GAME_SCENE_WIDTH / 2;
-	y = at->hitbox->GetPRect().y - GAME_SCENE_HEIGHT / 2;
+	x = at->hitbox->GetPRect().x - Graphics::GetGameSceneWidth() / 2;
+	y = at->hitbox->GetPRect().y - Graphics::GetGameSceneHeight() / 2;
 
 	// Fit into bounds
 	SDL_Rect entityRect = p.hitbox->GetRect();
@@ -83,8 +80,8 @@ void Camera::Attach(Entity &p)
 		{
 			virtualCam.x = bound.x;
 			virtualCam.y = bound.y;
-			x = virtualCam.x + VIRTUAL_CAM_WIDTH / 2 - GAME_SCENE_WIDTH / 2;
-			y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - GAME_SCENE_HEIGHT / 2;
+			x = virtualCam.x + VIRTUAL_CAM_WIDTH / 2 - Graphics::GetGameSceneWidth() / 2;
+			y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - Graphics::GetGameSceneHeight() / 2;
 			break;
 		}
 	}
@@ -169,13 +166,13 @@ void Camera::Update()
 	if(xFine)
 	{
 		virtualCam.x = newRectX.x;
-		x = virtualCam.x + VIRTUAL_CAM_WIDTH / 2 - GAME_SCENE_WIDTH / 2;
+		x = virtualCam.x + VIRTUAL_CAM_WIDTH / 2 - Graphics::GetGameSceneWidth() / 2;
 		PrintLog(LOG_SUPERDEBUG, "Camera X set to %lf", x);
 	}
 	if(yFine)
 	{
 		virtualCam.y = newRectY.y;
-		y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - GAME_SCENE_HEIGHT / 2;
+		y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - Graphics::GetGameSceneHeight() / 2;
 		PrintLog(LOG_SUPERDEBUG, "Camera Y set to %lf", y);
 	}
 

@@ -16,7 +16,6 @@ std::map<MENUS, Menu*> menus;
 extern Level *level;
 extern int currentLives;
 extern int playerLives;
-extern int fullscreenMode;
 extern bool GameEndFlag;
 extern TTF_Font *menu_font;
 extern TTF_Font *game_font;
@@ -24,8 +23,6 @@ extern SDL_Color menu_color;
 extern SDL_Color selected_color;
 extern SDL_Color pause_color;
 
-extern int displayIndex;
-extern SDL_DisplayMode displayMode;
 extern std::map<int, std::vector<SDL_DisplayMode>> displayModes;
 
 int RefreshDisplayModeMenus();
@@ -76,8 +73,8 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					SetCurrentTransition(TRANSITION_LEVELSTART);
 					ChangeGamestate(STATE_TRANSITION);
 					// force the loading screen to draw for one frame before we start loading
-					RenderTransition();
-					WindowUpdate();
+					Graphics::RenderTransition();
+					Graphics::WindowUpdate();
 					level = new Level(currentLevel);
 					currentLives = playerLives;
 				}
@@ -95,11 +92,11 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 				else if(CurrentMenu == MENU_VIDEO_OPTIONS)
 				{
 					if(SelectedItem == 0)
-						UpdateDisplayMode();
+						Graphics::UpdateDisplayMode();
 					if(SelectedItem == 1)
 					{
-						displayMode = displayModes[displayIndex][menus.at(MENU_SELECTION_DISPLAY_MODE)->selected];
-						UpdateDisplayMode();
+						Graphics::SetDisplayMode(Graphics::GetDisplayMode(Graphics::GetDisplayIndex(), menus.at(MENU_SELECTION_DISPLAY_MODE)->selected));
+						Graphics::UpdateDisplayMode();
 					}
 					if(SelectedItem == 3)
 						SetCurrentMenu(MENU_OPTIONS);
@@ -235,7 +232,7 @@ void NavigateMenu(int bind)
 				if(SelectedItem == 0)
 				{
 					menus.at(MENU_SELECTION_DISPLAY)->selected >= (menus.at(MENU_SELECTION_DISPLAY)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_DISPLAY)->selected = 0 : menus.at(MENU_SELECTION_DISPLAY)->selected++;
-					displayIndex = menus.at(MENU_SELECTION_DISPLAY)->selected;
+					Graphics::SetDisplayIndex(menus.at(MENU_SELECTION_DISPLAY)->selected);
 					RefreshDisplayModeMenus();
 				}
 				else if(SelectedItem == 1)
@@ -243,8 +240,8 @@ void NavigateMenu(int bind)
 				else if(SelectedItem == 2)
 				{
 					menus.at(MENU_SELECTION_FULLSCREEN)->selected <= 0 ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) : menus.at(MENU_SELECTION_FULLSCREEN)->selected--;
-					fullscreenMode = menus.at(MENU_SELECTION_FULLSCREEN)->selected;
-					UpdateDisplayMode();
+					Graphics::SetFullscreenMode(menus.at(MENU_SELECTION_FULLSCREEN)->selected);
+					Graphics::UpdateDisplayMode();
 					RefreshDisplayModeMenus();
 				}
 			}
@@ -276,7 +273,7 @@ void NavigateMenu(int bind)
 				if(SelectedItem == 0)
 				{
 					menus.at(MENU_SELECTION_DISPLAY)->selected <= 0 ? menus.at(MENU_SELECTION_DISPLAY)->selected = (menus.at(MENU_SELECTION_DISPLAY)->GetItemCount() - 1) : menus.at(MENU_SELECTION_DISPLAY)->selected--;
-					displayIndex = menus.at(MENU_SELECTION_DISPLAY)->selected;
+					Graphics::SetDisplayIndex(menus.at(MENU_SELECTION_DISPLAY)->selected);
 					RefreshDisplayModeMenus();
 				}
 				else if(SelectedItem == 1)
@@ -284,8 +281,8 @@ void NavigateMenu(int bind)
 				else if(SelectedItem == 2)
 				{
 					menus.at(MENU_SELECTION_FULLSCREEN)->selected >= (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = 0 : menus.at(MENU_SELECTION_FULLSCREEN)->selected++;
-					fullscreenMode = menus.at(MENU_SELECTION_FULLSCREEN)->selected;
-					UpdateDisplayMode();
+					Graphics::SetFullscreenMode(menus.at(MENU_SELECTION_FULLSCREEN)->selected);
+					Graphics::UpdateDisplayMode();
 					RefreshDisplayModeMenus();
 				}
 			}
@@ -305,7 +302,7 @@ MenuItem::~MenuItem()
 {
 }
 
-MenuItem::MenuItem(int x, int y, std::string text, TTF_Font *font, SDL_Color standardColor, SDL_Color selectedColor, TEXT_ALIGN align)
+MenuItem::MenuItem(int x, int y, std::string text, FONTS font, SDL_Color standardColor, SDL_Color selectedColor, TEXT_ALIGN align)
 {
 	pos.x = x;
 	pos.y = y;
@@ -316,7 +313,7 @@ MenuItem::MenuItem(int x, int y, std::string text, TTF_Font *font, SDL_Color sta
 	this->align = align;
 }
 
-MenuItem::MenuItem(SDL_Point pos, std::string text, TTF_Font *font, SDL_Color standardColor, SDL_Color selectedColor)
+MenuItem::MenuItem(SDL_Point pos, std::string text, FONTS font, SDL_Color standardColor, SDL_Color selectedColor)
 {
 	this->pos = pos;
 	this->text = text;
@@ -356,43 +353,46 @@ int Menu::GetItemCount()
 
 void LoadMenus()
 {
+	int centerX = Graphics::GetWindowNormalizedX(0.5);
+	int centerY = Graphics::GetWindowNormalizedY(0.5);
+
 	Menu *menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 5, GetWindowNormalizedY(0.5) - 32 * 3, "START GAME", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 4, GetWindowNormalizedY(0.5), "SETTINGS", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 2, GetWindowNormalizedY(0.5) + 32 * 3, "EXIT", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX + 32 * 5, centerY - 32 * 3, "START GAME", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX + 32 * 4, centerY, "SETTINGS", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX + 32 * 2, centerY + 32 * 3, "EXIT", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menus[MENU_MAIN] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 6, "VIDEO", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 3, "SOUND", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "CONTROLS", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "BACK", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY - 32 * 6, "VIDEO", FONT_MENU, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY - 32 * 3, "SOUND", FONT_MENU, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY, "CONTROLS", FONT_MENU, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 3, "BACK", FONT_MENU, menu_color, selected_color));
 	menus[MENU_OPTIONS] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 6, "DISPLAY:", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) - 32 * 5, GetWindowNormalizedY(0.5) - 32 * 3, "MODE:", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "FULLSCREEN:", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(centerX, centerY - 32 * 6, "DISPLAY:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX - 32 * 5, centerY - 32 * 3, "MODE:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX, centerY, "FULLSCREEN:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 3, "BACK", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_CENTER));
 	menus[MENU_VIDEO_OPTIONS] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * 6, "MUSIC:", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) - 32 * 2, GetWindowNormalizedY(0.5) - 32 * 3, "SFX:", menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(centerX, centerY - 32 * 6, "MUSIC:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX - 32 * 2, centerY - 32 * 3, "SFX:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX, centerY, "BACK", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_CENTER));
 	menus[MENU_SOUND_OPTIONS] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 60, "RESUME", game_font, pause_color, selected_color, TEXT_ALIGN_CENTER));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 60, "QUIT", game_font, pause_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(centerX, centerY - 60, "RESUME", FONT_GAME, pause_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 60, "QUIT", FONT_GAME, pause_color, selected_color, TEXT_ALIGN_CENTER));
 	menus[MENU_PAUSE] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 6, GetWindowNormalizedY(0.5) - 32 * 6, std::to_string(Sound::GetMusicVolume()), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX + 32 * 6, centerY - 32 * 6, std::to_string(Sound::GetMusicVolume()), FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menus[MENU_SELECTION_MUSIC_VOLUME] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 6, GetWindowNormalizedY(0.5) - 32 * 3, std::to_string(Sound::GetSfxVolume()), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX + 32 * 6, centerY - 32 * 3, std::to_string(Sound::GetSfxVolume()), FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menus[MENU_SELECTION_SFX_VOLUME] = menu;
 
 	menu = new Menu();
@@ -404,20 +404,20 @@ void LoadMenus()
 	menus[MENU_SELECTION_DISPLAY_MODE] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32, GetWindowNormalizedY(0.5), "OFF", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 5, GetWindowNormalizedY(0.5), "ON", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32 * 8, GetWindowNormalizedY(0.5), "BORDERLESS", menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(centerX + 32, centerY, "OFF", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(centerX + 32 * 5, centerY, "ON", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(centerX + 32 * 8, centerY, "BORDERLESS", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menus[MENU_SELECTION_FULLSCREEN] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "RETRY LEVEL", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "NEW LEVEL", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 6, "BACK TO MENU", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY, "RETRY LEVEL", FONT_MENU, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 3, "NEW LEVEL", FONT_MENU, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 6, "BACK TO MENU", FONT_MENU, menu_color, selected_color));
 	menus[MENU_PLAYER_FAILED] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 3, "NEW LEVEL", menu_font, menu_color, selected_color));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) + 32 * 6, "BACK TO MENU", menu_font, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 3, "NEW LEVEL", FONT_MENU, menu_color, selected_color));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 6, "BACK TO MENU", FONT_MENU, menu_color, selected_color));
 	menus[MENU_PLAYER_FAILED_NO_ESCAPE] = menu;
 
 	menu = new Menu();
@@ -431,14 +431,14 @@ void LoadMenus()
 	std::vector<KEYBINDS> bindables = GetBindables();
 	for(auto bind : bindables)
 	{
-		int x = GetWindowNormalizedX(0.3) - 32;
-		int y = GetWindowNormalizedY(0.5) - 32 * (half - i) * 2;
-		menu->AddMenuItem(new MenuItem(x, y, GetBindingName(bind), menu_font, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+		int x = Graphics::GetWindowNormalizedX(0.3) - 32;
+		int y = centerY - 32 * (half - i) * 2;
+		menu->AddMenuItem(new MenuItem(x, y, GetBindingName(bind), FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 		i++;
 	}
 
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - GetNumConfigurableBinds()) * 2, "RESET TO DEFAULT", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
-	menu->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5) - 32 * (half - GetNumConfigurableBinds() - 1) * 2, "BACK", menu_font, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(centerX, centerY - 32 * (half - GetNumConfigurableBinds()) * 2, "RESET TO DEFAULT", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(centerX, centerY - 32 * (half - GetNumConfigurableBinds() - 1) * 2, "BACK", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_CENTER));
 	menus[MENU_BINDS] = menu;
 
 	menu = new Menu();
@@ -506,13 +506,14 @@ void MenusCleanup()
 
 int CreateDisplayMenu()
 {
+	std::map<int, std::vector<SDL_DisplayMode>> displayModes = Graphics::GetDisplayModes();
 	for(auto display : displayModes)
 	{
 		std::ostringstream modeName;
 		// TODO: Proper UTF-8 text rendering
 		//modeName << SDL_GetDisplayName(display.first);
 		modeName << display.first;
-		menus.at(MENU_SELECTION_DISPLAY)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) + 32, GetWindowNormalizedY(0.5) - 32 * 6, modeName.str(), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+		menus.at(MENU_SELECTION_DISPLAY)->AddMenuItem(new MenuItem(Graphics::GetWindowNormalizedX(0.5) + 32, Graphics::GetWindowNormalizedY(0.5) - 32 * 6, modeName.str(), FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	}
 	return 0;
 }
@@ -541,7 +542,7 @@ int CreateMapSelectMenu()
 	std::vector<std::string> maps = GetAllTiledMaps();
 	for(int i = 0; i < (int)maps.size(); i++)
 	{
-		menus.at(MENU_MAPSELECT)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.2), GetWindowNormalizedY(0.2) + i * 50, maps[i], menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
+		menus.at(MENU_MAPSELECT)->AddMenuItem(new MenuItem(Graphics::GetWindowNormalizedX(0.2), Graphics::GetWindowNormalizedY(0.2) + i * 50, maps[i], FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	}
 	return 0;
 }
@@ -553,19 +554,22 @@ int RefreshDisplayModeMenus()
 	menu->IsSwitchable = true;
 	menus.at(MENU_SELECTION_DISPLAY_MODE) = menu;
 
-	for(auto mode : displayModes[displayIndex])
+	SDL_DisplayMode currentMode = Graphics::GetDisplayMode();
+	std::map<int, std::vector<SDL_DisplayMode>> displayModes = Graphics::GetDisplayModes();
+	for(auto mode : displayModes[Graphics::GetDisplayIndex()])
 	{
 		std::ostringstream modeName;
 		modeName << mode.w << "x" << mode.h << "@" << mode.refresh_rate << "HZ " << SDL_BITSPERPIXEL(mode.format) << "-BIT";
-		menus.at(MENU_SELECTION_DISPLAY_MODE)->AddMenuItem(new MenuItem(GetWindowNormalizedX(0.5) - 32 * 4, GetWindowNormalizedY(0.5) - 32 * 3, modeName.str(), menu_font, menu_color, selected_color, TEXT_ALIGN_LEFT));
-		if(displayMode.w == mode.w &&
-			displayMode.h == mode.h &&
-			displayMode.refresh_rate == mode.refresh_rate &&
-			displayMode.format == mode.format)
+		menus.at(MENU_SELECTION_DISPLAY_MODE)->AddMenuItem(new MenuItem(Graphics::GetWindowNormalizedX(0.5) - 32 * 4, Graphics::GetWindowNormalizedY(0.5) - 32 * 3, modeName.str(), FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+		
+		if(currentMode.w == mode.w &&
+			currentMode.h == mode.h &&
+			currentMode.refresh_rate == mode.refresh_rate &&
+			currentMode.format == mode.format)
 			menus.at(MENU_SELECTION_DISPLAY_MODE)->selected = menus.at(MENU_SELECTION_DISPLAY_MODE)->GetItemCount() - 1;
 	}
 
-	menus.at(MENU_SELECTION_FULLSCREEN)->selected = fullscreenMode;
-	menus.at(MENU_SELECTION_DISPLAY)->selected = displayIndex;
+	menus.at(MENU_SELECTION_FULLSCREEN)->selected = Graphics::GetFullscreenMode();
+	menus.at(MENU_SELECTION_DISPLAY)->selected = Graphics::GetDisplayIndex();
 	return 0;
 }

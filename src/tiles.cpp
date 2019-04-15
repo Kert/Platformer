@@ -3,12 +3,11 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include "graphics.h"
 #include "level.h"
 #include "utils.h"
 
 extern std::vector<std::vector<int>> tiles;
-
-extern SDL_Surface *surface_level_textures;
 
 extern Level *level;
 
@@ -16,12 +15,11 @@ std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 std::vector<CustomTile> tileset;
 
-
 void LoadTileSet()
 {
 	int width, height;
-	width = surface_level_textures->w / TILESIZE;
-	height = surface_level_textures->h / TILESIZE;
+	width = Graphics::GetLevelTextureSurface()->w / TILESIZE;
+	height = Graphics::GetLevelTextureSurface()->h / TILESIZE;
 	for(int i = 0; i < width * height; i++)
 	{
 		// Calculating tile ID
@@ -101,7 +99,7 @@ Tile::Tile(int x, int y, int layer, CustomTile *data, bool replace)
 	this->layer = layer;
 	this->tex_x = data->x_offset;
 	this->tex_y = data->y_offset;
-	src_tex = surface_level_textures;
+	src_tex = Graphics::GetLevelTextureSurface();
 	animation = &data->animationData;
 	customTile = data;
 	this->type = data->type;
@@ -137,7 +135,7 @@ Tile::Tile(int x, int y, int layer, CustomTile *data, char type, bool replace)
 	this->layer = layer;
 	this->tex_x = data->x_offset;
 	this->tex_y = data->y_offset;	
-	src_tex = surface_level_textures;
+	src_tex = Graphics::GetLevelTextureSurface();
 	animation = &data->animationData;
 	customTile = data;
 	this->type = type;

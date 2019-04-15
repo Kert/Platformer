@@ -19,9 +19,6 @@ Level *level = nullptr;
 
 extern std::vector<CustomTile> tileset;
 
-extern int GAME_SCENE_WIDTH;
-extern int GAME_SCENE_HEIGHT;
-
 struct EnemyLoadData
 {
 	int x;
@@ -57,8 +54,6 @@ std::vector<PlatformLoadData> levelPlatforms;
 extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
 
 std::vector<std::vector<int>> tiles;
-
-extern SDL_Surface *surface_level_textures;
 
 Level::Level()
 {
@@ -135,7 +130,7 @@ void Level::LoadLevelFromFile(std::string filename)
 		tokenize(tileset_filepath, tokens, "/");
 		tileset_name = tokens.back();
 		tileset_filepath = "assets/textures/" + tileset_name;
-		surface_level_textures = IMG_Load(tileset_filepath.c_str());
+		Graphics::LoadLevelTexturesFromFile(tileset_filepath);
 		LoadTileSet();
 		break; // not supporting multiple tilesets currently
 	}
@@ -467,7 +462,7 @@ void Level::LoadNonRandomElements()
 	// Loading player here because game camera needs its position to work with
 	LoadPlayer();
 
-	camera = new Camera(0, 0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT);
+	camera = new Camera(0, 0, Graphics::GetGameSceneWidth(), Graphics::GetGameSceneHeight());
 }
 
 void Level::MakeDoorWithButtons(int x, int y)

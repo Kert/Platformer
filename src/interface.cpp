@@ -7,22 +7,20 @@
 #include "graphics.h"
 #include "utils.h"
 
-extern SDL_Renderer *renderer;
-
 // interface structure, in order:
 // int - which part of the interface this is (affects draw priority)
 // SDL_Rect* - the part of the texture being used (allows different drawn frames)
 // SDL_Rect* - where on the screen the interface part will draw
 // SDL_Texture* - the actual texture being drawn
-std::map<int, InterfacePiece> interface;
+std::map<int, InterfacePiece> interfaces;
 
-TTF_Font *font = NULL;
-
-extern int RENDER_SCALE;
+std::map<int, InterfacePiece> GetInterfaces()
+{
+	return interfaces;
+}
 
 void InterfaceSetup()
-{
-	font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 14);
+{	
 	BuildInterface(32, 32, 20, 20, "assets/sprites/lifebar.png", 0, INTERFACE_LIFE);
 	BuildInterface(32, 32, 20, 20, "assets/sprites/abilities.png", 0, INTERFACE_ABILITY);
 	//BuildInterface(TEXT_HEIGHT, SCORE_WIDTH, SCORE_OFFSET_X, SCORE_OFFSET_Y, "000000", -1, INTERFACE_SCORE);
@@ -61,25 +59,25 @@ const char* InfoFormat(const char* data1, int data2)
 void PrintNumToInterface(int num, int part, int length)
 {
 	const char* toPrint = AddLeadingZeroes(num, length);
-	interface.at(part).text = toPrint;
+	interfaces.at(part).text = toPrint;
 	delete toPrint;
 }
 
 // todo: condense with num method?
 void PrintToInterface(const char* data, int part)
 {
-	interface.at(part).text = data;
+	interfaces.at(part).text = data;
 	delete data;
 }
 
 void ChangeInterfaceFrame(int frame, int part)
 {
-	if(part >= (int)interface.size())
+	if(part >= (int)interfaces.size())
 	{
 		PrintLog(LOG_DEBUG, "Attempted to change interface frame for unexisting interface");
 		return;
 	}
-	interface.at(part).frame.x = interface.at(part).frame.w * frame;
+	interfaces.at(part).frame.x = interfaces.at(part).frame.w * frame;
 }
 
 void BuildInterface(int h, int w, int x, int y, const char* content, int frame, int part)
@@ -98,38 +96,19 @@ void BuildInterface(int h, int w, int x, int y, const char* content, int frame, 
 
 	if(frame == -1) // null frame, treat as text
 	{
-		interface[part].text = content;
-		interface[part].tex = NULL;
+		interfaces[part].text = content;
+		interfaces[part].tex = NULL;
 	}
 	else
-		interface[part].tex = IMG_LoadTexture(renderer, content);
+		interfaces[part].tex = IMG_LoadTexture(Graphics::GetRenderer(), content);
 
-	interface[part].frame = f;
-	interface[part].location = r;
-}
-
-void RenderInterface()
-{
-	SDL_Color interface_color = { 50, 180, 0 };
-	for(auto iter : interface)
-	{
-		if(iter.second.tex == NULL)
-			RenderText(iter.second.location.x, iter.second.location.y, iter.second.text, font, interface_color);
-		else
-		{
-			SDL_Rect dest;
-			dest.x = iter.second.location.x * RENDER_SCALE;
-			dest.y = iter.second.location.y * RENDER_SCALE;
-			dest.w = iter.second.location.w * RENDER_SCALE;
-			dest.h = iter.second.location.h * RENDER_SCALE;
-			SDL_RenderCopy(renderer, iter.second.tex, &iter.second.frame, &dest);
-		}
-	}
+	interfaces[part].frame = f;
+	interfaces[part].location = r;
 }
 
 void InterfaceCleanup()
 {
-	for(auto i : interface)
+	for(auto i : interfaces)
 		SDL_DestroyTexture(i.second.tex);
-	std::map<int, InterfacePiece>().swap(interface); // forcibly deallocate memory
+	std::map<int, InterfacePiece>().swap(interfaces); // forcibly deallocate memory
 }

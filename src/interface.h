@@ -2,6 +2,7 @@
 #define _interface_h_ 
 
 #include <SDL.h>
+#include <map>
 #include <string>
 
 struct InterfacePiece
@@ -19,8 +20,8 @@ void PrintNumToInterface(int num, int part, int length);
 void PrintToInterface(const char* data, int part);
 void ChangeInterfaceFrame(int frame, int part);
 void BuildInterface(int h, int w, int x, int y, const char* content, int frame, int part);
-void RenderInterface();
 void InterfaceCleanup();
+std::map<int, InterfacePiece> GetInterfaces();
 
 enum INTERFACE_PARTS
 {

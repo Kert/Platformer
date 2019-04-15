@@ -22,7 +22,7 @@ SDL_Keycode GetKeyboardCodeFromBind(KEYBINDS bind);
 Uint8 GetControllerCodeFromBind(KEYBINDS bind);
 
 std::string GetBindingName(KEYBINDS bind);
-std::string GetFullscreenMode(int code);
+std::string GetFullscreenModeName(int code);
 std::string GetKeyboardKeyName(SDL_Keycode code);
 std::string GetControllerKeyName(Uint8 code);
 

@@ -198,7 +198,7 @@ Player::Player()
 	
 	hitbox = LoadEntityHitbox("assets/data/graphics/player.ini");
 	sprite = LoadEntitySprite("assets/data/graphics/player.ini");
-	InitPlayerTexture();
+	Graphics::InitPlayerTexture();
 
 	state = new OnGroundState(this);	
 }
@@ -222,18 +222,18 @@ void Player::SwitchWeapon(WEAPONS newWeap)
 	{
 		case WEAPON_FIREBALL:
 		{
-			ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 0, 0, 255 });
-			ChangePlayerColor(PLAYER_BODY_TAIL, { 255, 0, 0, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 0, 0, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 255, 0, 0, 255 });
 			break;
 		}
 		case WEAPON_LIGHTNING:
 		{
-			ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
-			ChangePlayerColor(PLAYER_BODY_TAIL, { 0, 0, 255, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 0, 0, 255, 255 });
 			break;
 		}
 		default:
-			ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
 	}
 	ChangeInterfaceFrame(weapon, INTERFACE_ABILITY);
 }
@@ -288,7 +288,7 @@ void Player::ToggleChargedColor()
 {
 	chargedColored = !chargedColored;
 	if(!chargedColored)
-		ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 255, 255, 255 });
+		Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 255, 255, 255 });
 	else
 		DisableChargedColor();
 }
@@ -299,16 +299,16 @@ void Player::DisableChargedColor()
 	{
 		case WEAPON_FIREBALL:
 		{
-			ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 0, 0, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 0, 0, 255 });
 			break;
 		}
 		case WEAPON_LIGHTNING:
 		{
-			ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
 			break;
 		}
 		default:
-			ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
 	}
 }
 
@@ -1513,7 +1513,7 @@ Lightning::Lightning(DynamicEntity &shooter)
 		posFrom = { (int)shooter.GetX(), (int)shooter.GetY() - 20 };
 
 	std::vector<SDL_Point> points = CalcLightningPoints(posFrom, shooter.direction);
-	tex = GenerateLightningTexture(points);
+	tex = Graphics::GenerateLightningTexture(points);
 
 	int width, height;
 	SDL_QueryTexture(tex, NULL, NULL, &width, &height);

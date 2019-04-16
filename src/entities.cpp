@@ -1216,49 +1216,26 @@ void Button::Remove()
 	delete this;
 }
 
-Platform::Platform(int x, int y, int x2, int y2, std::string platformType)
+Platform::Platform(int x, int y, std::string platformType, int pathID)
 {
 	machinery.push_back(this);
 	entityID = AssignEntityID(LIST_MACHINERY);
-
 	this->type = MACHINERY_TYPES::MACHINERY_PLATFORM;
 
-	if(x > x2)
-	{
-		std::swap(x, x2);
-		std::swap(y, y2);
-	}
-	else if(y > y2)
-	{
-		std::swap(x, x2);
-		std::swap(y, y2);
-	}
-	default_pos.x = x;
-	default_pos.y = y;
-	default_pos.h = 16;
-	default_pos.w = 16 * 2;
-	another_pos.x = x2;
-	another_pos.y = y2;
-	another_pos.h = 16;
-	another_pos.w = 16 * 2;
-		
 	std::string graphicsName = platformData[platformType].graphicsName;
 	hitbox = LoadEntityHitbox(graphicsName);
 	sprite = LoadEntitySprite(graphicsName);
-	hookable = true;
 
-	SetPos(x, y + 16);
-	SetVelocity(0, 0);
-	speed = 50;
-	minspeed = 10;
-	deaccel.x = speed * 1.85;
-	deaccel.y = speed * 1.15;
-	
-	automatic = true;
-	destructable = false;
 	standable = platformData[platformType].standable;
 	hookable = platformData[platformType].hookable;
 	solid = platformData[platformType].solid;
+	destructable = false;
+
+	SetPos(x, y);
+	SetVelocity(0, 0);
+	speed = 50;
+	this->pathID = pathID;
+	
 	direction = DIRECTION_RIGHT;
 }
 

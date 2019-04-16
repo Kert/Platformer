@@ -33,11 +33,10 @@ struct PickupLoadData
 
 struct PlatformLoadData
 {
-	int x1;
-	int y1;
-	int x2;
-	int y2;
+	int x;
+	int y;
 	std::string type;
+	int pathID;
 };
 
 std::vector<QueuedEntity> entitySpawns;
@@ -204,6 +203,12 @@ void Level::LoadLevelFromFile(std::string filename)
 	TiXmlNode* objects = node->FirstChild("objectgroup");
 	for(TiXmlElement* obj = objects->FirstChildElement("object"); obj != NULL; obj = obj->NextSiblingElement("object"))
 	{
+		const char* typeAttr = obj->Attribute("type");
+		if(!typeAttr)
+		{
+			PrintLog(LOG_IMPORTANT, "Object does not have any type");
+			continue;
+		}
 		std::string type = obj->Attribute("type");
 		if(type == "cam")
 		{
@@ -265,35 +270,30 @@ void Level::LoadLevelFromFile(std::string filename)
 		{
 			int x = SDL_atoi(obj->Attribute("x"));
 			int y = SDL_atoi(obj->Attribute("y"));
-			int h = SDL_atoi(obj->Attribute("height"));
-			int w = SDL_atoi(obj->Attribute("width"));
+			
 			const char *type = obj->Attribute("name");
 			if(!type)
 			{
 				PrintLog(LOG_IMPORTANT, "Platform type is null. Setting default");
 				type = "alien_platform";
 			}
-			int x1, y1, x2, y2;
-			if(h > w)
+
+			int pathID = -1;
+			TiXmlElement* prop = obj->FirstChildElement();
+			if(prop)
 			{
-				x1 = x;
-				y1 = y + TILESIZE;
-				x2 = x;
-				y2 = y + h;
-			}
-			else
-			{
-				x1 = x;
-				y1 = y;
-				x2 = x + w - TILESIZE * 2;
-				y2 = y;
+				for(TiXmlElement* curProp = prop->FirstChildElement("property"); curProp != NULL; curProp = prop->NextSiblingElement("property"))
+				{
+					std::string propName = curProp->Attribute("name");
+					if(propName == "pathID")
+						pathID = atoi(curProp->Attribute("value"));
+				}
 			}
 			PlatformLoadData data;
-			data.x1 = x1;
-			data.x2 = x2;
-			data.y1 = y1;
-			data.y2 = y2;
+			data.x = x;
+			data.y = y;
 			data.type = type;
+			data.pathID = pathID;
 			levelPlatforms.push_back(data);
 		}
 		if(type == "lava_floor")
@@ -333,6 +333,8 @@ void Level::LoadLevelFromFile(std::string filename)
 			initialPoint.x = atoi(obj->Attribute("x"));
 			initialPoint.y = atoi(obj->Attribute("y"));
 
+			int pathID = atoi(obj->Attribute("id"));
+
 			TiXmlElement* pathObj = obj->FirstChildElement();
 			if(!pathObj)
 				continue;
@@ -355,6 +357,8 @@ void Level::LoadLevelFromFile(std::string filename)
 			}
 			if(pathType == "polygon")
 				path.loopable = true;
+
+			paths[pathID] = path;
 		}
 	}
 }
@@ -376,6 +380,7 @@ void Level::Cleanup()
 	levelPlatforms.clear();
 	CameraBounds.clear();
 	deathZones.clear();
+	paths.clear();
 	Game::Reset();
 }
 
@@ -451,7 +456,7 @@ void Level::LoadEntities()
 
 	for(auto p : levelPlatforms)
 	{
-		new Platform(p.x1, p.y1, p.x2, p.y2, p.type);
+		new Platform(p.x, p.y, p.type, p.pathID);
 	}
 
 	for(auto e : entitySpawns)
@@ -487,4 +492,11 @@ void Level::LoadNonRandomElements()
 void Level::MakeDoorWithButtons(int x, int y)
 {
 	new Door(x, y, true);
+}
+
+Path* Level::GetPath(int id)
+{
+	if(paths.find(id) != paths.end())
+		return &paths[id];
+	return nullptr;
 }

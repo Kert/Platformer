@@ -2,8 +2,10 @@
 #define _level_h_ 
 
 #include <SDL.h>
+#include <map>
 #include <string>
 #include <vector>
+#include "entities.h"
 
 #define TILESIZE 16
 
@@ -22,6 +24,7 @@ class Level
 		int height_in_pix;
 		std::vector<SDL_Rect> CameraBounds;
 		std::vector<SDL_Rect> deathZones;
+		std::map<int, Path> paths;
 		std::string tileset_filepath;
 
 	public:
@@ -38,6 +41,7 @@ class Level
 		void LoadPlayer();
 		void LoadNonRandomElements();
 		void MakeDoorWithButtons(int x, int y);
+		Path* GetPath(int id);
 };
 
 #endif

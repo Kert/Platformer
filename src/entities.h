@@ -351,12 +351,10 @@ class Platform : public Machinery
 		bool standable = true;
 		bool hookable = false;
 		double speed;
-		Velocity deaccel;
-		double minspeed;
-		SDL_Rect another_pos;
-		bool automatic; // moves by itself or not
+		int pathID = -1;
+		int currentPathPoint = 0;
 	public:
-		Platform(int x, int y, int x2, int y2, std::string platformType);
+		Platform(int x, int y, std::string platformType, int pathID);
 		void Remove();
 		~Platform();
 };

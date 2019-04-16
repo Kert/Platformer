@@ -643,73 +643,49 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 	if(d.type == MACHINERY_TYPES::MACHINERY_PLATFORM)
 	{
 		Platform *plat = (Platform*)&d;
-		// Up-down platform
-		if(plat->default_pos.y != plat->another_pos.y)
+		if(plat->pathID != -1)
 		{
-			// Using velocity to determine new pos
-			y += vel.y * (deltaTicks * PHYSICS_SPEED);
-			// Limiting speed
-			if(abs(vel.y) > plat->speed)
-				vel.y = plat->speed * (vel.y < 0 ? -1 : 1);
-			// Do stuff when approaching top end point
-			if(abs(y - (plat->default_pos.y)) < TILESIZE)
-				vel.y += plat->deaccel.y * (deltaTicks * PHYSICS_SPEED);
-			// Platform reached top end point
-			if(y < plat->default_pos.y)
+			int nextPointID = plat->currentPathPoint + 1;
+			std::vector<SDL_Point> *pathPoints = &Game::GetLevel()->GetPath(plat->pathID)->points;
+			if(!pathPoints)
 			{
-				// Let it go the other direction
-				vel.y = plat->minspeed;
-				y = plat->default_pos.y + 1;
+				PrintLog(LOG_IMPORTANT, "Invalid platform path %d", plat->pathID);
+				return;
+			}				
+
+			if(nextPointID >= pathPoints->size())
+				nextPointID = 0;
+			double oldX, oldY, newX, newY, ix, iy, cx, cy, initialDist, currentDist;
+			oldX = pathPoints->at(plat->currentPathPoint).x;
+			oldY = pathPoints->at(plat->currentPathPoint).y;
+			newX = pathPoints->at(nextPointID).x;
+			newY = pathPoints->at(nextPointID).y;
+			ix = oldX - newX;
+			iy = oldY - newY;
+			initialDist = sqrt(ix * ix + iy * iy); // distance between points
+			cx = oldX - plat->GetX();
+			cy = oldY - plat->GetY();
+			currentDist = sqrt(cx * cx + cy * cy); // distance between old point and current pos
+
+			if(currentDist < initialDist)
+			{
+				// same speed for any direction
+				double tx, ty, dist;
+				tx = newX - plat->GetX();
+				ty = newY - plat->GetY();
+				dist = sqrt(tx * tx + ty * ty);
+
+				vel.x = (tx / dist) * plat->speed;
+				vel.y = (ty / dist) * plat->speed;
+				x += vel.x * (deltaTicks * PHYSICS_SPEED);
+				y += vel.y * (deltaTicks * PHYSICS_SPEED);
 			}
 			else
 			{
-				// Do stuff when approaching bottom end point
-				if(abs(y - plat->another_pos.y) < TILESIZE)
-					vel.y -= plat->deaccel.y * (deltaTicks * PHYSICS_SPEED);
-				// Platform reached bottom end point
-				if(y > plat->another_pos.y)
-				{
-					// Let it go the other direction
-					vel.y = -plat->minspeed;
-					y = plat->another_pos.y - 1;
-				}
+				plat->currentPathPoint = nextPointID;
+				x = newX;
+				y = newY;
 			}
-			// Don't stop me now
-			if(abs(vel.y) < plat->minspeed)
-				vel.y = plat->minspeed * (vel.y > 0 ? 1 : -1);
-		}
-		else // Left-right platform
-		{
-			// Using velocity to determine new pos
-			x += vel.x * (deltaTicks * PHYSICS_SPEED);
-			// Limiting speed
-			if(abs(vel.x) > plat->speed)
-				vel.x = plat->speed * (vel.x < 0 ? -1 : 1);
-			// Do stuff when approaching left end point
-			if(abs(x - (plat->default_pos.x)) < TILESIZE)
-				vel.x += plat->deaccel.x * (deltaTicks * PHYSICS_SPEED);
-			// Platform reached left end point
-			if(x < plat->default_pos.x)
-			{
-				// Let it go the other direction
-				vel.x = plat->minspeed;
-				x = plat->default_pos.x + 1;
-			}
-			else
-			{
-				// Do stuff when approaching bottom end point
-				if(abs(x - plat->another_pos.x) < TILESIZE)
-					vel.x -= plat->deaccel.x * (deltaTicks * PHYSICS_SPEED);
-				// Platform reached right end point
-				if(x > plat->another_pos.x)
-				{
-					vel.x = -plat->minspeed;
-					x = plat->another_pos.x - 1;
-				}
-			}
-			// Don't stop me now
-			if(abs(vel.x) < plat->minspeed)
-				vel.x = plat->minspeed * (vel.x > 0 ? 1 : -1);
 		}
 	}
 

@@ -39764,6 +39764,7 @@
   <object id="40" type="platform" x="720" y="96" width="32" height="16">
    <properties>
     <property name="pathID" value="71"/>
+    <property name="speed" type="float" value="10"/>
    </properties>
   </object>
   <object id="44" name="Dale" type="spawn" x="688" y="192">

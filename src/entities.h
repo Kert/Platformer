@@ -354,7 +354,7 @@ class Platform : public Machinery
 		int pathID = -1;
 		int currentPathPoint = 0;
 	public:
-		Platform(int x, int y, std::string platformType, int pathID);
+		Platform(int x, int y, std::string platformType, int pathID, double speed);
 		void Remove();
 		~Platform();
 };

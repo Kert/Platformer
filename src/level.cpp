@@ -37,6 +37,7 @@ struct PlatformLoadData
 	int y;
 	std::string type;
 	int pathID;
+	double speed;
 };
 
 std::vector<QueuedEntity> entitySpawns;
@@ -279,14 +280,17 @@ void Level::LoadLevelFromFile(std::string filename)
 			}
 
 			int pathID = -1;
+			double speed = 50;
 			TiXmlElement* prop = obj->FirstChildElement();
 			if(prop)
 			{
-				for(TiXmlElement* curProp = prop->FirstChildElement("property"); curProp != NULL; curProp = prop->NextSiblingElement("property"))
+				for(TiXmlElement* curProp = prop->FirstChildElement("property"); curProp != NULL; curProp = curProp->NextSiblingElement("property"))
 				{
 					std::string propName = curProp->Attribute("name");
 					if(propName == "pathID")
 						pathID = atoi(curProp->Attribute("value"));
+					else if(propName == "speed")
+						speed = atof(curProp->Attribute("value"));
 				}
 			}
 			PlatformLoadData data;
@@ -294,6 +298,7 @@ void Level::LoadLevelFromFile(std::string filename)
 			data.y = y;
 			data.type = type;
 			data.pathID = pathID;
+			data.speed = speed;
 			levelPlatforms.push_back(data);
 		}
 		if(type == "lava_floor")
@@ -456,7 +461,7 @@ void Level::LoadEntities()
 
 	for(auto p : levelPlatforms)
 	{
-		new Platform(p.x, p.y, p.type, p.pathID);
+		new Platform(p.x, p.y, p.type, p.pathID, p.speed);
 	}
 
 	for(auto e : entitySpawns)

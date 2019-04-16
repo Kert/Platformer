@@ -1216,7 +1216,7 @@ void Button::Remove()
 	delete this;
 }
 
-Platform::Platform(int x, int y, std::string platformType, int pathID)
+Platform::Platform(int x, int y, std::string platformType, int pathID, double speed)
 {
 	machinery.push_back(this);
 	entityID = AssignEntityID(LIST_MACHINERY);
@@ -1233,7 +1233,7 @@ Platform::Platform(int x, int y, std::string platformType, int pathID)
 
 	SetPos(x, y);
 	SetVelocity(0, 0);
-	speed = 50;
+	this->speed = speed;
 	this->pathID = pathID;
 	
 	direction = DIRECTION_RIGHT;

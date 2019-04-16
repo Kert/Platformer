@@ -597,7 +597,7 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 		{
 			double f, i;
 			f = modf(p.attached->hitbox->GetPRect().x, &i);
-			p.xNew = truncf(p.xNew) + f;
+			p.xNew = p.attached->hitbox->GetPRect().x + truncf(p.attX);
 		}
 		p.yNew = p.attached->hitbox->GetPRect().y + p.attY;
 	}

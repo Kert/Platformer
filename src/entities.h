@@ -12,6 +12,12 @@ class CreatureState;
 class Player;
 class Machinery;
 
+struct Path
+{
+	std::vector<SDL_Point> points;
+	bool loopable = false;
+};
+
 struct Velocity
 {
 	double x;

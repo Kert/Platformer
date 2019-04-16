@@ -327,6 +327,35 @@ void Level::LoadLevelFromFile(std::string filename)
 			data.type = type;
 			levelPickups.push_back(data);
 		}
+		if(type == "path")
+		{
+			SDL_Point initialPoint;
+			initialPoint.x = atoi(obj->Attribute("x"));
+			initialPoint.y = atoi(obj->Attribute("y"));
+
+			TiXmlElement* pathObj = obj->FirstChildElement();
+			if(!pathObj)
+				continue;
+
+			Path path;
+			std::string pathType = pathObj->Value();
+			if(pathType != "polyline" && pathType != "polygon")
+				continue;
+			
+			std::string pointsString = pathObj->Attribute("points");
+			std::vector<std::string> tokens;
+			tokenize(pointsString, tokens, " ");
+			for(auto token : tokens)
+			{
+				SDL_Point point;
+				sscanf(token.c_str(), "%d,%d", &point.x, &point.y);
+				point.x += initialPoint.x;
+				point.y += initialPoint.y;
+				path.points.push_back(point);
+			}
+			if(pathType == "polygon")
+				path.loopable = true;
+		}
 	}
 }
 

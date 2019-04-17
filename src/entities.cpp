@@ -130,16 +130,16 @@ void ReadCreatureData()
 			{
 				std::vector<std::string> tokens;
 				tokenize(animString, tokens, ",");
+				if(tokens.size() != 6)
+					continue;
+
 				int animOffX, animOffY, animNumFrames, animInterval, animFps, animLoopType;
-				if(tokens.size() == 6)
-				{
-					animOffX = atoi(tokens[0].c_str());
-					animOffY = atoi(tokens[1].c_str());
-					animNumFrames = atoi(tokens[2].c_str());
-					animInterval = atoi(tokens[3].c_str());
-					animFps = atoi(tokens[4].c_str());
-					animLoopType = atoi(tokens[5].c_str());
-				}
+				animOffX = atoi(tokens[0].c_str());
+				animOffY = atoi(tokens[1].c_str());
+				animNumFrames = atoi(tokens[2].c_str());
+				animInterval = atoi(tokens[3].c_str());
+				animFps = atoi(tokens[4].c_str());
+				animLoopType = atoi(tokens[5].c_str());
 				cr.sprite.AddAnimation(i.second, animOffX, animOffY, animNumFrames, animInterval, animFps, (ANIM_LOOP_TYPES)animLoopType);
 			}
 		}

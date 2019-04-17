@@ -53,36 +53,6 @@ void DeleteAllTiles()
 	tileLayers.clear();
 }
 
-void LoadTileTypesFromFile(std::string filename)
-{
-	std::ifstream infile(filename);
-	std::string line;
-
-	int i = 0;
-	while(std::getline(infile, line))
-	{
-		std::stringstream iss(line);
-		size_t pos = 0;
-		std::string delimiter = "\t";
-		pos = line.find(delimiter);
-		while(pos != std::string::npos)
-		{
-			pos = line.find('\t');
-			std::string token;
-			token = line.substr(0, pos);
-			std::stringstream str(token);
-			int val;
-			str >> val;
-			tileset[i].type = val;
-			i++;
-			if(pos == std::string::npos)
-				line.erase(0, line.size());
-			else
-				line.erase(0, pos + delimiter.size());
-		}
-	}
-}
-
 Tile::Tile(int x, int y, int layer, CustomTile *data, bool replace)
 {
 	if(x >= (int)tileLayers[layer].size() || y >= (int)tileLayers[layer][0].size())

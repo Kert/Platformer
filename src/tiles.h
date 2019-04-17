@@ -10,7 +10,6 @@ void LoadTileSet();
 void AddDataToTileSet(int type, int x_offset, int y_offset);
 void TilesCleanup();
 void DeleteAllTiles();
-void LoadTileTypesFromFile(std::string filename);
 PHYSICS_TYPES GetTileTypeAtTiledPos(int x, int y);
 PHYSICS_TYPES GetTileTypeAtTiledPos(SDL_Point at);
 PHYSICS_TYPES GetTileTypeAtPos(int x, int y);

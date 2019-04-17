@@ -1,5 +1,7 @@
 #include "graphics.h"
 #include <SDL_image.h>
+#include <iomanip>
+#include <sstream>
 #include "animation.h"
 #include "camera.h"
 #include "entities.h"
@@ -681,32 +683,33 @@ namespace Graphics
 
 	void ShowDebugInfo(Player &p)
 	{
-		char debug_str[256];
 		int x, y, rectx, recty;
-
 		p.GetPos(x, y);
 		rectx = p.hitbox->GetRect().x;
 		recty = p.hitbox->GetRect().y;
-		int status = p.status;
-		int statustimer = p.statusTimer;
-
+		Velocity vel = p.GetVelocity();
 		int tx, ty;
 		tx = ConvertToTileCoord(x, false);
 		ty = ConvertToTileCoord(y, false);
-		sprintf(debug_str, "state = %d onMachinery = %d PlayerX = %d | %d. PlayerY = %d | %d VelX: %d VelY: %d HP: %d",
-			p.state->GetState(), p.onMachinery, x, tx, y, ty,
-			(int)p.GetVelocity().x, (int)p.GetVelocity().y, p.health);
-		SDL_Surface *debug_surface = TTF_RenderText_Solid(debug_font, debug_str, debug_color);
-		SDL_Texture* debug_texture = SDL_CreateTextureFromSurface(renderer, debug_surface);
-		SDL_Rect temp;
-		SDL_GetClipRect(debug_surface, &temp);
-		SDL_FreeSurface(debug_surface);
-		temp.x = 8 * RENDER_SCALE;
-		temp.y = (GAME_SCENE_HEIGHT - 16) * RENDER_SCALE;
-		//PrintNumToInterface(p.statusTimer, INTERFACE_SCORE, 0);
-		SDL_RenderCopy(renderer, debug_texture, NULL, &temp);
-		SDL_DestroyTexture(debug_texture);
+		
+		std::ostringstream debug_str;
+		debug_str << "X: " << x << " | " << tx
+			<< " Y: " << y << " | " << ty
+			<< " VelX: " << vel.x << " VelY: " << vel.y
+			<< " AccX: " << p.accel.x << " AccY: " << p.accel.y
+			<< " Attached X: " << p.attX << " Y: " << p.attY;
+		RenderText(0, GetWindowNormalizedY(1) - 32, debug_str.str(), debug_font, debug_color);
+		
+		debug_str.str("");
+		debug_str.clear();
+		debug_str << "HP: " << p.health
+			<< " state: " << p.state->GetState()
+			<< " onMachinery: " << p.onMachinery
+			<< " status: " << p.status
+			<< " statusTimer: " << p.statusTimer;
 
+		RenderText(0, GetWindowNormalizedY(1) - 16, debug_str.str(), debug_font, debug_color);
+		
 		SDL_Rect virtualCamRect;
 		virtualCamRect.x = (camera->virtualCam.x - camera->GetRect().x) * RENDER_SCALE;
 		virtualCamRect.y = (camera->virtualCam.y - camera->GetRect().y) * RENDER_SCALE;
@@ -726,7 +729,7 @@ namespace Graphics
 		for(auto iter : *interfaces)
 		{
 			if(iter.second.tex == NULL)
-				RenderText(iter.second.location.x, iter.second.location.y, iter.second.text, interface_font, interface_color);
+				RenderText(iter.second.location.x * RENDER_SCALE, iter.second.location.y * RENDER_SCALE, iter.second.text, interface_font, interface_color);
 			else
 			{
 				SDL_Rect dest;
@@ -763,11 +766,14 @@ namespace Graphics
 					min = Game::GetTimeLimit() / 60;
 					sec = Game::GetTimeLimit() % 60;
 
-					char str[64];
-					sprintf(str, "Time: %2d min %2d sec", min, sec);
-					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2), str, game_font, selected_color, TEXT_ALIGN_CENTER);
-					sprintf(str, "Lives left: %d", Game::GetPlayerLivesLeft());
-					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2) + 100, str, game_font, selected_color, TEXT_ALIGN_CENTER);
+					std::ostringstream msg;
+					msg << "TIME: " << std::setw(2) << min << " MIN " << sec << " SEC";
+					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2), msg.str(), game_font, selected_color, TEXT_ALIGN_CENTER);
+					
+					msg.str("");
+					msg.clear();
+					msg << "LIVES LEFT: " << Game::GetPlayerLivesLeft();
+					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2) + 100, msg.str(), game_font, selected_color, TEXT_ALIGN_CENTER);
 
 					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADED! PRESS A KEY TO START", menu_font, menu_color, TEXT_ALIGN_CENTER);
 				}
@@ -895,7 +901,7 @@ namespace Graphics
 			r.y = menu->GetItemInfo(i)->pos.y;
 			TTF_Font *font = GetFont(menu->GetItemInfo(i)->font);
 			TEXT_ALIGN align = menu->GetItemInfo(i)->align;
-			const char *text = menu->GetItemInfo(i)->text.c_str();
+			std::string text = menu->GetItemInfo(i)->text;
 			RenderText(r.x, r.y, text, font, color, align);
 		}
 	}

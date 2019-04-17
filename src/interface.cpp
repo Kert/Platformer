@@ -24,50 +24,32 @@ void InterfaceSetup()
 	BuildInterface(32, 32, 20, 20, "assets/sprites/lifebar.png", 0, INTERFACE_LIFE);
 	BuildInterface(32, 32, 20, 20, "assets/sprites/abilities.png", 0, INTERFACE_ABILITY);
 	//BuildInterface(TEXT_HEIGHT, SCORE_WIDTH, SCORE_OFFSET_X, SCORE_OFFSET_Y, "000000", -1, INTERFACE_SCORE);
-	//BuildInterface(TEXT_HEIGHT, TIME_WIDTH, TIME_OFFSET_X, TIME_OFFSET_Y, "00:00", -1, INTERFACE_TIME);
+	BuildInterface(32, 32 * 5, 52, 20, "00:00", -1, INTERFACE_TIME);
 }
 
-const char* InfoFormat(int data1, int data2)
+std::string InfoFormat(int data1, int data2)
 {
 	std::stringstream o;
-	const char* c1 = AddLeadingZeroes(data1, 2);
-	const char* c2 = AddLeadingZeroes(data2, 2);
-	o << c1;
-	delete c1;
-	o << ":";
-	o << c2;
-	delete c2;
-	std::string temp = o.str().c_str();
-
-	return StringToChars(temp);
+	o << AddLeadingZeroes(data1, 2) << ":" << AddLeadingZeroes(data2, 2);
+	return o.str();
 }
 
-const char* InfoFormat(const char* data1, int data2)
+std::string InfoFormat(std::string data1, int data2)
 {
 	std::stringstream o;
-	const char* c = AddLeadingZeroes(data2, 2);
-	o << data1;
-	o << ":";
-	o << c;
-	delete c;
-	//delete data1;
-	std::string temp = o.str().c_str();
-
-	return StringToChars(temp);
+	o << data1 << ":" << AddLeadingZeroes(data2, 2);
+	return o.str();
 }
 
 void PrintNumToInterface(int num, int part, int length)
 {
-	const char* toPrint = AddLeadingZeroes(num, length);
-	interfaces.at(part).text = toPrint;
-	delete toPrint;
+	interfaces.at(part).text = AddLeadingZeroes(num, length);
 }
 
 // todo: condense with num method?
-void PrintToInterface(const char* data, int part)
+void PrintToInterface(std::string data, int part)
 {
 	interfaces.at(part).text = data;
-	delete data;
 }
 
 void ChangeInterfaceFrame(int frame, int part)

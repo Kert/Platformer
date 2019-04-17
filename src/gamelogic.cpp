@@ -266,13 +266,13 @@ namespace Game
 			PrintLog(LOG_INFO, "Time up!");
 			GameOver(GAME_OVER_REASON_TIME);
 		}
-		const char *c = "";
-		if(sec % 2 == 0)
-			c = InfoFormat(min, sec);
+		std::string time = "";
+		//if(sec % 2 == 0) // swap messages every 2 seconds
+		time = InfoFormat(min, sec);
 		//else
-		//	c = InfoFormat("LOLI");
+		//	c = InfoFormat("LOLI"); // show another message
 
-		//PrintToInterface(c, INTERFACE_TIME);
+		PrintToInterface(time, INTERFACE_TIME);
 	}
 
 	void OnLevelExit()

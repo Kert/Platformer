@@ -6,7 +6,7 @@
 namespace Sound
 {
 	void Init();
-	void PlaySfx(char* sound);
+	void PlaySfx(std::string sound);
 	void PlayMusic(std::string musicName);
 	void ProcessMusic();
 	void OnMusicFinished();

@@ -38,12 +38,7 @@ void RandomGenerator::ExportSeed()
 	}
 
 	std::string seedString = "Last seed: " + IntToString(seed);
-	const char *seed = StringToChars(seedString);
-
-	SDL_RWwrite(logfile, seed, 1, strlen(seed));
-
-	delete seed;
-
+	SDL_RWwrite(logfile, seedString.c_str(), 1, seedString.length());
 	SDL_RWclose(logfile);
 }
 
@@ -129,7 +124,7 @@ std::string IntToString(int var)
 	return o.str().c_str();
 }
 
-const char* AddLeadingZeroes(int var, int length)
+std::string AddLeadingZeroes(int var, int length)
 {
 	std::string temp = IntToString(var);
 
@@ -138,49 +133,7 @@ const char* AddLeadingZeroes(int var, int length)
 		temp = "0" + temp;
 	}
 
-	return StringToChars(temp);
-}
-
-// this function leaks 3 bytes every time it's called
-// c needs to be deleted at some point
-const char* StringToChars(std::string temp)
-{
-	char* c = new char[temp.size() + 1];
-	std::vector<char> ch;
-	for(int i = 0; i < (int)temp.size(); i++)
-	{
-		ch.push_back(' ');
-	}
-	std::copy(temp.begin(), temp.end(), ch.begin());
-	int at = 0;
-	for(auto f : ch)
-	{
-		c[at] = f;
-		at++;
-	}
-	c[at] = '\0';
-	return c;
-}
-
-int StringToInt(std::string val)
-{
-	int temp = -1;
-	std::stringstream s;
-	s << val;
-	s >> temp;
 	return temp;
-}
-
-const char* ConstCharConcat(const char* first, const char* second)
-{
-	std::stringstream o;
-	o << first;
-	//delete first;
-	o << second;
-	//delete second;
-	std::string temp = o.str().c_str();
-
-	return StringToChars(temp);
 }
 
 void PrintLog(int logLevel, const char *fmt, ...)

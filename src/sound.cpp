@@ -46,18 +46,15 @@ namespace Sound
 		return volumeMusic;
 	}
 
-	void PlaySfx(char* soundName)
+	void PlaySfx(std::string soundName)
 	{
-		char soundFile[50];
-
-		strcpy(soundFile, "assets/sounds/");
-		strcat(soundFile, soundName);
-		strcat(soundFile, ".wav");
+		std::string soundFile;
+		soundFile = "assets/sounds/" + soundName + ".wav";
 
 		Mix_Chunk *activeSound = NULL;
 		if(loadedSounds.find(soundFile) == loadedSounds.end())
 		{
-			activeSound = Mix_LoadWAV(soundFile);
+			activeSound = Mix_LoadWAV(soundFile.c_str());
 			loadedSounds[soundFile] = activeSound;
 		}
 		else

@@ -14,10 +14,10 @@ struct InterfacePiece
 };
 
 void InterfaceSetup();
-const char* InfoFormat(const char* data1, int data2);
-const char* InfoFormat(int data1, int data2);
+std::string InfoFormat(std::string data1, int data2);
+std::string InfoFormat(int data1, int data2);
 void PrintNumToInterface(int num, int part, int length);
-void PrintToInterface(const char* data, int part);
+void PrintToInterface(std::string data, int part);
 void ChangeInterfaceFrame(int frame, int part);
 void BuildInterface(int h, int w, int x, int y, const char* content, int frame, int part);
 void InterfaceCleanup();

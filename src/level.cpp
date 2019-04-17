@@ -90,6 +90,7 @@ void Level::LoadLevelFromFile(std::string filename)
 
 	TiXmlElement* mapProperties = node->ToElement();
 	
+	musicFileName = "1.ogg";
 	TiXmlNode* props = mapProperties->FirstChild();
 	for(TiXmlElement* prop = props->FirstChildElement(); prop != NULL; prop = prop->NextSiblingElement())
 	{
@@ -102,8 +103,6 @@ void Level::LoadLevelFromFile(std::string filename)
 				const char* tmp = prop->Attribute("value");
 				if(tmp)
 					musicFileName = tmp;
-				else
-					musicFileName = "1.ogg";
 			}
 		}		
 	}

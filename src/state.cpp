@@ -37,6 +37,11 @@ CreatureState* CreatureState::HandleInput(int input, int type)
 							ProcessShot(p->weapon, *cr);
 							p->charge_time = 700;
 						}
+						if(p->ammo[p->weapon] && p->weapon == WEAPON_AIRGUST)
+						{
+							p->ammo[p->weapon]--;
+							ProcessShot(p->weapon, *cr);
+						}
 						p->sprite->shootingAnimTimer = SHOOTING_ANIM_DURATION;
 					}
 					break;

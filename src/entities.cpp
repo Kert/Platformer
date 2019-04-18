@@ -191,6 +191,7 @@ Player::Player()
 	ResetWeapons();
 
 	ammo[WEAPON_FIREBALL] = 3;
+	ammo[WEAPON_AIRGUST] = 2;
 	//Initialize the velocity
 	SetVelocity(0, 0);
 	
@@ -229,6 +230,11 @@ void Player::SwitchWeapon(WEAPONS newWeap)
 			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
 			Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 0, 0, 255, 255 });
 			break;
+		}
+		case WEAPON_AIRGUST:
+		{
+			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 255, 255, 255 });
+			Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 255, 255, 255, 255 });
 		}
 		default:
 			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
@@ -270,6 +276,7 @@ void Player::ResetWeapons()
 	fireDelay[WEAPON_GRENADE] = (int)(1.0 * 1000);
 	fireDelay[WEAPON_LIGHTNING] = (int)(0.5 * 3000);
 	fireDelay[WEAPON_FIREBALL] = (int)(0.1 * 1000);
+	fireDelay[WEAPON_AIRGUST] = (int)(0.2 * 1000);
 }
 
 bool Player::CanMoveWhileFiring()
@@ -851,8 +858,18 @@ void Effect::Remove()
 
 void Bullet::Remove()
 {
-	if(origin == WEAPON_FIREBALL && owner == Game::GetPlayer())
-		Game::GetPlayer()->ammo[WEAPON_FIREBALL]++;
+	if(owner == Game::GetPlayer())
+	{
+		switch(origin)
+		{
+			case WEAPON_FIREBALL:
+				Game::GetPlayer()->ammo[WEAPON_FIREBALL]++;
+				break;
+			case WEAPON_AIRGUST:
+				Game::GetPlayer()->ammo[WEAPON_AIRGUST]++;
+				break;
+		}
+	}
 	delete this;
 }
 
@@ -1004,6 +1021,16 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			statusTimer = lifetime;
 			piercing = false;
 			break;
+		case WEAPON_AIRGUST:
+			hitbox = LoadEntityHitbox("assets/data/graphics/airgust.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/airgust.ini");
+			SetVelocity(240 * (direction ? 1 : -1), 0);
+			accel.y = 0;
+			accel.x = 0;
+			lifetime = (int)(1 * 2000);
+			statusTimer = lifetime;
+			piercing = false;
+			break;
 	}
 	origin = firedFrom;
 }
@@ -1059,6 +1086,11 @@ void Creature::ProcessBulletHit(Bullet *b)
 			break;
 		}
 		case WEAPONS::WEAPON_GROUNDSHOCKWAVE:
+		{
+			damage = 25;
+			break;
+		}
+		case WEAPONS::WEAPON_AIRGUST:
 		{
 			damage = 25;
 			break;

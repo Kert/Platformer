@@ -188,6 +188,7 @@ class Creature : public DynamicEntity
 		bool shotLocked;
 		bool charging;
 		bool onMachinery;
+		bool doubleJumped = false; // air ability specific
 		struct
 		{
 			bool left;

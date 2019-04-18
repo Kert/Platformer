@@ -124,6 +124,7 @@ OnGroundState::OnGroundState(Creature *cr) : CreatureState(cr)
 {
 	state = CREATURE_STATES::ONGROUND;
 	PrintLog(LOG_DEBUG, "Switched to ONGROUND");
+	cr->doubleJumped = false;
 }
 
 CreatureState* OnGroundState::HandleInput(int input, int type)
@@ -241,6 +242,13 @@ CreatureState* InAirState::HandleInput(int input, int type)
 		{
 			switch(input)
 			{
+				case BIND_JUMP:
+					if(cr->weapon == WEAPON_AIRGUST && !cr->doubleJumped)
+					{
+						cr->doubleJumped = true;
+						return new JumpingState(cr);
+					}
+					break;
 				default:
 					CreatureState::HandleInput(input, type);
 			}
@@ -417,6 +425,7 @@ HangingState::HangingState(Creature *cr) : CreatureState(cr)
 	cr->accel.y = 0;
 	cr->accel.x = 0;
 	cr->SetVelocity(0, 0);
+	cr->doubleJumped = false;
 }
 
 HangingState::~HangingState()

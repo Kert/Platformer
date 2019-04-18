@@ -184,6 +184,7 @@ Player::Player()
 	shottime = 0;
 	attached = nullptr;
 
+	doubleJumped = false;
 	shotLocked = false;
 	charging = false;
 	onMachinery = false;
@@ -418,7 +419,7 @@ void Creature::SetState(CreatureState *newState)
 {
 	if(this->state != nullptr)
 	{
-		if(newState->GetState() == CREATURE_STATES::JUMPING && !(this->state->Is(CREATURE_STATES::ONGROUND) || this->state->Is(CREATURE_STATES::HANGING)))
+		if(newState->GetState() == CREATURE_STATES::JUMPING && !(this->state->Is(CREATURE_STATES::INAIR) || this->state->Is(CREATURE_STATES::ONGROUND) || this->state->Is(CREATURE_STATES::HANGING)))
 		{
 			delete newState;
 			return;

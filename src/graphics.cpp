@@ -706,7 +706,9 @@ namespace Graphics
 			<< " state: " << p.state->GetState()
 			<< " onMachinery: " << p.onMachinery
 			<< " status: " << p.status
-			<< " statusTimer: " << p.statusTimer;
+			<< " statusTimer: " << p.statusTimer
+			<< " doubleJumped: " << p.doubleJumped
+			<< " jumpTime: " << p.jumptime;
 
 		RenderText(0, GetWindowNormalizedY(1) - 16, debug_str.str(), debug_font, debug_color);
 		

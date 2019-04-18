@@ -927,6 +927,12 @@ Effect::Effect(EFFECT_TYPES type)
 			status = STATUS_DYING;
 			statusTimer = (int)(0.3 * 1000);
 			break;
+		case EFFECT_DOUBLE_JUMP:
+			hitbox = LoadEntityHitbox("assets/data/graphics/effect_doublejump.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/effect_doublejump.ini");
+			status = STATUS_DYING;
+			statusTimer = (int)(0.2 * 1000);
+			break;
 		default:
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");

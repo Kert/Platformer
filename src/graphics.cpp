@@ -313,16 +313,10 @@ namespace Graphics
 		LoadMenus();
 	}
 
-	void DrawFPS(Uint32 dt)
+	void DrawFPS(long long dt)
 	{
-		static int oldfps = 0;
-		int diff;
-		int newfps;
-		newfps = (int)(1000 / (dt + 0.01));
-		diff = newfps - oldfps;
-		if(abs(diff) > 1)
-			oldfps = oldfps + (int)(0.5 * diff);
-		RenderText(10, 10, "fps: " + std::to_string(newfps), debug_font, debug_color);
+		long long fps = 1000000000 / dt;
+		RenderText(10, 10, "fps: " + std::to_string(fps), debug_font, debug_color);
 	}
 
 	void BlitObserveTileAt(Tile* tile, int x, int y)

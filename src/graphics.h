@@ -34,7 +34,7 @@ namespace Graphics
 	void Render(Entity &e);
 	void DrawHitbox(Entity &e);
 
-	void DrawFPS(Uint32 dt);
+	void DrawFPS(long long dt);
 	void ShowDebugInfo(Player &p);
 	void UpdateDisplayMode();
 	void RenderInterface();

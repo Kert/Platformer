@@ -88,6 +88,7 @@ int main(int argc, char* argv[])
 		auto deltaTime_graphics = clock::now() - timeStart_graphics;
 		if(deltaTime_graphics >= timestepGraphics) // 125fps draw ONE frame
 		{
+			timeStart_graphics = clock::now();
 			Graphics::WindowFlush();
 			if(Game::GetState() == STATE_GAME || Game::GetState() == STATE_PAUSED)
 				Graphics::Update();
@@ -102,9 +103,9 @@ int main(int argc, char* argv[])
 				Graphics::DrawFading();
 			if(Game::GetState() == STATE_PAUSED)
 				Graphics::RenderMenuItems(MENU_PAUSE);
-			//DrawFPS(dtG);
+			if(Game::IsDebug())
+				Graphics::DrawFPS(deltaTime_graphics.count());
 			Graphics::WindowUpdate();
-			timeStart_graphics = clock::now();
 		}
 
 		// Workaround to allow for gapless ogg looping without bugs

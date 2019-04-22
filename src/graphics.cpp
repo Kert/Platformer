@@ -375,6 +375,9 @@ namespace Graphics
 				{
 					for(auto &layer : tileLayers)
 					{
+						if(layer[i][j] == nullptr)
+							continue;
+						layer[i][j]->Animate();
 						BlitObserveTileAt(layer[i][j], p, q);
 					}
 					q += TILESIZE;
@@ -973,24 +976,6 @@ namespace Graphics
 
 					c.animated_x_offset = tileset[c.animationData.sequence[currentFrame].id].x_offset;
 					c.animated_y_offset = tileset[c.animationData.sequence[currentFrame].id].y_offset;
-				}
-			}
-		}
-
-		for(auto &layer : tileLayers)
-		{
-			for(auto &i : layer)
-			{
-				for(auto t : i)
-				{
-					if(t != nullptr)
-					{
-						if(t->HasAnimation())
-						{
-							t->tex_x = t->customTile->animated_x_offset;
-							t->tex_y = t->customTile->animated_y_offset;
-						}
-					}
 				}
 			}
 		}

@@ -37,6 +37,7 @@ class Tile
 		Tile(int x, int y, int layer, CustomTile *data, char type, bool replace);
 		int GetID();
 		bool HasAnimation();
+		void Animate();
 		~Tile();
 };
 

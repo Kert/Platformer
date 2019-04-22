@@ -137,6 +137,15 @@ bool Tile::HasAnimation()
 	return !!(int)this->animation->sequence.size();
 }
 
+void Tile::Animate()
+{
+	if(HasAnimation())
+	{
+		tex_x = customTile->animated_x_offset;
+		tex_y = customTile->animated_y_offset;
+	}
+}
+
 void TilesCleanup()
 {
 	tileLayers.~vector();

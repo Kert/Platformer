@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.3" orientation="orthogonal" renderorder="right-down" width="176" height="75" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#00007f" nextlayerid="5" nextobjectid="76">
+<map version="1.2" tiledversion="1.2.3" orientation="orthogonal" renderorder="right-down" width="176" height="75" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#00007f" nextlayerid="11" nextobjectid="77">
  <properties>
   <property name="passages" value="rl"/>
   <property name="traveltime" value="1500"/>
@@ -39693,7 +39693,11 @@
     <property name="pathID" value="74"/>
    </properties>
   </object>
-  <object id="17" type="platform" x="2432" y="528" width="32" height="160"/>
+  <object id="17" type="platform" x="2432" y="528" width="32" height="16">
+   <properties>
+    <property name="pathID" type="int" value="76"/>
+   </properties>
+  </object>
   <object id="22" type="deathzone" x="80" y="272" width="2352" height="32"/>
   <object id="24" name="Ghost" type="spawn" x="2448" y="384">
    <properties>
@@ -39852,6 +39856,9 @@
   </object>
   <object id="75" type="path" x="2544" y="672">
    <polyline points="0,0 0,256"/>
+  </object>
+  <object id="76" type="path" x="2432" y="528">
+   <polyline points="0,0 0,160"/>
   </object>
  </objectgroup>
 </map>

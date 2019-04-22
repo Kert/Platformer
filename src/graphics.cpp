@@ -367,12 +367,13 @@ namespace Graphics
 			{
 				if(i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
 				{
-					for(auto &layer : tileLayers)
+					for(int layerIndex = 0; layerIndex < (int)tileLayers.size(); layerIndex++)
 					{
-						if(layer[i][j] == nullptr)
+						Tile *tile = tileLayers[layerIndex][i][j];
+						if(tile == nullptr)
 							continue;
-						layer[i][j]->Animate();
-						BlitObserveTileAt(layer[i][j], p, q);
+						tile->Animate();
+						BlitObserveTileAt(tile, p, q);
 					}
 					q += TILESIZE;
 				}

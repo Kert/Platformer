@@ -115,6 +115,14 @@ namespace Graphics
 	TTF_Font *minor_font = NULL;
 	TTF_Font *interface_font = NULL;
 
+	RandomGenerator graphics_rg;
+	struct ScreenShake
+	{
+		int timer = 0;
+		int offsetX;
+		int offsetY;
+	} screenShake;
+
 	Camera* camera;
 
 	int FindDisplayModes();
@@ -387,6 +395,8 @@ namespace Graphics
 		SDL_Texture *pov_texture = SDL_CreateTextureFromSurface(renderer, pov_surface);
 		SDL_Rect dest;
 		dest.x = dest.y = 0;
+		dest.x += screenShake.offsetX * RENDER_SCALE;
+		dest.y += screenShake.offsetY * RENDER_SCALE;
 		dest.w = GAME_SCENE_WIDTH * RENDER_SCALE;
 		dest.h = GAME_SCENE_HEIGHT * RENDER_SCALE;
 		SDL_RenderCopy(renderer, pov_texture, NULL, &dest);
@@ -402,6 +412,7 @@ namespace Graphics
 
 		UpdateTileAnimations();
 
+		ScreenShakeUpdate();
 		BlitObservableTiles();
 
 		// Renders everything in entities collections
@@ -1104,5 +1115,30 @@ namespace Graphics
 			case FONT_DEBUG:
 				return debug_font;
 		}
+	}
+
+	void ScreenShake(int time)
+	{
+		screenShake.timer = time;
+	}
+
+	void ScreenShakeUpdate()
+	{
+		if(screenShake.timer <= 0)
+		{
+			screenShake.offsetX = 0;
+			screenShake.offsetY = 0;
+			return;
+		}
+		
+		screenShake.timer--;
+		if(screenShake.timer % 100)
+		{
+			int randVals[] = { 0, -8, 8 };
+			int rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));
+			screenShake.offsetX = rand;
+			rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));
+			screenShake.offsetY = rand;
+		}			
 	}
 }

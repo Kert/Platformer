@@ -1,6 +1,7 @@
 #include "ai.h"
 #include "entities.h"
 #include "gamelogic.h"
+#include "graphics.h"
 #include "level.h"
 #include "physics.h"
 #include "state.h"
@@ -304,6 +305,7 @@ void AI_GroundShockwaver::OnStateChange(CREATURE_STATES oldState, CREATURE_STATE
 		me->direction = DIRECTION_RIGHT;
 		me->Shoot();
 		me->direction = oldDirection;
+		Graphics::ScreenShake(100);
 	}
 }
 

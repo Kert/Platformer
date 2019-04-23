@@ -71,5 +71,7 @@ namespace Graphics
 	int LoadLevelTexturesFromFile(std::string fileName);
 	SDL_Surface* GetLevelTextureSurface();
 	TTF_Font* GetFont(FONTS font);
+	void ScreenShake(int time);
+	void ScreenShakeUpdate();
 }
 #endif

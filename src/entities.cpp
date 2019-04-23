@@ -933,6 +933,12 @@ Effect::Effect(EFFECT_TYPES type)
 			status = STATUS_DYING;
 			statusTimer = (int)(0.2 * 1000);
 			break;
+		case EFFECT_ICEMELT:
+			hitbox = LoadEntityHitbox("assets/data/graphics/effect_icemelt.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/effect_icemelt.ini");
+			status = STATUS_DYING;
+			statusTimer = (int)(0.5 * 1000);
+			break;
 		default:
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");

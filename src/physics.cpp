@@ -787,7 +787,9 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 					{
 						if(layer[tileX][tileY]->type == PHYSICS_ICEBLOCK)
 						{
-							delete layer[tileX][tileY];							
+							delete layer[tileX][tileY];
+							Effect * eff = new Effect(EFFECT_ICEMELT);
+							eff->SetPos(tileX * TILESIZE, (tileY + 1) * TILESIZE);
 						}
 					}
 				}

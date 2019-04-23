@@ -425,16 +425,18 @@ namespace Graphics
 		Player *player = Game::GetPlayer();
 		UpdateAnimation(*player);
 		Render(*player);
-		for(auto &b : bullets)
-		{
-			UpdateAnimation(*b);
-			Render(*b);
-		}
+
 		for(auto &e : effects)
 		{
 			UpdateAnimation(*e);
 			Render(*e);
 		}
+
+		for(auto &b : bullets)
+		{
+			UpdateAnimation(*b);
+			Render(*b);
+		}		
 
 		RenderInterface();
 

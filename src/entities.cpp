@@ -236,6 +236,7 @@ void Player::SwitchWeapon(WEAPONS newWeap)
 		{
 			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 255, 255, 255 });
 			Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 255, 255, 255, 255 });
+			break;
 		}
 		default:
 			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });

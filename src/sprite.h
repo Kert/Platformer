@@ -32,7 +32,7 @@ class Sprite
 		Sprite(SDL_Texture **tex, SDL_Rect rect);
 		Sprite(SDL_Texture **tex, int x, int y, int h, int w);
 		SDL_Rect GetTextureCoords();
-		void AddAnimation(ANIMATION_TYPE type, int offset_x, int offset_y, int frames, int interval, int fps, ANIM_LOOP_TYPES loop);
+		void AddAnimation(ANIMATION_TYPE type, int offset_x, int offset_y, int frames, int interval, int fps, ANIM_LOOP_TYPES loop, int loopFrom);
 		void SetAnimation(ANIMATION_TYPE type);
 		bool AnimationExists(ANIMATION_TYPE type);
 		void StopAnimation();

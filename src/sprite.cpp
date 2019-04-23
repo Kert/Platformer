@@ -67,9 +67,9 @@ ANIMATION_TYPE Sprite::GetAnimation()
 	return last_anim;
 }
 
-void Sprite::AddAnimation(ANIMATION_TYPE type, int offset_x, int offset_y, int frames, int interval, int fps, ANIM_LOOP_TYPES loop)
+void Sprite::AddAnimation(ANIMATION_TYPE type, int offset_x, int offset_y, int frames, int interval, int fps, ANIM_LOOP_TYPES loop, int loopFrom)
 {
-	animation[type] = Animation(offset_x, offset_y, frames, interval, fps, loop);
+	animation[type] = Animation(offset_x, offset_y, frames, interval, fps, loop, loopFrom);
 }
 
 void Sprite::StopAnimation()

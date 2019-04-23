@@ -33,6 +33,7 @@ class Animation {
 		int OffsetX;
 		int OffsetY;
 		Uint32    OldTime;
+		int loopFromFrame;
 
 	public:
 		int    Frames;
@@ -40,7 +41,7 @@ class Animation {
 
 	public:
 		Animation();
-		Animation(int offset_x, int offset_y, int frames, int interval, int fps, ANIM_LOOP_TYPES loop);
+		Animation(int offset_x, int offset_y, int frames, int interval, int fps, ANIM_LOOP_TYPES loop, int loopFrom);
 		void Animate(int &x, int &y);
 
 	public:

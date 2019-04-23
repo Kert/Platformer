@@ -13,9 +13,10 @@ Animation::Animation()
 	OffsetX = 0;
 	OffsetY = 0;
 	loop = ANIM_LOOP_TYPES::LOOP_NONE;
+	loopFromFrame = 1;
 }
 
-Animation::Animation(int offset_x, int offset_y, int frames, int interval, int fps, ANIM_LOOP_TYPES loop)
+Animation::Animation(int offset_x, int offset_y, int frames, int interval, int fps, ANIM_LOOP_TYPES loop, int loopFrom)
 {
 	CurrentFrame = 1;
 	FrameInc = 1;
@@ -26,6 +27,7 @@ Animation::Animation(int offset_x, int offset_y, int frames, int interval, int f
 	PixelInterval = interval;
 	FrameRate = fps;
 	this->loop = loop;
+	loopFromFrame = loopFrom;
 }
 
 void Animation::Animate(int &x, int &y)
@@ -48,7 +50,7 @@ void Animation::Animate(int &x, int &y)
 		}
 		else
 		{
-			if(CurrentFrame <= 1)
+			if(CurrentFrame <= loopFromFrame)
 			{
 				FrameInc = -FrameInc;
 			}
@@ -58,7 +60,7 @@ void Animation::Animate(int &x, int &y)
 	{
 		if(CurrentFrame > Frames)
 		{
-			CurrentFrame = 1;
+			CurrentFrame = loopFromFrame;
 		}
 	}
 	else if(loop == ANIM_LOOP_TYPES::LOOP_NONE)

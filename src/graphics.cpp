@@ -1139,6 +1139,6 @@ namespace Graphics
 			screenShake.offsetX = rand;
 			rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));
 			screenShake.offsetY = rand;
-		}			
+		}
 	}
 }

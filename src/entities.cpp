@@ -985,8 +985,6 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 		case WEAPON_FLAME:
 			hitbox = LoadEntityHitbox("assets/data/graphics/flame.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/flame.ini");
-			sprite->SetSpriteOffset(0, -12);
-			sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 4, 8, 105, ANIM_LOOP_TYPES::LOOP_NONE);
 			SetVelocity(this->owner->GetVelocity().x + 80 * (direction ? 1 : -1), 0);
 			accel.y = -2.5;
 			accel.x = 0;
@@ -1027,7 +1025,6 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 		case WEAPON_GROUNDSHOCKWAVE:
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
-
 			SetVelocity(240 * (direction ? 1 : -1), 0);
 			accel.y = 0;
 			accel.x = 0;
@@ -1552,9 +1549,6 @@ Lightning::Lightning(DynamicEntity &shooter)
 	else
 		x = shooter.GetX() + 15;
 	this->SetPos(x, y);
-
-	// dummy I guess
-	sprite->AddAnimation(ANIMATION_STANDING, 0, 0, 1, 0, 90, ANIM_LOOP_TYPES::LOOP_NONE);
 
 	SetVelocity(0, 0);
 	status = STATUS_INVULN;

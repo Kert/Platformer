@@ -587,15 +587,25 @@ namespace Graphics
 			{
 				p.sprite->SetAnimation(ANIMATION_RUNNING);
 				p.sprite->Animate();
+				p.idleTimer = 0;
 			}
 			else
 			{
-				p.sprite->SetAnimation(ANIMATION_STANDING);
+				if(p.idleTimer > 500)
+				{
+					p.sprite->SetAnimation(ANIMATION_IDLE);
+				}
+				else
+				{					
+					p.sprite->SetAnimation(ANIMATION_STANDING);
+					p.idleTimer++;
+				}
 				p.sprite->Animate();
 			}
 		}
 		else
 		{
+			p.idleTimer = 0;
 			if(p.GetVelocity().y > 0)
 			{
 				p.sprite->SetAnimation(ANIMATION_FALLING);

@@ -263,6 +263,7 @@ class Player : public Creature
 		int ammo[NUMWEAPONS];
 		int fireDelay[NUMWEAPONS]; // Time in ms
 		bool chargedColored = false;
+		int idleTimer;
 
 	public:
 		Player();

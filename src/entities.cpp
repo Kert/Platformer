@@ -120,7 +120,8 @@ void ReadCreatureData()
 			{ "Shooting_Standing", ANIMATION_SHOOTING_STANDING },
 			{ "Shooting_Jumping", ANIMATION_SHOOTING_JUMPING },
 			{ "Shooting_Falling", ANIMATION_SHOOTING_FALLING },
-			{ "Shooting_Running", ANIMATION_SHOOTING_RUNNING }
+			{ "Shooting_Running", ANIMATION_SHOOTING_RUNNING },
+			{ "Idle", ANIMATION_IDLE }
 		};
 
 		for(auto i : animTable)
@@ -193,6 +194,8 @@ Player::Player()
 	charging = false;
 	onMachinery = false;
 	
+	idleTimer = 0;
+
 	ResetWeapons();
 
 	ammo[WEAPON_FIREBALL] = 3;

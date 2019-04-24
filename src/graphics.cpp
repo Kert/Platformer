@@ -527,8 +527,12 @@ namespace Graphics
 				p.ToggleChargedColor();
 		}
 
+		if(!(p.state->Is(CREATURE_STATES::ONGROUND) && p.GetVelocity().x == 0))
+			p.idleTimer = 0;
+
 		if(p.sprite->shootingAnimTimer > 0)
 		{
+			p.idleTimer = 0;
 			p.sprite->shootingAnimTimer -= 1;
 			if(p.sprite->shootingAnimTimer <= 0)
 				p.sprite->shootingAnimTimer = 0;
@@ -587,7 +591,6 @@ namespace Graphics
 			{
 				p.sprite->SetAnimation(ANIMATION_RUNNING);
 				p.sprite->Animate();
-				p.idleTimer = 0;
 			}
 			else
 			{
@@ -605,7 +608,6 @@ namespace Graphics
 		}
 		else
 		{
-			p.idleTimer = 0;
 			if(p.GetVelocity().y > 0)
 			{
 				p.sprite->SetAnimation(ANIMATION_FALLING);

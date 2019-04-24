@@ -54,7 +54,6 @@ int main(int argc, char* argv[])
 	constexpr std::chrono::nanoseconds timestepGraphics(7ms);
 	using clock = std::chrono::high_resolution_clock;
 	std::chrono::nanoseconds lag_logic(0ns);
-	std::chrono::nanoseconds lagGraph(0ns);
 	auto timeStart_logic = clock::now();
 	auto timeStart_graphics = clock::now();
 	// main loop
@@ -81,7 +80,7 @@ int main(int argc, char* argv[])
 		}
 
 		// calculate how close or far we are from the next timestep
-		auto alpha = (float)lag_logic.count() / timestep.count();
+		//auto alpha = (float)lag_logic.count() / timestep.count();
 		//auto interpolated_state = interpolate(current_state, previous_state, alpha);
 		//render(interpolated_state);
 

@@ -4,8 +4,6 @@
 #include <SDL.h>
 #include "globals.h"
 
-int GetCodeFromInputEvent(SDL_Keycode key, Uint8 jbutton);
-
 bool OnBindPress(int bind);
 void OnBindHold(int bind);
 void OnBindUnpress(int bind);

@@ -393,9 +393,10 @@ void LoadMenus()
 	menus[MENU_SELECTION_DISPLAY_MODE] = menu;
 
 	menu = new Menu();
-	menu->AddMenuItem(new MenuItem(centerX + 32, centerY, "OFF", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(centerX + 32 * 5, centerY, "ON", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
-	menu->AddMenuItem(new MenuItem(centerX + 32 * 8, centerY, "BORDERLESS", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(centerX + 32, centerY, "DISABLED", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(centerX + 32, centerY, "ENABLED", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(centerX + 32, centerY, "BORDERLESS", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->IsSwitchable = true;
 	menus[MENU_SELECTION_FULLSCREEN] = menu;
 
 	menu = new Menu();

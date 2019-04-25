@@ -193,12 +193,6 @@ namespace Graphics
 		// Allows drawing half-transparent rectangles
 		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-		pov_surface = SDL_CreateRGBSurface(0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT, 32,
-			0x00FF0000,
-			0x0000FF00,
-			0x000000FF,
-			0xFF000000);
-
 		InterfaceSetup();
 
 		lightningSegment = IMG_Load("assets/textures/millhilightning.png");
@@ -249,14 +243,13 @@ namespace Graphics
 		GAME_SCENE_HEIGHT = static_cast<int>(ceil((double)WINDOW_HEIGHT / RENDER_SCALE));
 
 		if(pov_surface)
-		{
 			SDL_FreeSurface(pov_surface);
-			pov_surface = SDL_CreateRGBSurface(0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT, 32,
-				0x00FF0000,
-				0x0000FF00,
-				0x000000FF,
-				0xFF000000);
-		}
+
+		pov_surface = SDL_CreateRGBSurface(0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT, 32,
+			0x00FF0000,
+			0x0000FF00,
+			0x000000FF,
+			0xFF000000);
 
 		return 0;
 	}

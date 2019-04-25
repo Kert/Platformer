@@ -73,5 +73,7 @@ namespace Graphics
 	TTF_Font* GetFont(FONTS font);
 	void ScreenShake(int time);
 	void ScreenShakeUpdate();
+	void DrawLetterbox();
+	SCALING_MODES GetScalingMode();
 }
 #endif

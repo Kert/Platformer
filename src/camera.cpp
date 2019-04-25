@@ -4,8 +4,8 @@
 #include "level.h"
 #include "utils.h"
 
-const int VIRTUAL_CAM_WIDTH = 22 * TILESIZE;
-const int VIRTUAL_CAM_HEIGHT = 18 * TILESIZE;
+const int VIRTUAL_CAM_WIDTH = 16 * TILESIZE;
+const int VIRTUAL_CAM_HEIGHT = 15 * TILESIZE;
 
 Camera::Camera()
 {
@@ -172,9 +172,24 @@ void Camera::Update()
 	if(yFine)
 	{
 		virtualCam.y = newRectY.y;
-		y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - Graphics::GetGameSceneHeight() / 2;
+		if(Graphics::GetScalingMode() == SCALING_LETTERBOXED)
+		{
+			// center cam without considering anything else
+			y = virtualCam.y + VIRTUAL_CAM_HEIGHT / 2 - Graphics::GetGameSceneHeight() / 2;
+		}
+		else
+		{
+			// center camera but avoid cropped tiles at the bottom of the screen
+			int diff = abs(virtualCam.h - this->h);
+			int mod = diff % TILESIZE;
+			int rem = ceil((diff / (double)TILESIZE) / 2);
+			y = virtualCam.y + rem * TILESIZE + mod;
+		}
 		PrintLog(LOG_SUPERDEBUG, "Camera Y set to %lf", y);
 	}
+		
+	if(Graphics::GetScalingMode() == SCALING_LETTERBOXED)
+		return;
 
 	//Keep the camera in bounds.
 	if(x < 0)

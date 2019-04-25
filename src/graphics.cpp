@@ -87,15 +87,16 @@ namespace Graphics
 	SDL_DisplayMode displayMode;
 	int displayIndex;
 	int fullscreenMode;
+	SCALING_MODES scalingMode = SCALING_ADAPTIVE;
 
 	Timer timer100{ 100 }, timerRain{ 200 };
 
 	std::vector<Timer*> TimersGraphics{ &timer100, &timerRain };
 	
-	int const MAX_TILES_VERTICALLY = 18;
+	int const MAX_TILES_VERTICALLY = 15;
 
-	// SHOULD CALCULATE THIS
-	int RENDER_SCALE = 1;
+	// Calculated based on resolution and scaling type
+	double RENDER_SCALE = 1;
 
 	// in non-scaled pixels 
 	int GAME_SCENE_WIDTH;
@@ -237,7 +238,21 @@ namespace Graphics
 
 		SDL_SetWindowSize(win, WINDOW_WIDTH, WINDOW_HEIGHT);
 		SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-		RENDER_SCALE = static_cast<int>(ceil((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
+		switch(scalingMode)
+		{			
+			case SCALING_ADAPTIVE:
+				RENDER_SCALE = static_cast<int>(ceil((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
+				break;
+			case SCALING_LETTERBOXED:
+				RENDER_SCALE = static_cast<int>(floor((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
+				break;
+			default:
+			{
+				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+				// TODO: Implement a better scaling filter e.g. scale up with regular filter and then downscale
+				RENDER_SCALE = WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE);
+			}
+		}
 
 		GAME_SCENE_WIDTH = static_cast<int>(ceil((double)WINDOW_WIDTH / RENDER_SCALE));
 		GAME_SCENE_HEIGHT = static_cast<int>(ceil((double)WINDOW_HEIGHT / RENDER_SCALE));
@@ -341,12 +356,18 @@ namespace Graphics
 	void BlitObservableTiles()
 	{
 		PrecisionRect prect = camera->GetPRect();
-		int x, y;
+		int x, y, w, h;
 		x = ConvertToTileCoord(prect.x, false);
 		y = ConvertToTileCoord(prect.y, false);
-		int w, h;
 		w = ConvertToTileCoord(prect.w, true);
-		h = ConvertToTileCoord(prect.h, true);
+		h = ConvertToTileCoord(prect.h, true);		
+		if(scalingMode == SCALING_LETTERBOXED)
+		{
+			//x = ConvertToTileCoord(camera->virtualCam.x, false);
+			y = ConvertToTileCoord(camera->virtualCam.y, false);
+			//w = ConvertToTileCoord(camera->virtualCam.w, true);
+			h = ConvertToTileCoord(camera->virtualCam.h, true);
+		}
 
 		Level *level = Game::GetLevel();
 		// range checks
@@ -443,6 +464,9 @@ namespace Graphics
 		}		
 
 		RenderInterface();
+
+		if(scalingMode == SCALING_LETTERBOXED)
+			DrawLetterbox();
 
 		if(Game::IsDebug()) ShowDebugInfo(*player);
 	}
@@ -746,13 +770,24 @@ namespace Graphics
 		std::map<int, InterfacePiece> *interfaces = GetInterfaces();
 		for(auto iter : *interfaces)
 		{
-			if(iter.second.tex == NULL)
-				RenderText(iter.second.location.x * RENDER_SCALE, iter.second.location.y * RENDER_SCALE, iter.second.text, interface_font, interface_color);
+			int posX, posY;
+			if(scalingMode == SCALING_LETTERBOXED)
+			{
+				posX = (iter.second.location.x + (camera->virtualCam.x - camera->GetRect().x)) * RENDER_SCALE;
+				posY = (iter.second.location.y + (camera->virtualCam.y - camera->GetRect().y)) * RENDER_SCALE;
+			}
+			else
+			{
+				posX = iter.second.location.x * RENDER_SCALE;
+				posY = iter.second.location.y * RENDER_SCALE;
+			}
+			if(iter.second.tex == NULL)	
+				RenderText(posX, posY, iter.second.text, interface_font, interface_color);
 			else
 			{
 				SDL_Rect dest;
-				dest.x = iter.second.location.x * RENDER_SCALE;
-				dest.y = iter.second.location.y * RENDER_SCALE;
+				dest.x = posX;
+				dest.y = posY;
 				dest.w = iter.second.location.w * RENDER_SCALE;
 				dest.h = iter.second.location.h * RENDER_SCALE;
 				SDL_RenderCopy(GetRenderer(), iter.second.tex, &iter.second.frame, &dest);
@@ -1145,5 +1180,38 @@ namespace Graphics
 			rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));
 			screenShake.offsetY = rand;
 		}
+	}
+
+	void DrawLetterbox()
+	{
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_Rect rect;
+		// top
+		rect.x = rect.y = 0;
+		rect.w = GAME_SCENE_WIDTH * RENDER_SCALE;
+		rect.h = camera->virtualCam.y - camera->GetPRect().y;
+		rect.h *= RENDER_SCALE;
+		SDL_RenderFillRect(renderer, &rect);
+		// bottom
+		rect.x = 0;
+		rect.y = rect.h + camera->virtualCam.h * RENDER_SCALE;
+		rect.h = GAME_SCENE_HEIGHT * RENDER_SCALE - rect.y;
+		SDL_RenderFillRect(renderer, &rect);
+		// left
+		rect.x = rect.y = 0;
+		rect.h = GAME_SCENE_HEIGHT * RENDER_SCALE;
+		rect.w = camera->virtualCam.x - camera->GetPRect().x;
+		rect.w *= RENDER_SCALE;
+		SDL_RenderFillRect(renderer, &rect);
+		// right
+		rect.y = 0;
+		rect.x = rect.w + camera->virtualCam.w * RENDER_SCALE;
+		rect.w = GAME_SCENE_WIDTH * RENDER_SCALE - rect.w;
+		SDL_RenderFillRect(renderer, &rect);		
+	}
+
+	SCALING_MODES GetScalingMode()
+	{
+		return scalingMode;
 	}
 }

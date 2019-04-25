@@ -75,5 +75,6 @@ namespace Graphics
 	void ScreenShakeUpdate();
 	void DrawLetterbox();
 	SCALING_MODES GetScalingMode();
+	void SetScalingMode(int mode);
 }
 #endif

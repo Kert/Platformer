@@ -241,17 +241,17 @@ namespace Graphics
 		switch(scalingMode)
 		{			
 			case SCALING_ADAPTIVE:
+				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 				RENDER_SCALE = static_cast<int>(ceil((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
 				break;
 			case SCALING_LETTERBOXED:
+				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 				RENDER_SCALE = static_cast<int>(floor((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
 				break;
 			default:
-			{
 				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 				// TODO: Implement a better scaling filter e.g. scale up with regular filter and then downscale
 				RENDER_SCALE = WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE);
-			}
 		}
 
 		GAME_SCENE_WIDTH = static_cast<int>(ceil((double)WINDOW_WIDTH / RENDER_SCALE));
@@ -880,6 +880,7 @@ namespace Graphics
 				RenderMenuItems(MENU_SELECTION_DISPLAY);
 				RenderMenuItems(MENU_SELECTION_DISPLAY_MODE);
 				RenderMenuItems(MENU_SELECTION_FULLSCREEN);
+				RenderMenuItems(MENU_SELECTION_SCALING_MODE);
 				break;
 			}
 			case MENU_BINDS:
@@ -1213,5 +1214,10 @@ namespace Graphics
 	SCALING_MODES GetScalingMode()
 	{
 		return scalingMode;
+	}
+
+	void SetScalingMode(int mode)
+	{
+		scalingMode = (SCALING_MODES)mode;
 	}
 }

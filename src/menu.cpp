@@ -90,7 +90,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 						Graphics::SetDisplayMode(Graphics::GetDisplayMode(Graphics::GetDisplayIndex(), menus.at(MENU_SELECTION_DISPLAY_MODE)->selected));
 						Graphics::UpdateDisplayMode();
 					}
-					if(SelectedItem == 3)
+					if(SelectedItem == 4)
 						SetCurrentMenu(MENU_OPTIONS);
 				}
 				else if(CurrentMenu == MENU_SOUND_OPTIONS)
@@ -233,6 +233,13 @@ void NavigateMenu(int bind)
 					Graphics::UpdateDisplayMode();
 					RefreshDisplayModeMenus();
 				}
+				else if(SelectedItem == 3)
+				{
+					menus.at(MENU_SELECTION_SCALING_MODE)->selected <= 0 ? menus.at(MENU_SELECTION_SCALING_MODE)->selected = (menus.at(MENU_SELECTION_SCALING_MODE)->GetItemCount() - 1) : menus.at(MENU_SELECTION_SCALING_MODE)->selected--;
+					Graphics::SetScalingMode(menus.at(MENU_SELECTION_SCALING_MODE)->selected);
+					Graphics::UpdateDisplayMode();
+					RefreshDisplayModeMenus();
+				}
 			}
 			break;
 		case BIND_RIGHT: case BIND_ARROWR:
@@ -271,6 +278,13 @@ void NavigateMenu(int bind)
 				{
 					menus.at(MENU_SELECTION_FULLSCREEN)->selected >= (menus.at(MENU_SELECTION_FULLSCREEN)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_FULLSCREEN)->selected = 0 : menus.at(MENU_SELECTION_FULLSCREEN)->selected++;
 					Graphics::SetFullscreenMode(menus.at(MENU_SELECTION_FULLSCREEN)->selected);
+					Graphics::UpdateDisplayMode();
+					RefreshDisplayModeMenus();
+				}
+				else if(SelectedItem == 3)
+				{
+					menus.at(MENU_SELECTION_SCALING_MODE)->selected >= (menus.at(MENU_SELECTION_SCALING_MODE)->GetItemCount() - 1) ? menus.at(MENU_SELECTION_SCALING_MODE)->selected = 0 : menus.at(MENU_SELECTION_SCALING_MODE)->selected++;
+					Graphics::SetScalingMode(menus.at(MENU_SELECTION_SCALING_MODE)->selected);
 					Graphics::UpdateDisplayMode();
 					RefreshDisplayModeMenus();
 				}
@@ -362,7 +376,8 @@ void LoadMenus()
 	menu->AddMenuItem(new MenuItem(centerX, centerY - 32 * 6, "DISPLAY:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menu->AddMenuItem(new MenuItem(centerX - 32 * 5, centerY - 32 * 3, "MODE:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
 	menu->AddMenuItem(new MenuItem(centerX, centerY, "FULLSCREEN:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
-	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 3, "BACK", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_CENTER));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 3, "SCALING:", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_RIGHT));
+	menu->AddMenuItem(new MenuItem(centerX, centerY + 32 * 6, "BACK", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_CENTER));
 	menus[MENU_VIDEO_OPTIONS] = menu;
 
 	menu = new Menu();
@@ -398,6 +413,13 @@ void LoadMenus()
 	menu->AddMenuItem(new MenuItem(centerX + 32, centerY, "BORDERLESS", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
 	menu->IsSwitchable = true;
 	menus[MENU_SELECTION_FULLSCREEN] = menu;
+
+	menu = new Menu();
+	menu->AddMenuItem(new MenuItem(centerX + 32, centerY + 32 * 3, "DEFAULT", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(centerX + 32, centerY + 32 * 3, "ADAPTIVE", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->AddMenuItem(new MenuItem(centerX + 32, centerY + 32 * 3, "LETTERBOXED", FONT_MENU, menu_color, selected_color, TEXT_ALIGN_LEFT));
+	menu->IsSwitchable = true;
+	menus[MENU_SELECTION_SCALING_MODE] = menu;
 
 	menu = new Menu();
 	menu->AddMenuItem(new MenuItem(centerX, centerY, "RETRY LEVEL", FONT_MENU, menu_color, selected_color));
@@ -555,6 +577,7 @@ int RefreshDisplayModeMenus()
 	}
 
 	menus.at(MENU_SELECTION_FULLSCREEN)->selected = Graphics::GetFullscreenMode();
+	menus.at(MENU_SELECTION_SCALING_MODE)->selected = Graphics::GetScalingMode();
 	menus.at(MENU_SELECTION_DISPLAY)->selected = Graphics::GetDisplayIndex();
 	return 0;
 }

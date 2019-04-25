@@ -59,6 +59,12 @@ std::map<std::string, int> fullscreenModeNames = {
 	{"Borderless", 2}
 };
 
+std::map<std::string, int> scalingModeNames = {
+	{ "Default", SCALING_DEFAULT },
+	{ "Adaptive", SCALING_ADAPTIVE },
+	{ "Letterboxed", SCALING_LETTERBOXED }
+};
+
 void InitConfig()
 {
 	LoadDefaultBinds();
@@ -127,6 +133,7 @@ void LoadConfig()
 	mode.refresh_rate = atoi(reader.Get("Video", "RefreshRate", "60").c_str());
 	mode.format = std::stoul(reader.Get("Video", "Format", "0").c_str());
 	Graphics::SetDisplayMode(mode);
+	Graphics::SetScalingMode(scalingModeNames[reader.Get("Video", "ScalingMode", "Default")]);
 	Sound::SetMusicVolume(atoi(reader.Get("Sound", "Music", "100").c_str()));
 	Sound::SetSfxVolume(atoi(reader.Get("Sound", "Sfx", "100").c_str()));
 }
@@ -160,6 +167,7 @@ void SaveConfig()
 	file << "Height=" << displayMode.h << std::endl;
 	file << "RefreshRate=" << displayMode.refresh_rate << std::endl;
 	file << "Format=" << displayMode.format << std::endl;
+	file << "ScalingMode=" << GetScalingModeName(Graphics::GetScalingMode()) << std::endl;
 
 	file << "[Sound]" << std::endl;
 	file << "Music=" << Sound::GetMusicVolume() << std::endl;
@@ -230,6 +238,21 @@ std::string GetFullscreenModeName(int code)
 		return "Borderless";
 	default:
 		return "";
+	}
+}
+
+std::string GetScalingModeName(int mode)
+{
+	switch(mode)
+	{
+		case SCALING_DEFAULT:
+			return "Default";
+		case SCALING_ADAPTIVE:
+			return "Adaptive";
+		case SCALING_LETTERBOXED:
+			return "Letterboxed";
+		default:
+			return "";
 	}
 }
 

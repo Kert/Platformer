@@ -87,7 +87,7 @@ namespace Graphics
 	SDL_DisplayMode displayMode;
 	int displayIndex;
 	int fullscreenMode;
-	SCALING_MODES scalingMode = SCALING_ADAPTIVE;
+	SCALING_MODES scalingMode;
 
 	Timer timer100{ 100 }, timerRain{ 200 };
 
@@ -1189,7 +1189,8 @@ namespace Graphics
 		}
 		
 		screenShake.timer--;
-		if(screenShake.timer % 100)
+		// TODO: Don't change it each frame maybe?
+		if(screenShake.timer)
 		{
 			int randVals[] = { 0, -8, 8 };
 			int rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));

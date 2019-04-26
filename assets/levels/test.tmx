@@ -39672,9 +39672,9 @@
   </data>
  </layer>
  <objectgroup id="4" name="Object Layer 1">
-  <object id="5" type="cam" x="32" y="0" width="2656" height="288"/>
-  <object id="6" type="cam" x="2336" y="0" width="352" height="1200"/>
-  <object id="7" type="cam" x="320" y="912" width="2368" height="288"/>
+  <object id="5" type="cam" x="32" y="0" width="2656" height="240"/>
+  <object id="6" type="cam" x="2432" y="0" width="256" height="1200"/>
+  <object id="7" type="cam" x="320" y="960" width="2368" height="240"/>
   <object id="11" name="player" type="spawn" x="64" y="176"/>
   <object id="13" name="Dale" type="spawn" x="2256" y="144">
    <properties>
@@ -39698,7 +39698,7 @@
     <property name="pathID" type="int" value="76"/>
    </properties>
   </object>
-  <object id="22" type="deathzone" x="80" y="272" width="2352" height="32"/>
+  <object id="22" type="deathzone" x="80" y="256" width="2352" height="32"/>
   <object id="24" name="Ghost" type="spawn" x="2448" y="384">
    <properties>
     <property name="ai" value="HomingMissile"/>

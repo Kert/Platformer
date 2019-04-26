@@ -69,7 +69,7 @@ namespace Graphics
 	int GetGameSceneHeight();
 	SDL_Renderer* GetRenderer();
 	int LoadLevelTexturesFromFile(std::string fileName);
-	SDL_Surface* GetLevelTextureSurface();
+	SDL_Texture* GetLevelTexture();
 	TTF_Font* GetFont(FONTS font);
 	void ScreenShake(int time);
 	void ScreenShakeUpdate();

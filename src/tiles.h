@@ -31,8 +31,7 @@ class Tile
 		CustomTile *customTile = nullptr;
 		// animation stuff
 		TileAnimationData *animation = nullptr;
-		// texture surface
-		SDL_Surface *src_tex;
+		SDL_Texture *src_tex;
 		Tile(int x, int y, int layer, CustomTile *data, bool replace);
 		Tile(int x, int y, int layer, CustomTile *data, char type, bool replace);
 		int GetID();

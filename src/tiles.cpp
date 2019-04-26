@@ -16,8 +16,9 @@ std::vector<CustomTile> tileset;
 void LoadTileSet()
 {
 	int width, height;
-	width = Graphics::GetLevelTextureSurface()->w / TILESIZE;
-	height = Graphics::GetLevelTextureSurface()->h / TILESIZE;
+	SDL_QueryTexture(Graphics::GetLevelTexture(), NULL, NULL, &width, &height);
+	width /= TILESIZE;
+	height /= TILESIZE;
 	for(int i = 0; i < width * height; i++)
 	{
 		// Calculating tile ID
@@ -67,7 +68,7 @@ Tile::Tile(int x, int y, int layer, CustomTile *data, bool replace)
 	this->layer = layer;
 	this->tex_x = data->x_offset;
 	this->tex_y = data->y_offset;
-	src_tex = Graphics::GetLevelTextureSurface();
+	src_tex = Graphics::GetLevelTexture();
 	animation = &data->animationData;
 	customTile = data;
 	this->type = data->type;
@@ -103,7 +104,7 @@ Tile::Tile(int x, int y, int layer, CustomTile *data, char type, bool replace)
 	this->layer = layer;
 	this->tex_x = data->x_offset;
 	this->tex_y = data->y_offset;	
-	src_tex = Graphics::GetLevelTextureSurface();
+	src_tex = Graphics::GetLevelTexture();
 	animation = &data->animationData;
 	customTile = data;
 	this->type = type;

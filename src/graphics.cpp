@@ -104,9 +104,11 @@ namespace Graphics
 
 	SDL_Renderer *renderer = NULL;
 	SDL_Surface *player_surface = NULL;
-	SDL_Surface *surface_level_textures = NULL;
+	SDL_Texture *level_texture = NULL;
 	SDL_Surface *lightningSegment = NULL;
-	SDL_Surface *pov_surface = NULL;
+
+	SDL_Texture *unscaled_scene = nullptr;
+	SDL_Texture *scaled_scene = nullptr;
 
 	SDL_Window *win = NULL;
 
@@ -175,7 +177,7 @@ namespace Graphics
 		debug_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 8);
 		menu_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 32);
 		game_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 32);
-		minor_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 16);
+		minor_font = TTF_OpenFont("assets/misc/PressStart2P.ttf", 8);
 		interface_font = minor_font;
 
 		// create the window and renderer
@@ -249,22 +251,20 @@ namespace Graphics
 				RENDER_SCALE = static_cast<int>(floor((double)WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE)));
 				break;
 			default:
-				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-				// TODO: Implement a better scaling filter e.g. scale up with regular filter and then downscale
 				RENDER_SCALE = WINDOW_HEIGHT / (double)MAX_TILES_VERTICALLY / (double)(TILESIZE);
 		}
 
 		GAME_SCENE_WIDTH = static_cast<int>(ceil((double)WINDOW_WIDTH / RENDER_SCALE));
 		GAME_SCENE_HEIGHT = static_cast<int>(ceil((double)WINDOW_HEIGHT / RENDER_SCALE));
 
-		if(pov_surface)
-			SDL_FreeSurface(pov_surface);
-
-		pov_surface = SDL_CreateRGBSurface(0, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT, 32,
-			0x00FF0000,
-			0x0000FF00,
-			0x000000FF,
-			0xFF000000);
+		if(unscaled_scene)
+			SDL_DestroyTexture(unscaled_scene);
+		if(scaled_scene)
+		{
+			SDL_DestroyTexture(scaled_scene);
+			scaled_scene = nullptr;
+		}
+		unscaled_scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT);
 
 		return 0;
 	}
@@ -347,10 +347,11 @@ namespace Graphics
 
 		rect2.x = x;
 		rect2.y = y;
-		rect2.w = rect.w; rect2.h = rect.h;
+		rect2.w = rect.w;
+		rect2.h = rect.h;
 
 		//PrintLog(LOG_SUPERDEBUG, ("x= %d y= %d ", rect2.x, rect2.y);
-		SDL_BlitSurface(tile->src_tex, &rect, pov_surface, &rect2);
+		SDL_RenderCopy(renderer, tile->src_tex, &rect, &rect2);
 	}
 
 	void BlitObservableTiles()
@@ -377,7 +378,9 @@ namespace Graphics
 		if(y >= level->height_in_tiles) x = level->height_in_tiles - 1;
 
 		// clear with background color
-		SDL_FillRect(pov_surface, NULL, SDL_MapRGBA(pov_surface->format, level->bgColor.r, level->bgColor.g, level->bgColor.b, 255));
+		SDL_SetRenderDrawColor(renderer, level->bgColor.r, level->bgColor.g, level->bgColor.b, 255);
+		SDL_RenderFillRect(renderer, NULL);
+
 		int a = SDL_GetTicks();
 		// counters for current tile pos to blit to
 		int p, q;
@@ -404,17 +407,6 @@ namespace Graphics
 		}
 		int b = SDL_GetTicks();
 		//PrintLog(LOG_DEBUG, "%d time passed", b - a);
-		// transfer pixedata from surface to texture
-
-		SDL_Texture *pov_texture = SDL_CreateTextureFromSurface(renderer, pov_surface);
-		SDL_Rect dest;
-		dest.x = dest.y = 0;
-		dest.x += screenShake.offsetX * RENDER_SCALE;
-		dest.y += screenShake.offsetY * RENDER_SCALE;
-		dest.w = GAME_SCENE_WIDTH * RENDER_SCALE;
-		dest.h = GAME_SCENE_HEIGHT * RENDER_SCALE;
-		SDL_RenderCopy(renderer, pov_texture, NULL, &dest);
-		SDL_DestroyTexture(pov_texture);
 	}
 
 	void Update()
@@ -423,6 +415,8 @@ namespace Graphics
 		{
 			t->Run();
 		}
+		
+		SDL_SetRenderTarget(renderer, unscaled_scene);
 
 		UpdateTileAnimations();
 
@@ -469,11 +463,38 @@ namespace Graphics
 			DrawLetterbox();
 
 		if(Game::IsDebug()) ShowDebugInfo(*player);
+
+		// don't use upscaling+linear downscaling for integer render scale and default scaling mode
+		if(scalingMode == SCALING_DEFAULT && (floor(RENDER_SCALE) != RENDER_SCALE))
+		{
+			if(!scaled_scene)
+			{
+				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+				scaled_scene = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, GAME_SCENE_WIDTH * 4, GAME_SCENE_HEIGHT * 4);
+				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+			}
+			SDL_SetRenderTarget(renderer, scaled_scene);
+			SDL_RenderCopy(renderer, unscaled_scene, NULL, NULL);
+
+			SDL_SetRenderTarget(renderer, NULL);
+			SDL_RenderCopy(renderer, scaled_scene, NULL, NULL);
+		}
+		else
+		{
+			SDL_SetRenderTarget(renderer, NULL);
+			SDL_Rect dest;
+			dest.x = dest.y = 0;
+			dest.w = GAME_SCENE_WIDTH * RENDER_SCALE;
+			dest.h = GAME_SCENE_HEIGHT * RENDER_SCALE;
+			SDL_RenderCopy(renderer, unscaled_scene, NULL, &dest);
+		}
 	}
 
 	void Cleanup()
 	{
-		SDL_FreeSurface(surface_level_textures);
+		SDL_DestroyTexture(unscaled_scene);
+		SDL_DestroyTexture(scaled_scene);
+		SDL_DestroyTexture(level_texture);
 		textureManager.Clear();
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(win);
@@ -489,10 +510,10 @@ namespace Graphics
 	void DrawHitbox(Entity &e)
 	{
 		SDL_Rect rect;
-		rect.x = (int)round(e.hitbox->GetPRect().x - camera->GetPRect().x) * RENDER_SCALE;
-		rect.y = (int)round(e.hitbox->GetPRect().y - camera->GetPRect().y) * RENDER_SCALE;
-		rect.h = (int)e.hitbox->GetPRect().h * RENDER_SCALE;
-		rect.w = (int)e.hitbox->GetPRect().w * RENDER_SCALE;
+		rect.x = (int)round(e.hitbox->GetPRect().x - camera->GetPRect().x);
+		rect.y = (int)round(e.hitbox->GetPRect().y - camera->GetPRect().y);
+		rect.h = (int)e.hitbox->GetPRect().h;
+		rect.w = (int)e.hitbox->GetPRect().w;
 		SDL_SetRenderDrawColor(renderer, 230, 0, 0, 150);
 		SDL_RenderFillRect(renderer, &rect);
 	}
@@ -506,11 +527,6 @@ namespace Graphics
 		realpos.y = (int)round(y - camera->GetPRect().y + e.sprite->GetSpriteOffsetY());
 		realpos.h = (int)e.sprite->GetTextureCoords().h;
 		realpos.w = (int)e.sprite->GetTextureCoords().w;
-
-		realpos.x *= RENDER_SCALE;
-		realpos.y *= RENDER_SCALE;
-		realpos.h *= RENDER_SCALE;
-		realpos.w *= RENDER_SCALE;
 
 		if(e.status == STATUS_INVULN && e.statusTimer % 200 > 100 && e.blinkDamaged) return;
 
@@ -753,10 +769,10 @@ namespace Graphics
 		RenderText(0, GetWindowNormalizedY(1) - 16, debug_str.str(), debug_font, debug_color);
 		
 		SDL_Rect virtualCamRect;
-		virtualCamRect.x = (camera->virtualCam.x - camera->GetRect().x) * RENDER_SCALE;
-		virtualCamRect.y = (camera->virtualCam.y - camera->GetRect().y) * RENDER_SCALE;
-		virtualCamRect.w = camera->virtualCam.w * RENDER_SCALE;
-		virtualCamRect.h = camera->virtualCam.h * RENDER_SCALE;
+		virtualCamRect.x = (camera->virtualCam.x - camera->GetRect().x);
+		virtualCamRect.y = (camera->virtualCam.y - camera->GetRect().y);
+		virtualCamRect.w = camera->virtualCam.w;
+		virtualCamRect.h = camera->virtualCam.h;
 		SDL_SetRenderDrawColor(renderer, 0, 200, 10, 250);
 		SDL_RenderDrawRect(renderer, &virtualCamRect);
 	}
@@ -773,13 +789,13 @@ namespace Graphics
 			int posX, posY;
 			if(scalingMode == SCALING_LETTERBOXED)
 			{
-				posX = (iter.second.location.x + (camera->virtualCam.x - camera->GetRect().x)) * RENDER_SCALE;
-				posY = (iter.second.location.y + (camera->virtualCam.y - camera->GetRect().y)) * RENDER_SCALE;
+				posX = (iter.second.location.x + (camera->virtualCam.x - camera->GetRect().x));
+				posY = (iter.second.location.y + (camera->virtualCam.y - camera->GetRect().y));
 			}
 			else
 			{
-				posX = iter.second.location.x * RENDER_SCALE;
-				posY = iter.second.location.y * RENDER_SCALE;
+				posX = iter.second.location.x;
+				posY = iter.second.location.y;
 			}
 			if(iter.second.tex == NULL)	
 				RenderText(posX, posY, iter.second.text, interface_font, interface_color);
@@ -788,8 +804,8 @@ namespace Graphics
 				SDL_Rect dest;
 				dest.x = posX;
 				dest.y = posY;
-				dest.w = iter.second.location.w * RENDER_SCALE;
-				dest.h = iter.second.location.h * RENDER_SCALE;
+				dest.w = iter.second.location.w;
+				dest.h = iter.second.location.h;
 				SDL_RenderCopy(GetRenderer(), iter.second.tex, &iter.second.frame, &dest);
 			}
 		}
@@ -1132,13 +1148,13 @@ namespace Graphics
 
 	int LoadLevelTexturesFromFile(std::string fileName)
 	{
-		surface_level_textures = IMG_Load(fileName.c_str());
+		level_texture = IMG_LoadTexture(renderer, fileName.c_str());
 		return 0;
 	}
 
-	SDL_Surface* GetLevelTextureSurface()
+	SDL_Texture* GetLevelTexture()
 	{
-		return surface_level_textures;
+		return level_texture;
 	}
 
 	TTF_Font* GetFont(FONTS font)
@@ -1189,25 +1205,23 @@ namespace Graphics
 		SDL_Rect rect;
 		// top
 		rect.x = rect.y = 0;
-		rect.w = GAME_SCENE_WIDTH * RENDER_SCALE;
+		rect.w = GAME_SCENE_WIDTH;
 		rect.h = camera->virtualCam.y - camera->GetPRect().y;
-		rect.h *= RENDER_SCALE;
 		SDL_RenderFillRect(renderer, &rect);
 		// bottom
 		rect.x = 0;
-		rect.y = rect.h + camera->virtualCam.h * RENDER_SCALE;
-		rect.h = GAME_SCENE_HEIGHT * RENDER_SCALE - rect.y;
+		rect.y = rect.h + camera->virtualCam.h;
+		rect.h = GAME_SCENE_HEIGHT - rect.y;
 		SDL_RenderFillRect(renderer, &rect);
 		// left
 		rect.x = rect.y = 0;
-		rect.h = GAME_SCENE_HEIGHT * RENDER_SCALE;
+		rect.h = GAME_SCENE_HEIGHT;
 		rect.w = camera->virtualCam.x - camera->GetPRect().x;
-		rect.w *= RENDER_SCALE;
 		SDL_RenderFillRect(renderer, &rect);
 		// right
 		rect.y = 0;
-		rect.x = rect.w + camera->virtualCam.w * RENDER_SCALE;
-		rect.w = GAME_SCENE_WIDTH * RENDER_SCALE - rect.w;
+		rect.x = rect.w + camera->virtualCam.w;
+		rect.w = GAME_SCENE_WIDTH - rect.w;
 		SDL_RenderFillRect(renderer, &rect);		
 	}
 

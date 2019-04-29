@@ -345,8 +345,8 @@ namespace Graphics
 		rect.y = tile->tex_y;
 		rect.w = TILESIZE; rect.h = TILESIZE;
 
-		rect2.x = x;
-		rect2.y = y;
+		rect2.x = x + screenShake.offsetX;
+		rect2.y = y + screenShake.offsetY;
 		rect2.w = rect.w;
 		rect2.h = rect.h;
 

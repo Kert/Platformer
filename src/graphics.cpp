@@ -462,8 +462,6 @@ namespace Graphics
 		if(scalingMode == SCALING_LETTERBOXED)
 			DrawLetterbox();
 
-		if(Game::IsDebug()) ShowDebugInfo(*player);
-
 		// don't use upscaling+linear downscaling for integer render scale and default scaling mode
 		if(scalingMode == SCALING_DEFAULT && (floor(RENDER_SCALE) != RENDER_SCALE))
 		{
@@ -488,6 +486,8 @@ namespace Graphics
 			dest.h = GAME_SCENE_HEIGHT * RENDER_SCALE;
 			SDL_RenderCopy(renderer, unscaled_scene, NULL, &dest);
 		}
+
+		if(Game::IsDebug()) ShowDebugInfo(*player);
 	}
 
 	void Cleanup()

@@ -40,4 +40,13 @@ class Tile
 		~Tile();
 };
 
+struct TileLayerData
+{
+	int parallaxOffsetX = 0;
+	int parallaxOffsetY = 0;
+	double parallaxDepthX = 1;
+	double parallaxDepthY = 1;
+	std::vector<std::vector<Tile*>> tiles;
+};
+
 #endif

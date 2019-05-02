@@ -383,27 +383,33 @@ namespace Graphics
 
 		int a = SDL_GetTicks();
 		// counters for current tile pos to blit to
-		int p, q;
-		p = (int)(x * TILESIZE - prect.x);
-		for(int i = x; i <= x + w; i++)
+		for(int layerIndex = 0; layerIndex < (int)tileLayers.size(); layerIndex++)
 		{
-			q = (int)(y * TILESIZE - prect.y);
-			for(int j = y; j <= y + h; j++)
+			TileLayerData *curLayer = tileLayers[layerIndex];
+			double parallaxDepthX = curLayer->parallaxDepthX;
+			int parallaxOffsetX = curLayer->parallaxOffsetX;
+			int actualX = parallaxOffsetX * parallaxDepthX  + (prect.x * parallaxDepthX) / TILESIZE;
+			for(int i = actualX; i <= actualX + w; i++)
 			{
-				if(i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
+				double parallaxDepthY = curLayer->parallaxDepthY;
+				int parallaxOffsetY = curLayer->parallaxOffsetY;
+				int actualY = parallaxOffsetY * parallaxDepthY  + (prect.y * parallaxDepthY) / TILESIZE;
+				for(int j = actualY; j <= actualY + h; j++)
 				{
-					for(int layerIndex = 0; layerIndex < (int)tileLayers.size(); layerIndex++)
+					if(i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
 					{
-						Tile *tile = tileLayers[layerIndex][i][j];
-						if(tile == nullptr)
-							continue;
-						tile->Animate();
-						BlitObserveTileAt(tile, p, q);
+						int p = (i * TILESIZE - prect.x * parallaxDepthX - parallaxOffsetX * TILESIZE * parallaxDepthX);
+						int q = (j * TILESIZE - prect.y * parallaxDepthY - parallaxOffsetY * TILESIZE * parallaxDepthY);
+
+						Tile *tile = curLayer->tiles[i][j];
+						if(tile != nullptr)
+						{
+							tile->Animate();
+							BlitObserveTileAt(tile, p, q);
+						}						
 					}
-					q += TILESIZE;
 				}
 			}
-			p += TILESIZE;
 		}
 		int b = SDL_GetTicks();
 		//PrintLog(LOG_DEBUG, "%d time passed", b - a);

@@ -45,7 +45,7 @@ std::vector<EnemyLoadData> levelEnemies;
 std::vector<PickupLoadData> levelPickups;
 std::vector<PlatformLoadData> levelPlatforms;
 
-extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
+extern std::vector<TileLayerData> tileLayers;
 
 std::vector<std::vector<int>> tiles;
 
@@ -173,7 +173,29 @@ void Level::LoadLevelFromFile(std::string filename)
 	int layerNum = 0;
 	for(TiXmlElement* curLayer = node->FirstChildElement("layer"); curLayer != NULL; curLayer = curLayer->NextSiblingElement("layer"))
 	{
-		tileLayers.push_back(std::vector< std::vector<Tile*>>(this->width_in_tiles, std::vector<Tile*>(this->height_in_tiles)));
+		TileLayerData tileLayerData;
+		tileLayerData.parallaxOffsetX = 0;
+		tileLayerData.parallaxOffsetY = 0;
+		tileLayerData.parallaxDepthX = 1;
+		tileLayerData.parallaxDepthY = 1;
+		TiXmlElement* prop = curLayer->FirstChildElement("properties");
+		if(prop)
+		{
+			for(TiXmlElement* curProp = prop->FirstChildElement("property"); curProp != NULL; curProp = curProp->NextSiblingElement("property"))
+			{
+				std::string propName = curProp->Attribute("name");
+				if(propName == "parallaxOffsetX")
+					tileLayerData.parallaxOffsetX = atoi(curProp->Attribute("value"));
+				else if(propName == "parallaxOffsetY")
+					tileLayerData.parallaxOffsetY = atoi(curProp->Attribute("value"));
+				else if(propName == "parallaxDepthX")
+					tileLayerData.parallaxDepthX = atof(curProp->Attribute("value"));
+				else if(propName == "parallaxDepthY")
+					tileLayerData.parallaxDepthY = atof(curProp->Attribute("value"));
+			}
+		}
+		tileLayerData.tiles = std::vector<std::vector<Tile*>>(this->width_in_tiles, std::vector<Tile*>(this->height_in_tiles));
+		tileLayers.push_back(tileLayerData);
 		
 		int tileColumn = 0;
 		int tileRow = 0;

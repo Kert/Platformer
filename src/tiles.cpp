@@ -9,7 +9,7 @@
 
 extern std::vector<std::vector<int>> tiles;
 
-std::vector<std::vector<std::vector<Tile*>>> tileLayers;
+std::vector<TileLayerData> tileLayers;
 
 std::vector<CustomTile> tileset;
 
@@ -38,7 +38,7 @@ void DeleteAllTiles()
 {
 	for(auto &layer : tileLayers)
 	{
-		for(auto &i : layer)
+		for(auto &i : layer.tiles)
 		{
 			for(auto &j : i)
 			{
@@ -56,7 +56,7 @@ void DeleteAllTiles()
 
 Tile::Tile(int x, int y, int layer, CustomTile *data, bool replace)
 {
-	if(x >= (int)tileLayers[layer].size() || y >= (int)tileLayers[layer][0].size())
+	if(x >= (int)tileLayers[layer].tiles.size() || y >= (int)tileLayers[layer].tiles[0].size())
 	{
 		PrintLog(LOG_IMPORTANT, "Attempted to place a tile outside of level boundaries: %d %d", x, y);
 		delete this;
@@ -82,17 +82,17 @@ Tile::Tile(int x, int y, int layer, CustomTile *data, bool replace)
 		}
 		else
 		{
-			delete tileLayers[layer][x][y];
+			delete tileLayers[layer].tiles[x][y];
 			tiles[x][y] = PHYSICS_UNOCCUPIED;
 		}
 	}
 	tiles[x][y] = type;
-	tileLayers[layer][x][y] = this;
+	tileLayers[layer].tiles[x][y] = this;
 }
 
 Tile::Tile(int x, int y, int layer, CustomTile *data, char type, bool replace)
 {
-	if(x >= (int)tileLayers[layer].size() || y >= (int)tileLayers[layer][0].size())
+	if(x >= (int)tileLayers[layer].tiles.size() || y >= (int)tileLayers[layer].tiles[0].size())
 	{
 		PrintLog(LOG_IMPORTANT, "Attempted to place a tile outside of level boundaries: %d %d", x, y);
 		delete this;
@@ -118,13 +118,13 @@ Tile::Tile(int x, int y, int layer, CustomTile *data, char type, bool replace)
 		}
 		else
 		{
-			delete tileLayers[layer][x][y];
+			delete tileLayers[layer].tiles[x][y];
 			tiles[x][y] = PHYSICS_UNOCCUPIED;
 		}
 	}
 
 	tiles[x][y] = type;
-	tileLayers[layer][x][y] = this;
+	tileLayers[layer].tiles[x][y] = this;
 }
 
 
@@ -155,14 +155,14 @@ void TilesCleanup()
 
 Tile::~Tile()
 {
-	tileLayers[layer][x][y] = nullptr;
+	tileLayers[layer].tiles[x][y] = nullptr;
 	// Setting tile type of a tile below current one
 	bool foundTile = false;
 	for(int i = layer-1; i >= 0; i--)
 	{
-		if(tileLayers[i][x][y] != nullptr)
+		if(tileLayers[i].tiles[x][y] != nullptr)
 		{
-			tiles[x][y] = tileLayers[i][x][y]->type;
+			tiles[x][y] = tileLayers[i].tiles[x][y]->type;
 			foundTile = true;
 			break;
 		}

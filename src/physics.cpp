@@ -12,7 +12,7 @@
 static double PHYSICS_SPEED_FACTOR = 1;
 static double PHYSICS_SPEED = 0.001 * PHYSICS_SPEED_FACTOR;
 
-extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
+extern std::vector<TileLayerData> tileLayers;
 
 extern std::vector<Creature*> creatures;
 extern std::vector<Machinery*> machinery;
@@ -783,11 +783,11 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 				// TODO: Optimize this?
 				for(auto &layer : tileLayers)
 				{
-					if(layer[tileX][tileY] != nullptr)
+					if(layer.tiles[tileX][tileY] != nullptr)
 					{
-						if(layer[tileX][tileY]->type == PHYSICS_ICEBLOCK)
+						if(layer.tiles[tileX][tileY]->type == PHYSICS_ICEBLOCK)
 						{
-							delete layer[tileX][tileY];
+							delete layer.tiles[tileX][tileY];
 							Effect * eff = new Effect(EFFECT_ICEMELT);
 							eff->SetPos(tileX * TILESIZE, (tileY + 1) * TILESIZE);
 						}

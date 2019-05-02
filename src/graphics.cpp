@@ -71,7 +71,7 @@ extern std::vector<Creature*> creatures;
 extern std::vector<Pickup*> pickups;
 extern std::vector<Machinery*> machinery;
 extern std::vector<Lightning*> lightnings;
-extern std::vector<std::vector<std::vector<Tile*>>> tileLayers;
+extern std::vector<TileLayerData> tileLayers;
 extern std::vector<CustomTile> tileset;
 
 SDL_Color debug_color = { 50, 180, 0 };
@@ -385,7 +385,7 @@ namespace Graphics
 		// counters for current tile pos to blit to
 		for(int layerIndex = 0; layerIndex < (int)tileLayers.size(); layerIndex++)
 		{
-			TileLayerData *curLayer = tileLayers[layerIndex];
+			TileLayerData *curLayer = &tileLayers[layerIndex];
 			double parallaxDepthX = curLayer->parallaxDepthX;
 			int parallaxOffsetX = curLayer->parallaxOffsetX;
 			int actualX = parallaxOffsetX * parallaxDepthX  + (prect.x * parallaxDepthX) / TILESIZE;

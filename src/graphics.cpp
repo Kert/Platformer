@@ -356,30 +356,20 @@ namespace Graphics
 
 	void BlitObservableTiles()
 	{
-		PrecisionRect prect = camera->GetPRect();
-		int x, y, w, h;
-		x = ConvertToTileCoord(prect.x, false);
-		y = ConvertToTileCoord(prect.y, false);
-		w = ConvertToTileCoord(prect.w, true);
-		h = ConvertToTileCoord(prect.h, true);		
-		if(scalingMode == SCALING_LETTERBOXED)
-		{
-			//x = ConvertToTileCoord(camera->virtualCam.x, false);
-			y = ConvertToTileCoord(camera->virtualCam.y, false);
-			//w = ConvertToTileCoord(camera->virtualCam.w, true);
-			h = ConvertToTileCoord(camera->virtualCam.h, true);
-		}
-
 		Level *level = Game::GetLevel();
-		// range checks
-		if(x < 0) x = 0;
-		if(y < 0) y = 0;
-		if(x >= level->width_in_tiles) x = level->width_in_tiles - 1;
-		if(y >= level->height_in_tiles) x = level->height_in_tiles - 1;
-
 		// clear with background color
 		SDL_SetRenderDrawColor(renderer, level->bgColor.r, level->bgColor.g, level->bgColor.b, 255);
 		SDL_RenderFillRect(renderer, NULL);
+
+		int w, h;
+		PrecisionRect prect = camera->GetPRect();
+		w = ConvertToTileCoord(prect.w, true);
+		h = ConvertToTileCoord(prect.h, true);
+		if(scalingMode == SCALING_LETTERBOXED)
+		{
+			w = ConvertToTileCoord(camera->virtualCam.w, false);
+			h = ConvertToTileCoord(camera->virtualCam.h, false);
+		}
 
 		int a = SDL_GetTicks();
 		// counters for current tile pos to blit to
@@ -388,18 +378,24 @@ namespace Graphics
 			TileLayerData *curLayer = &tileLayers[layerIndex];
 			double parallaxDepthX = curLayer->parallaxDepthX;
 			int parallaxOffsetX = curLayer->parallaxOffsetX;
-			int actualX = parallaxOffsetX * parallaxDepthX  + (prect.x * parallaxDepthX) / TILESIZE;
+			int actualX = (int)floor(parallaxOffsetX * parallaxDepthX * TILESIZE + camera->virtualCam.x * parallaxDepthX);
+			if(scalingMode != SCALING_LETTERBOXED)
+				actualX -= (int)floor(camera->virtualCam.x - prect.x);
+			actualX /= TILESIZE;
 			for(int i = actualX; i <= actualX + w; i++)
 			{
 				double parallaxDepthY = curLayer->parallaxDepthY;
 				int parallaxOffsetY = curLayer->parallaxOffsetY;
-				int actualY = parallaxOffsetY * parallaxDepthY  + (prect.y * parallaxDepthY) / TILESIZE;
+				int actualY = (int)floor(parallaxOffsetY * parallaxDepthY * TILESIZE + camera->virtualCam.y * parallaxDepthY);
+				if(scalingMode != SCALING_LETTERBOXED)
+					actualY -= (int)floor(camera->virtualCam.y - prect.y);
+				actualY /= TILESIZE;
 				for(int j = actualY; j <= actualY + h; j++)
 				{
 					if(i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
 					{
-						int p = (i * TILESIZE - prect.x * parallaxDepthX - parallaxOffsetX * TILESIZE * parallaxDepthX);
-						int q = (j * TILESIZE - prect.y * parallaxDepthY - parallaxOffsetY * TILESIZE * parallaxDepthY);
+						int p = (int)floor(i * TILESIZE - camera->virtualCam.x * parallaxDepthX - parallaxOffsetX * TILESIZE * parallaxDepthX + (camera->virtualCam.x - prect.x));
+						int q = (int)floor(j * TILESIZE - camera->virtualCam.y * parallaxDepthY - parallaxOffsetY * TILESIZE * parallaxDepthY + (camera->virtualCam.y - prect.y));
 
 						Tile *tile = curLayer->tiles[i][j];
 						if(tile != nullptr)

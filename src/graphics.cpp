@@ -129,6 +129,7 @@ namespace Graphics
 	Camera* camera;
 
 	int FindDisplayModes();
+	void DrawVirtualCamera();
 
 	Camera* GetCamera()
 	{
@@ -363,12 +364,14 @@ namespace Graphics
 
 		int w, h;
 		PrecisionRect prect = camera->GetPRect();
+		SDL_Rect virtCam = camera->GetVirtualCamRect();
+
 		w = ConvertToTileCoord(prect.w, true);
 		h = ConvertToTileCoord(prect.h, true);
 		if(scalingMode == SCALING_LETTERBOXED)
 		{
-			w = ConvertToTileCoord(camera->virtualCam.w, false);
-			h = ConvertToTileCoord(camera->virtualCam.h, false);
+			w = ConvertToTileCoord(virtCam.w, false);
+			h = ConvertToTileCoord(virtCam.h, false);
 		}
 
 		int a = SDL_GetTicks();
@@ -378,24 +381,24 @@ namespace Graphics
 			TileLayerData *curLayer = &tileLayers[layerIndex];
 			double parallaxDepthX = curLayer->parallaxDepthX;
 			int parallaxOffsetX = curLayer->parallaxOffsetX;
-			int actualX = (int)floor(parallaxOffsetX * parallaxDepthX * TILESIZE + camera->virtualCam.x * parallaxDepthX);
+			int actualX = (int)floor(parallaxOffsetX * parallaxDepthX * TILESIZE + virtCam.x * parallaxDepthX);
 			if(scalingMode != SCALING_LETTERBOXED)
-				actualX -= (int)floor(camera->virtualCam.x - prect.x);
+				actualX -= (int)floor(virtCam.x - prect.x);
 			actualX /= TILESIZE;
 			for(int i = actualX; i <= actualX + w; i++)
 			{
 				double parallaxDepthY = curLayer->parallaxDepthY;
 				int parallaxOffsetY = curLayer->parallaxOffsetY;
-				int actualY = (int)floor(parallaxOffsetY * parallaxDepthY * TILESIZE + camera->virtualCam.y * parallaxDepthY);
+				int actualY = (int)floor(parallaxOffsetY * parallaxDepthY * TILESIZE + virtCam.y * parallaxDepthY);
 				if(scalingMode != SCALING_LETTERBOXED)
-					actualY -= (int)floor(camera->virtualCam.y - prect.y);
+					actualY -= (int)floor(virtCam.y - prect.y);
 				actualY /= TILESIZE;
 				for(int j = actualY; j <= actualY + h; j++)
 				{
 					if(i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
 					{
-						int p = (int)floor(i * TILESIZE - camera->virtualCam.x * parallaxDepthX - parallaxOffsetX * TILESIZE * parallaxDepthX + (camera->virtualCam.x - prect.x));
-						int q = (int)floor(j * TILESIZE - camera->virtualCam.y * parallaxDepthY - parallaxOffsetY * TILESIZE * parallaxDepthY + (camera->virtualCam.y - prect.y));
+						int p = (int)floor(i * TILESIZE - virtCam.x * parallaxDepthX - parallaxOffsetX * TILESIZE * parallaxDepthX + (virtCam.x - prect.x));
+						int q = (int)floor(j * TILESIZE - virtCam.y * parallaxDepthY - parallaxOffsetY * TILESIZE * parallaxDepthY + (virtCam.y - prect.y));
 
 						Tile *tile = curLayer->tiles[i][j];
 						if(tile != nullptr)
@@ -463,6 +466,8 @@ namespace Graphics
 
 		if(scalingMode == SCALING_LETTERBOXED)
 			DrawLetterbox();
+
+		if(Game::IsDebug()) DrawVirtualCamera();
 
 		// don't use upscaling+linear downscaling for integer render scale and default scaling mode
 		if(scalingMode == SCALING_DEFAULT && (floor(RENDER_SCALE) != RENDER_SCALE))
@@ -769,14 +774,6 @@ namespace Graphics
 			<< " jumpTime: " << p.jumptime;
 
 		RenderText(0, GetWindowNormalizedY(1) - 16, debug_str.str(), debug_font, debug_color);
-		
-		SDL_Rect virtualCamRect;
-		virtualCamRect.x = (camera->virtualCam.x - camera->GetRect().x);
-		virtualCamRect.y = (camera->virtualCam.y - camera->GetRect().y);
-		virtualCamRect.w = camera->virtualCam.w;
-		virtualCamRect.h = camera->virtualCam.h;
-		SDL_SetRenderDrawColor(renderer, 0, 200, 10, 250);
-		SDL_RenderDrawRect(renderer, &virtualCamRect);
 	}
 
 	void RenderInterface()
@@ -791,8 +788,9 @@ namespace Graphics
 			int posX, posY;
 			if(scalingMode == SCALING_LETTERBOXED)
 			{
-				posX = (iter.second.location.x + (camera->virtualCam.x - camera->GetRect().x));
-				posY = (iter.second.location.y + (camera->virtualCam.y - camera->GetRect().y));
+				SDL_Rect virtCam = camera->GetVirtualCamRect();
+				posX = (iter.second.location.x + (virtCam.x - camera->GetRect().x));
+				posY = (iter.second.location.y + (virtCam.y - camera->GetRect().y));
 			}
 			else
 			{
@@ -1205,27 +1203,28 @@ namespace Graphics
 	void DrawLetterbox()
 	{
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_Rect rect;
+		SDL_Rect rectToDraw;
+		SDL_Rect virtCam = camera->GetVirtualCamRect();
 		// top
-		rect.x = rect.y = 0;
-		rect.w = GAME_SCENE_WIDTH;
-		rect.h = camera->virtualCam.y - camera->GetPRect().y;
-		SDL_RenderFillRect(renderer, &rect);
+		rectToDraw.x = rectToDraw.y = 0;
+		rectToDraw.w = GAME_SCENE_WIDTH;
+		rectToDraw.h = virtCam.y - camera->GetPRect().y;
+		SDL_RenderFillRect(renderer, &rectToDraw);
 		// bottom
-		rect.x = 0;
-		rect.y = rect.h + camera->virtualCam.h;
-		rect.h = GAME_SCENE_HEIGHT - rect.y;
-		SDL_RenderFillRect(renderer, &rect);
+		rectToDraw.x = 0;
+		rectToDraw.y = rectToDraw.h + virtCam.h;
+		rectToDraw.h = GAME_SCENE_HEIGHT - rectToDraw.y;
+		SDL_RenderFillRect(renderer, &rectToDraw);
 		// left
-		rect.x = rect.y = 0;
-		rect.h = GAME_SCENE_HEIGHT;
-		rect.w = camera->virtualCam.x - camera->GetPRect().x;
-		SDL_RenderFillRect(renderer, &rect);
+		rectToDraw.x = rectToDraw.y = 0;
+		rectToDraw.h = GAME_SCENE_HEIGHT;
+		rectToDraw.w = virtCam.x - camera->GetPRect().x;
+		SDL_RenderFillRect(renderer, &rectToDraw);
 		// right
-		rect.y = 0;
-		rect.x = rect.w + camera->virtualCam.w;
-		rect.w = GAME_SCENE_WIDTH - rect.w;
-		SDL_RenderFillRect(renderer, &rect);		
+		rectToDraw.y = 0;
+		rectToDraw.x = rectToDraw.w + virtCam.w;
+		rectToDraw.w = GAME_SCENE_WIDTH - rectToDraw.w;
+		SDL_RenderFillRect(renderer, &rectToDraw);		
 	}
 
 	SCALING_MODES GetScalingMode()
@@ -1236,5 +1235,17 @@ namespace Graphics
 	void SetScalingMode(int mode)
 	{
 		scalingMode = (SCALING_MODES)mode;
+	}
+
+	void DrawVirtualCamera()
+	{
+		SDL_Rect virtCamToDraw;
+		SDL_Rect virtCam = camera->GetVirtualCamRect();
+		virtCamToDraw.x = (virtCam.x - camera->GetRect().x);
+		virtCamToDraw.y = (virtCam.y - camera->GetRect().y);
+		virtCamToDraw.w = virtCam.w;
+		virtCamToDraw.h = virtCam.h;
+		SDL_SetRenderDrawColor(renderer, 0, 200, 10, 250);
+		SDL_RenderDrawRect(renderer, &virtCamToDraw);
 	}
 }

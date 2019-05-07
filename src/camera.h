@@ -17,7 +17,7 @@ class Camera
 		double factorY = 0.055;
 		// attached to what
 		Entity *at;
-	public:
+		// used for limiting camera movement
 		SDL_Rect virtualCam;
 
 	public:
@@ -34,6 +34,7 @@ class Camera
 		void SetOffsetX(int x);
 		void SetOffsetY(int y);
 		bool IsAttachedTo(Entity *e);
+		SDL_Rect GetVirtualCamRect();
 };
 
 #endif

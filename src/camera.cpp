@@ -214,3 +214,8 @@ bool Camera::IsAttachedTo(Entity *e)
 {
 	return e == this->at;
 }
+
+SDL_Rect Camera::GetVirtualCamRect()
+{
+	return virtualCam;
+}

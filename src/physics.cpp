@@ -931,7 +931,9 @@ void ResolveTop(Creature &p)
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(i, head);
 		if(IsSolid(type))
 		{
-			p.yNew = p.GetY(); // REVERT
+			SDL_Rect tileTop;
+			tileTop = GetTileRect(i, head + 1);
+			p.yNew = tileTop.y + ppr.h; // REVERT
 			collisionFound = true;
 			//PrintLog(LOG_SUPERDEBUG, "Hitting ceiling");
 			break;

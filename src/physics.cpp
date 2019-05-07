@@ -696,10 +696,9 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 {
 	const double IN_RAIN_FIREBALL_DECAY_MULTIPLIER = 3;
-
 	double x, y;
 	Velocity vel;
-	bool complete = false;
+	
 	vel = b.GetVelocity();
 	Accel accel = b.accel;
 	b.GetPos(x, y);
@@ -718,17 +717,11 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 	if(b.statusTimer <= 0)
 	{
 		b.statusTimer = 0;
-		if(b.origin == WEAPON_GRENADE || b.origin == WEAPON_LIGHTNING)
-		{
-			complete = true;
-		}
-		else
-		{
-			b.Remove();
-			return false;
-		}
+		b.Remove();
+		return false;
 	}
 
+	bool complete = false;
 	std::pair<Creature*, Machinery*> wasHit;
 	wasHit = CheckForCollision(&b);
 	// do not allow enemies to damage other enemies
@@ -737,8 +730,9 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 	{
 		if(wasHit.first != nullptr && wasHit.first != b.owner)
 		{
+			if(!b.piercing && wasHit.first->status == STATUS_NORMAL)
+				complete = true;
 			wasHit.first->ProcessBulletHit(&b);
-			complete = true;
 		}
 	}
 	if(wasHit.second != nullptr && wasHit.second->solid)
@@ -794,11 +788,14 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 					}
 				}
 			}
+			else
+			{
+				if(!b.piercing)
+					complete = true;
+			}
 		}
-		else
-		{
+		else if(!b.piercing)
 			complete = true;
-		}
 	}
 
 	if(x >= level->width_in_pix || y >= level->height_in_pix || x < 0 || y < 0)
@@ -817,12 +814,9 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 				effect = new Effect(EFFECT_ROCKETL_HIT);
 				effect->SetPos(x - 11, y + 11);
 				Sound::PlaySfx("rocketl_explode");
-				b.Remove();
-				return false;
-			case WEAPON_LIGHTNING:
-				//b.Remove();
-				return false;
 		}
+		b.Remove();
+		return false;
 	}
 
 	b.SetVelocity(vel);

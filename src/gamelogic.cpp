@@ -68,10 +68,9 @@ namespace Game
 		level = nullptr;
 	}
 
-	void CheckDebugMode()
+	void SetDebug(bool toggle)
 	{
-		std::ifstream infile("debugme");
-		Debug = infile.good();
+		Debug = toggle;
 	}
 
 	GAMESTATES GetState()

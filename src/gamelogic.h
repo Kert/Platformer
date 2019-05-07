@@ -14,7 +14,7 @@ namespace Game
 	Level* GetLevel();
 	void CreateLevel(std::string fileName);
 	void RemoveLevel();
-	void CheckDebugMode();
+	void SetDebug(bool toggle);
 	GAMESTATES GetState();
 	void SetState(GAMESTATES state);
 	void ChangeState(GAMESTATES state);

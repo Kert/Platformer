@@ -21,7 +21,6 @@ void Cleanup();
 
 int main(int argc, char* argv[])
 {
-	Game::CheckDebugMode();
 	//VLDEnable();
 	// Initialize SDL.
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)

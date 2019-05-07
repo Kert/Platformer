@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include "INIReader.h"
+#include "gamelogic.h"
 #include "globals.h"
 #include "graphics.h"
 #include "sound.h"
@@ -136,6 +137,7 @@ void LoadConfig()
 	Graphics::SetScalingMode(scalingModeNames[reader.Get("Video", "ScalingMode", "Default")]);
 	Sound::SetMusicVolume(atoi(reader.Get("Sound", "Music", "100").c_str()));
 	Sound::SetSfxVolume(atoi(reader.Get("Sound", "Sfx", "100").c_str()));
+	Game::SetDebug(!!atoi(reader.Get("Other", "Debug", "0").c_str()));
 }
 
 void SaveConfig()
@@ -172,6 +174,8 @@ void SaveConfig()
 	file << "[Sound]" << std::endl;
 	file << "Music=" << Sound::GetMusicVolume() << std::endl;
 	file << "Sfx=" << Sound::GetSfxVolume() << std::endl;
+	file << "[Other]" << std::endl;
+	file << "Debug=" << Game::IsDebug() << std::endl;
 }
 
 void SetKeyboardBind(SDL_Keycode code, KEYBINDS bind)

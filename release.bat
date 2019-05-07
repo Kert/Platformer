@@ -21,6 +21,7 @@ xcopy /Y "src\lib\x86\zlib1.dll" "data" /I /Q > nul
 xcopy /Y "src\lib\x86\libvorbis-0.dll" "data" /I /Q > nul
 xcopy /Y "src\lib\x86\libvorbisfile-3.dll" "data" /I /Q > nul
 xcopy /Y "src\lib\x86\libogg-0.dll" "data" /I /Q > nul
+xcopy /Y "src\lib\x86\smpeg2.dll" "data" /I /Q > nul
 @echo Copying into release folder...
 xcopy /Y "data" "release" /E /I /Q > nul
 @echo Sanitizing release folder...

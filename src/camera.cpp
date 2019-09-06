@@ -43,10 +43,10 @@ Camera::Camera(double x, double y, double w, double h)
 SDL_Rect Camera::GetRect()
 {
 	SDL_Rect r;
-	r.h = (int)round(h);
-	r.w = (int)round(w);
-	r.x = (int)round(x);
-	r.y = (int)round(y);
+	r.h = (int)(h);
+	r.w = (int)(w);
+	r.x = (int)(x);
+	r.y = (int)(y);
 	return r;
 }
 

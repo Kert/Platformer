@@ -598,8 +598,8 @@ void Entity::GetPos(double &x, double &y)
 
 void Entity::GetPos(int &x, int &y)
 {
-	x = (int)round(this->x);
-	y = (int)round(this->y);
+	x = (int)(this->x);
+	y = (int)(this->y);
 }
 
 void Entity::SetPos(int x, int y)
@@ -738,10 +738,10 @@ bool Hitbox::HasCollision(Hitbox *hitbox)
 SDL_Rect Hitbox::GetRect()
 {
 	SDL_Rect r;
-	r.h = (int)ceil(h - 0.50001);
-	r.w = (int)ceil(w - 0.50001);
-	r.x = (int)ceil(x - 0.50001);
-	r.y = (int)ceil(y - 0.50001);
+	r.h = (int)(h);
+	r.w = (int)(w);
+	r.x = (int)(x);
+	r.y = (int)(y);
 	return r;
 }
 

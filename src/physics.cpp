@@ -901,7 +901,7 @@ void ResolveBottom(Creature &p)
 	else
 	{
 		// because we need to be out of the ground for next left/right colission check
-		p.yNew = tileBottom.y - 0.001;
+		p.yNew = tileBottom.y;
 		if(!p.state->Is(CREATURE_STATES::SLIDING))
 			p.SetState(CREATURE_STATES::ONGROUND);
 
@@ -957,7 +957,7 @@ void ResolveRight(Creature &p)
 	// Converting to coordinates in tiles array
 	int maxx = ConvertToTileCoord(p.xNew + ppr.w, false);
 
-	int feet = ConvertToTileCoord(p.yNew, false);
+	int feet = ConvertToTileCoord(p.yNew - 1, false);
 	int head = ConvertToTileCoord(p.yNew - ppr.h, false);
 
 	bool break_flag = false;
@@ -993,7 +993,7 @@ void ResolveRight(Creature &p)
 
 	if(collisionFound)
 	{
-		p.xNew = maxx * TILESIZE - ppr.w - 0.001;
+		p.xNew = maxx * TILESIZE - ppr.w;
 		if(p.pushedFrom.left)
 		{
 			p.Crush();
@@ -1009,7 +1009,7 @@ void ResolveLeft(Creature &p)
 	PrecisionRect ppr = p.hitbox->GetPRect();
 	// Converting to coordinates in tiles array
 	int minx = ConvertToTileCoord(p.xNew, false);
-	int feet = ConvertToTileCoord(p.yNew, false);
+	int feet = ConvertToTileCoord(p.yNew - 1, false);
 	int head = ConvertToTileCoord(p.yNew - ppr.h, false);
 
 	// Left
@@ -1046,7 +1046,7 @@ void ResolveLeft(Creature &p)
 
 	if(collisionFound)
 	{
-		p.xNew = (minx + 1) * TILESIZE + 0.001;
+		p.xNew = (minx + 1) * TILESIZE;
 		if(p.pushedFrom.right)
 		{
 			p.Crush();

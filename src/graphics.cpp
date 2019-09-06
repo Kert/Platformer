@@ -517,8 +517,8 @@ namespace Graphics
 	void DrawHitbox(Entity &e)
 	{
 		SDL_Rect rect;
-		rect.x = (int)round(e.hitbox->GetPRect().x - camera->GetPRect().x);
-		rect.y = (int)round(e.hitbox->GetPRect().y - camera->GetPRect().y);
+		rect.x = (int)(e.hitbox->GetPRect().x - camera->GetPRect().x);
+		rect.y = (int)(e.hitbox->GetPRect().y - camera->GetPRect().y);
 		rect.h = (int)e.hitbox->GetPRect().h;
 		rect.w = (int)e.hitbox->GetPRect().w;
 		SDL_SetRenderDrawColor(renderer, 230, 0, 0, 150);
@@ -530,8 +530,8 @@ namespace Graphics
 		SDL_Rect realpos;
 		double x, y;
 		e.GetPos(x, y);
-		realpos.x = (int)round(x - camera->GetPRect().x + e.sprite->GetSpriteOffsetX());
-		realpos.y = (int)round(y - camera->GetPRect().y + e.sprite->GetSpriteOffsetY());
+		realpos.x = (int)(x - camera->GetPRect().x + e.sprite->GetSpriteOffsetX());
+		realpos.y = (int)(y - camera->GetPRect().y + e.sprite->GetSpriteOffsetY());
 		realpos.h = (int)e.sprite->GetTextureCoords().h;
 		realpos.w = (int)e.sprite->GetTextureCoords().w;
 

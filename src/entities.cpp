@@ -179,9 +179,10 @@ void ReadPlatformData()
 
 Player::Player()
 {
-	move_vel = 110;
+	move_vel = 2;
 	jumptime = 0;
-	term_vel = 240;
+	jump_accel = -0.05;
+	term_vel = 3;
 	health = 100;
 	direction = DIRECTION_RIGHT;
 	status = 0;
@@ -279,13 +280,13 @@ void Player::ResetWeapons()
 		ammo[i] = 0;
 	}
 
-	fireDelay[WEAPON_ROCKETL] = (int)(0.7 * 1000);
-	fireDelay[WEAPON_FLAME] = (int)(0.1 * 1000);
+	fireDelay[WEAPON_ROCKETL] = SecToTicks(0.7);
+	fireDelay[WEAPON_FLAME] = SecToTicks(1);
 	//fireDelay[WEAPON_FLAME] = (int)(0.07 * 1000 );
-	fireDelay[WEAPON_GRENADE] = (int)(1.0 * 1000);
-	fireDelay[WEAPON_LIGHTNING] = (int)(0.5 * 3000);
-	fireDelay[WEAPON_FIREBALL] = (int)(0.1 * 1000);
-	fireDelay[WEAPON_AIRGUST] = (int)(0.2 * 1000);
+	fireDelay[WEAPON_GRENADE] = SecToTicks(1);
+	fireDelay[WEAPON_LIGHTNING] = SecToTicks(1.5);
+	fireDelay[WEAPON_FIREBALL] = SecToTicks(0.1);
+	fireDelay[WEAPON_AIRGUST] = SecToTicks(0.2);
 }
 
 bool Player::CanMoveWhileFiring()
@@ -484,18 +485,13 @@ void Creature::Walk()
 
 void Creature::Walk(DIRECTIONS direction)
 {
-	Velocity vel;
-	vel = this->GetVelocity();
-
 	if(this->state->Is(CREATURE_STATES::ONGROUND)) {
-		this->accel.x = 1 * (direction ? 1 : -1);
+		this->accel.x = 0.35 * (direction ? 1 : -1);
 		if(IsOnIce(*this))
-			this->accel.x = 0.35 * (direction ? 1 : -1);
+			this->accel.x = 0.1 * (direction ? 1 : -1);
 	}
 	else if(!this->state->Is(CREATURE_STATES::ONGROUND))
 		this->accel.x = 0.7 * (direction ? 1 : -1);
-
-	this->SetVelocity(vel.x, vel.y);
 }
 
 Creature::Creature(std::string type)
@@ -525,6 +521,7 @@ Creature::Creature(std::string type)
 	accel.x = 0;
 	accel.y = 0;
 	jumptime = 0;
+	jump_accel = -0.05;
 	statusTimer = 0;
 	shotLocked = false;
 	charging = false;
@@ -557,6 +554,7 @@ Creature::Creature()
 	shotLocked = false;
 	charging = false;
 	onMachinery = false;
+	jump_accel = -0.05;
 
 	state = new InAirState(this);
 	// creatures are leaking a few bytes when created, something to do with DamageSource it seems like?
@@ -780,7 +778,7 @@ void Pickup::OnPickup()
 	if(this->type != PICKUP_NOTHING)
 	{
 		this->status = STATUS_DYING;
-		this->statusTimer = this->deathLength;
+		this->statusTimer = 0;
 
 		Player *player = Game::GetPlayer();
 		switch(this->type)
@@ -846,7 +844,6 @@ Pickup::Pickup(PICKUP_TYPES spawnType)
 	sprite = LoadEntitySprite("assets/data/graphics/pickup_" + pickupName + ".ini");
 	hitbox = LoadEntityHitbox("assets/data/graphics/pickup_" + pickupName + ".ini");
 
-	deathLength = 0;
 	direction = DIRECTION_RIGHT;
 }
 
@@ -927,25 +924,25 @@ Effect::Effect(EFFECT_TYPES type)
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
 			status = STATUS_DYING;
-			statusTimer = (int)(0.4 * 1000);
+			statusTimer = SecToTicks(0.4);
 			break;
 		case EFFECT_ROCKETL_HIT:
 			hitbox = LoadEntityHitbox("assets/data/graphics/effect_explosion.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/effect_explosion.ini");
 			status = STATUS_DYING;
-			statusTimer = (int)(0.3 * 1000);
+			statusTimer = SecToTicks(0.3);
 			break;
 		case EFFECT_DOUBLE_JUMP:
 			hitbox = LoadEntityHitbox("assets/data/graphics/effect_doublejump.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/effect_doublejump.ini");
 			status = STATUS_DYING;
-			statusTimer = (int)(0.2 * 1000);
+			statusTimer = SecToTicks(0.2);
 			break;
 		case EFFECT_ICEMELT:
 			hitbox = LoadEntityHitbox("assets/data/graphics/effect_icemelt.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/effect_icemelt.ini");
 			status = STATUS_DYING;
-			statusTimer = (int)(0.5 * 1000);
+			statusTimer = SecToTicks(0.5);
 			break;
 		default:
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
@@ -982,70 +979,70 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 		case WEAPON_ROCKETL:
 			hitbox = LoadEntityHitbox("assets/data/graphics/rocket.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/rocket.ini");
-			SetVelocity(400 * (direction ? 1 : -1), 0);
+			SetVelocity(5 * (direction ? 1 : -1), 0);
 			accel.y = 0;
 			accel.x = 0;
-			lifetime = (int)(1 * 1000);
+			lifetime = SecToTicks(1);
 			statusTimer = lifetime;
 			piercing = false;
 			break;
 		case WEAPON_FLAME:
 			hitbox = LoadEntityHitbox("assets/data/graphics/flame.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/flame.ini");
-			SetVelocity(this->owner->GetVelocity().x + 80 * (direction ? 1 : -1), 0);
+			SetVelocity(this->owner->GetVelocity().x + 1 * (direction ? 1 : -1), 0);
 			accel.y = -2.5;
 			accel.x = 0;
-			lifetime = (int)(0.3 * 1000);
+			lifetime = SecToTicks(0.3);
 			statusTimer = lifetime;
 			piercing = false;
 			break;
 		case WEAPON_GRENADE:
 			hitbox = LoadEntityHitbox("assets/data/graphics/grenade.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/grenade.ini");
-			SetVelocity(150 * (direction ? 1 : -1), -200);
+			SetVelocity(2 * (direction ? 1 : -1), -2);
 			accel.y = 5;
 			accel.x = 0;
-			lifetime = (int)(1.8 * 1000);
+			lifetime = SecToTicks(1.8);
 			statusTimer = lifetime;
 			piercing = false;
 			break;
 		case WEAPON_FIREBALL:
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
-			SetVelocity(240 * (direction ? 1 : -1), 0);
+			SetVelocity(4 * (direction ? 1 : -1), 0);
 			accel.y = 0;
 			accel.x = 0;
-			lifetime = (int)(1 * 2000);
+			lifetime = SecToTicks(2);
 			statusTimer = lifetime;
 			piercing = false;
 			break;
 		case WEAPON_BOMBDROP:
 			hitbox = LoadEntityHitbox("assets/data/graphics/bombdrop.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/bombdrop.ini");
-			SetVelocity(0, 100);
+			SetVelocity(0, 1);
 			accel.y = 0.1;
 			accel.x = 0;
-			lifetime = (int)(15 * 1000);
+			lifetime = SecToTicks(15);
 			statusTimer = lifetime;
 			piercing = false;
 			break;
 		case WEAPON_GROUNDSHOCKWAVE:
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/fireball.ini");
-			SetVelocity(240 * (direction ? 1 : -1), 0);
+			SetVelocity(3 * (direction ? 1 : -1), 0);
 			accel.y = 0;
 			accel.x = 0;
-			lifetime = (int)(0.5 * 1000);
+			lifetime = SecToTicks(0.5);
 			statusTimer = lifetime;
 			piercing = false;
 			break;
 		case WEAPON_AIRGUST:
 			hitbox = LoadEntityHitbox("assets/data/graphics/airgust.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/airgust.ini");
-			SetVelocity(240 * (direction ? 1 : -1), 0);
+			SetVelocity(3 * (direction ? 1 : -1), 0);
 			accel.y = 0;
 			accel.x = 0;
-			lifetime = (int)(1 * 2000);
+			lifetime = SecToTicks(2);
 			statusTimer = lifetime;
 			piercing = false;
 			break;
@@ -1119,21 +1116,21 @@ void Creature::ProcessBulletHit(Bullet *b)
 		ApplyKnockback(*this, *(Creature*)b->owner);
 }
 
-void Creature::SetStun(int milliseconds)
+void Creature::SetStun(double sec)
 {
 	status = STATUS_STUN;
-	statusTimer = milliseconds;
+	statusTimer = SecToTicks(sec);
 }
 
-void Creature::SetInvulnerability(int milliseconds)
+void Creature::SetInvulnerability(double sec)
 {
 	status = STATUS_INVULN;
-	statusTimer = milliseconds;
+	statusTimer = SecToTicks(sec);
 }
 
 void Creature::TakeDamage(int damage)
 {
-	const int STUN_TIME = 200;
+	const double STUN_TIME = 0.2;
 	if(status == STATUS_DYING || status == STATUS_INVULN || status == STATUS_STUN)
 		return;
 	health -= damage;
@@ -1152,13 +1149,13 @@ void Machinery::Activate()
 	// TODO: call door open and close functions somehow (I don't think they're being used yet)
 	if(enabled)
 	{
-		SetVelocity(0, 200);
+		SetVelocity(0, 2);
 		Sound::PlaySfx("door_close");
 		enabled = false;
 	}
 	else
 	{
-		SetVelocity(0, -200);
+		SetVelocity(0, -2);
 		Sound::PlaySfx("door_open");
 		enabled = true;
 	}
@@ -1211,13 +1208,13 @@ void Door::Remove()
 
 void Door::Open()
 {
-	SetVelocity(0, -200);
+	SetVelocity(0, -2);
 	Sound::PlaySfx("door_open");
 }
 
 void Door::Close()
 {
-	SetVelocity(0, 200);
+	SetVelocity(0, 2);
 	Sound::PlaySfx("door_close");
 }
 
@@ -1409,9 +1406,9 @@ void Creature::Die()
 	accel.y = 0;
 	gravityMultiplier = 1;
 	if(Game::GetPlayer()->GetX() > GetX())
-		this->SetVelocity(-60, -150);
+		this->SetVelocity(1, -2);
 	else
-		this->SetVelocity(60, -150);
+		this->SetVelocity(1, -2);
 }
 
 std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
@@ -1559,7 +1556,7 @@ Lightning::Lightning(DynamicEntity &shooter)
 
 	SetVelocity(0, 0);
 	status = STATUS_INVULN;
-	lifetime = (int)(1 * 500);
+	lifetime = SecToTicks(0.5);
 	statusTimer = lifetime;
 	piercing = true;
 	PrintLog(LOG_SUPERDEBUG, "%d TIME PASSED", SDL_GetTicks() - a);

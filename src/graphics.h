@@ -24,7 +24,7 @@ public:
 namespace Graphics
 {
 	int Init();
-	void Update();
+	void Update(double ticks);
 	void Cleanup();
 
 	Camera* GetCamera();
@@ -45,7 +45,7 @@ namespace Graphics
 	void RenderText(int x, int y, std::string text, TTF_Font *font, SDL_Color color, TEXT_ALIGN align = TEXT_ALIGN_LEFT);
 	void UpdateAnimation(Bullet &b);
 	void UpdateAnimation(Effect &e);
-	void UpdateAnimation(Player &p);
+	void UpdateAnimation(Player &p, double ticks);
 	void UpdateAnimation(Creature &c);
 	void UpdateAnimation(Pickup &p);
 	void DrawFading();
@@ -65,14 +65,15 @@ namespace Graphics
 	int SetDisplayMode(SDL_DisplayMode mode);
 	int GetDisplayIndex();
 	void SetDisplayIndex(int index);
+	int GetRefreshRate();
 	int GetGameSceneWidth();
 	int GetGameSceneHeight();
 	SDL_Renderer* GetRenderer();
 	int LoadLevelTexturesFromFile(std::string fileName);
 	SDL_Texture* GetLevelTexture();
 	TTF_Font* GetFont(FONTS font);
-	void ScreenShake(int time);
-	void ScreenShakeUpdate();
+	void ScreenShake(double sec);
+	void ScreenShakeUpdate(double ticks);
 	void DrawLetterbox();
 	SCALING_MODES GetScalingMode();
 	void SetScalingMode(int mode);

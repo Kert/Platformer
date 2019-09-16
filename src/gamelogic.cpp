@@ -106,22 +106,22 @@ namespace Game
 
 		if(oldstate == STATE_GAME && state == STATE_PAUSED)
 		{
-			Fading::Init(FADING_STATE_IN, 0, 150, 5);
+			Fading::Init(FADING_STATE_IN, 0, 150, 0.2);
 			SetState(STATE_PAUSED);
 		}
 		else if(oldstate == STATE_PAUSED && state == STATE_GAME)
 		{
-			Fading::Init(FADING_STATE_OUT, 150, 0, 8);
+			Fading::Init(FADING_STATE_OUT, 150, 0, 0.2);
 			SetState(STATE_GAME);
 		}
 		else if(oldstate == STATE_TRANSITION && state == STATE_GAME)
 		{
 			Start();
-			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 3, STATE_GAME);
+			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 0.3, STATE_GAME);
 		}
 		else if(oldstate == STATE_GAME && state == STATE_TRANSITION)
 		{
-			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 3, STATE_TRANSITION);
+			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 0.3, STATE_TRANSITION);
 		}
 		else
 			SetState(state);
@@ -155,7 +155,7 @@ namespace Game
 		else
 		{
 			Sound::PlaySfx("game_over");
-			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 3, STATE_MENU);
+			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 0.3, STATE_MENU);
 			Sound::StopMusic();
 			currentLives -= 1;
 			if(currentLives < 1)
@@ -165,7 +165,7 @@ namespace Game
 		}
 	}
 
-	void Update(Uint32 dt)
+	void Update(double ticks)
 	{
 		if(player->status == STATUS_DYING)
 		{
@@ -186,12 +186,12 @@ namespace Game
 		{
 			if(m->type == MACHINERY_TYPES::MACHINERY_PLATFORM)
 			{
-				ApplyPhysics(*(Platform*)m, dt);
+				ApplyPhysics(*(Platform*)m, ticks);
 			}
 		}
 
 		player->HandleStateIdle();
-		ApplyPhysics(*player, dt);
+		ApplyPhysics(*player, ticks);
 		//// Updating camera
 		//if(player->hasState(STATE_LOOKINGUP))
 		//	camera->SetOffsetY(-20);
@@ -201,14 +201,14 @@ namespace Game
 
 		for(auto &b : bullets)
 		{
-			ApplyPhysics(*b, dt);
+			ApplyPhysics(*b, ticks);
 		}
 		CleanFromNullPointers(&bullets);
 		CleanFromNullPointers(&creatures); // they can be dead already
 
 		for(auto &l : lightnings)
 		{
-			if(!ApplyPhysics(*l, dt))
+			if(!ApplyPhysics(*l, ticks))
 				break; // workaround to stop physicsing once a lightning is deleted
 		}
 		CleanFromNullPointers(&creatures); // they can be dead already
@@ -217,13 +217,13 @@ namespace Game
 		{
 			if(player->hitbox->HasCollision(i->hitbox))
 			{
-				OnHitboxCollision(*player, *i, dt);
+				OnHitboxCollision(*player, *i, ticks);
 				PrintLog(LOG_SUPERDEBUG, "what %d", SDL_GetTicks());
 			}
 			if(i->AI)
-				i->AI->RunAI();
-			ApplyPhysics(*i, dt);
-			UpdateStatus(*i, dt);
+				i->AI->RunAI(ticks);
+			ApplyPhysics(*i, ticks);
+			UpdateStatus(*i, ticks);
 			if(i->REMOVE_ME)
 				delete i;
 		}
@@ -233,12 +233,12 @@ namespace Game
 		{
 			if(player->hitbox->HasCollision(j->hitbox))
 			{
-				OnHitboxCollision(*player, *j, dt);
+				OnHitboxCollision(*player, *j, ticks);
 				PrintLog(LOG_SUPERDEBUG, "what %d", SDL_GetTicks());
 			}
 			if(j->status == STATUS_DYING)
 			{
-				if(!UpdateStatus(*j, dt))
+				if(!UpdateStatus(*j, ticks))
 					break; // j has been deleted, let's get out of here
 			}
 		}
@@ -246,7 +246,7 @@ namespace Game
 		{
 			if(e->status == STATUS_DYING)
 			{
-				if(!UpdateStatus(*e, dt))
+				if(!UpdateStatus(*e, ticks))
 					break; // j has been deleted, let's get out of here
 			}
 		}
@@ -321,15 +321,15 @@ namespace Game
 namespace Fading
 {
 	FADING_STATES FadingState = FADING_STATE_NONE;
-	int FadingVal;
+	double FadingVal;
 	int FadingStart;
 	int FadingEnd;
-	unsigned FadingSpeed;
+	double FadingSpeed; // alpha channel change per frame
 	GAMESTATES toGameState;
 	
 	int GetVal()
 	{
-		return FadingVal;
+		return (int)FadingVal;
 	}
 
 	FADING_STATES GetState()
@@ -342,17 +342,18 @@ namespace Fading
 		FadingState = FADING_STATE_NONE;
 	}
 
-	void Update()
+	void Update(double ticks)
 	{
+		double change = FadingSpeed * ticks;
 		if(FadingState == FADING_STATE_IN)
 		{
-			FadingVal += FadingSpeed;
+			FadingVal += change;
 			if(FadingVal >= FadingEnd)
 				FadingVal = FadingEnd;
 		}
 		else if(FadingState == FADING_STATE_OUT)
 		{
-			FadingVal -= FadingSpeed;
+			FadingVal -= change;
 			if(FadingVal <= FadingEnd)
 			{
 				FadingVal = FadingEnd;
@@ -363,7 +364,7 @@ namespace Fading
 		{
 			if(FadingVal <= FadingEnd)
 			{
-				FadingVal += FadingSpeed;
+				FadingVal += change;
 				if(FadingVal > FadingEnd)
 				{
 					FadingVal = 255;
@@ -375,7 +376,7 @@ namespace Fading
 		}
 	}
 
-	void Init(FADING_STATES state, int start, int end, int speed)
+	void Init(FADING_STATES state, int start, int end, double sec)
 	{
 		if(state == FADING_STATE_IN && start > end)
 		{
@@ -391,7 +392,7 @@ namespace Fading
 		FadingVal = start;
 		FadingStart = start;
 		FadingEnd = end;
-		FadingSpeed = speed;
+		FadingSpeed = abs(FadingStart - FadingEnd) / SecToTicks(sec);
 		if(state == FADING_STATE_BLACKNBACK)
 		{
 			FadingStart = 0;
@@ -400,9 +401,9 @@ namespace Fading
 		}
 	}
 
-	void Init(FADING_STATES state, int start, int end, int speed, GAMESTATES to)
+	void Init(FADING_STATES state, int start, int end, double sec, GAMESTATES to)
 	{
-		Init(state, start, end, speed);
+		Init(state, start, end, sec);
 		toGameState = to;
 	}
 }

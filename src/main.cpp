@@ -49,63 +49,45 @@ int main(int argc, char* argv[])
 
 	// Fixed time step game loop wizardry
 	using namespace std::chrono_literals;
-	constexpr std::chrono::nanoseconds timestep(8ms);
-	constexpr std::chrono::nanoseconds timestepGraphics(7ms);
 	using clock = std::chrono::high_resolution_clock;
-	std::chrono::nanoseconds lag_logic(0ns);
-	auto timeStart_logic = clock::now();
 	auto timeStart_graphics = clock::now();
 	// main loop
 	while(!Game::IsGameEndRequested())
 	{
-		auto deltaTime_logic = clock::now() - timeStart_logic;
-		timeStart_logic = clock::now();
-		lag_logic += std::chrono::duration_cast<std::chrono::nanoseconds>(deltaTime_logic);
-
 		InputUpdate();
 
-		while(lag_logic >= timestep)
-		{
-			//previous_state = current_state;
-			//update(&current_state); // update at a fixed rate each time
-			lag_logic -= timestep;
-			if(Fading::GetState() != FADING_STATE_NONE)
-				Fading::Update();
-			if(Game::GetState() == STATE_GAME && Fading::GetState() != FADING_STATE_BLACKNBACK)
-			{
-				if(Game::GetState() != STATE_MENU)
-					Game::Update(8);
-			}
-		}
+		double ticksMultiplier = 1. / (Graphics::GetRefreshRate() / 60.);
 
-		// calculate how close or far we are from the next timestep
-		//auto alpha = (float)lag_logic.count() / timestep.count();
-		//auto interpolated_state = interpolate(current_state, previous_state, alpha);
-		//render(interpolated_state);
+		if(Fading::GetState() != FADING_STATE_NONE)
+			Fading::Update(ticksMultiplier);
+
+		if(Game::GetState() == STATE_GAME && Fading::GetState() != FADING_STATE_BLACKNBACK)
+		{
+			Game::Update(ticksMultiplier);
+		}
 
 		auto deltaTime_graphics = clock::now() - timeStart_graphics;
-		if(deltaTime_graphics >= timestepGraphics) // 125fps draw ONE frame
-		{
-			timeStart_graphics = clock::now();
-			Graphics::WindowFlush();
-			if(Game::GetState() == STATE_GAME || Game::GetState() == STATE_PAUSED)
-				Graphics::Update();
-			else
-			{
-				if(Game::GetState() == STATE_MENU)
-					Graphics::RenderMenu();
-				if(Game::GetState() == STATE_TRANSITION)
-					Graphics::RenderTransition();
-			}
-			if(Fading::GetState() != FADING_STATE_NONE)
-				Graphics::DrawFading();
-			if(Game::GetState() == STATE_PAUSED)
-				Graphics::RenderMenuItems(MENU_PAUSE);
-			if(Game::IsDebug())
-				Graphics::DrawFPS(deltaTime_graphics.count());
-			Graphics::WindowUpdate();
-		}
+		timeStart_graphics = clock::now();
 
+		Graphics::WindowFlush();
+		if(Game::GetState() == STATE_GAME || Game::GetState() == STATE_PAUSED)
+		{
+			Graphics::Update(ticksMultiplier);
+		}
+		else
+		{
+			if(Game::GetState() == STATE_MENU)
+				Graphics::RenderMenu();
+			if(Game::GetState() == STATE_TRANSITION)
+				Graphics::RenderTransition();
+		}
+		if(Fading::GetState() != FADING_STATE_NONE)
+			Graphics::DrawFading();
+		if(Game::GetState() == STATE_PAUSED)
+			Graphics::RenderMenuItems(MENU_PAUSE);
+		if(Game::IsDebug())
+			Graphics::DrawFPS(deltaTime_graphics.count());
+		Graphics::WindowUpdate();
 		// Workaround to allow for gapless ogg looping without bugs
 		Sound::ProcessMusic();
 		// prevent 100% usage of cpu

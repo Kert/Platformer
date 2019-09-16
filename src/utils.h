@@ -96,5 +96,6 @@ void CleanFromNullPointers(std::vector<T> *collection)
 }
 
 bool HasEnding(std::string const &fullString, std::string const &ending);
+double SecToTicks(double sec);
 
 #endif

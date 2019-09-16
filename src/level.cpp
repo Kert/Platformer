@@ -301,7 +301,7 @@ void Level::LoadLevelFromFile(std::string filename)
 			}
 
 			int pathID = -1;
-			double speed = 50;
+			double speed = 0.5;
 			TiXmlElement* prop = obj->FirstChildElement();
 			if(prop)
 			{

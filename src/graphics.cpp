@@ -121,7 +121,7 @@ namespace Graphics
 	RandomGenerator graphics_rg;
 	struct ScreenShake
 	{
-		int timer = 0;
+		double timer = 0;
 		int offsetX;
 		int offsetY;
 	} screenShake;
@@ -184,7 +184,7 @@ namespace Graphics
 		// create the window and renderer
 		// note that the renderer is accelerated
 		win = SDL_CreateWindow("Platformer", 100, 100, 640, 480, NULL);
-		renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+		renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
 		SDL_Surface *icon = IMG_Load("assets/misc/icon.png");
 		SDL_SetWindowIcon(win, icon);
@@ -414,7 +414,7 @@ namespace Graphics
 		//PrintLog(LOG_DEBUG, "%d time passed", b - a);
 	}
 
-	void Update()
+	void Update(double ticks)
 	{
 		for(auto &t : TimersGraphics)
 		{
@@ -425,7 +425,7 @@ namespace Graphics
 
 		UpdateTileAnimations();
 
-		ScreenShakeUpdate();
+		ScreenShakeUpdate(ticks);
 		BlitObservableTiles();
 
 		// Renders everything in entities collections
@@ -447,7 +447,7 @@ namespace Graphics
 			Render(*l);
 		}
 		Player *player = Game::GetPlayer();
-		UpdateAnimation(*player);
+		UpdateAnimation(*player, ticks);
 		Render(*player);
 
 		for(auto &e : effects)
@@ -535,7 +535,7 @@ namespace Graphics
 		realpos.h = (int)e.sprite->GetTextureCoords().h;
 		realpos.w = (int)e.sprite->GetTextureCoords().w;
 
-		if(e.status == STATUS_INVULN && e.statusTimer % 200 > 100 && e.blinkDamaged) return;
+		if(e.status == STATUS_INVULN && SDL_GetTicks() % 200 > 100 && e.blinkDamaged) return;
 
 		SDL_RendererFlip flip = SDL_FLIP_NONE;
 		if(e.direction == DIRECTION_LEFT)
@@ -559,7 +559,7 @@ namespace Graphics
 	}
 
 	bool had_shot_while_jumping = false;
-	void UpdateAnimation(Player &p)
+	void UpdateAnimation(Player &p, double ticks)
 	{
 		if(p.charging)
 		{
@@ -573,7 +573,7 @@ namespace Graphics
 		if(p.sprite->shootingAnimTimer > 0)
 		{
 			p.idleTimer = 0;
-			p.sprite->shootingAnimTimer -= 1;
+			p.sprite->shootingAnimTimer -= ticks;
 			if(p.sprite->shootingAnimTimer <= 0)
 				p.sprite->shootingAnimTimer = 0;
 			else
@@ -1131,6 +1131,11 @@ namespace Graphics
 		displayIndex = index;
 	}
 
+	int GetRefreshRate()
+	{
+		return GetDisplayMode().refresh_rate;
+	}
+
 	int GetGameSceneWidth()
 	{
 		return GAME_SCENE_WIDTH;
@@ -1174,12 +1179,12 @@ namespace Graphics
 		}
 	}
 
-	void ScreenShake(int time)
+	void ScreenShake(double sec)
 	{
-		screenShake.timer = time;
+		screenShake.timer = SecToTicks(1);
 	}
 
-	void ScreenShakeUpdate()
+	void ScreenShakeUpdate(double ticks)
 	{
 		if(screenShake.timer <= 0)
 		{
@@ -1187,17 +1192,14 @@ namespace Graphics
 			screenShake.offsetY = 0;
 			return;
 		}
-		
-		screenShake.timer--;
+				
 		// TODO: Don't change it each frame maybe?
-		if(screenShake.timer)
-		{
-			int randVals[] = { 0, -8, 8 };
-			int rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));
-			screenShake.offsetX = rand;
-			rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));
-			screenShake.offsetY = rand;
-		}
+		int randVals[] = { 0, -8, 8 };
+		int rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));
+		screenShake.offsetX = rand;
+		rand = graphics_rg.Generate(0, sizeof(randVals) / sizeof(randVals[0]));
+		screenShake.offsetY = rand;
+		screenShake.timer -= ticks;
 	}
 
 	void DrawLetterbox()

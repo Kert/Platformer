@@ -10,7 +10,6 @@
 #include "utils.h"
 
 static double PHYSICS_SPEED_FACTOR = 1;
-static double PHYSICS_SPEED = 0.001 * PHYSICS_SPEED_FACTOR;
 
 extern std::vector<TileLayerData> tileLayers;
 
@@ -290,12 +289,12 @@ void CheckSpecialBehaviour(Creature &p) {
 		p.lefthook = false;
 }
 
-void ApplyPhysics(Creature &p, Uint32 deltaTicks)
+void ApplyPhysics(Creature &p, double ticks)
 {
 	if(p.REMOVE_ME)
 		return;
 
-	ApplyForces(p, deltaTicks);
+	ApplyForces(p, ticks);
 	if(IsInDeathZone(p) && !p.ignoreGravity)
 	{
 		if(&p == Game::GetPlayer())
@@ -324,7 +323,7 @@ void ApplyPhysics(Creature &p, Uint32 deltaTicks)
 	if(Game::GetState() != STATE_GAME) return; // we hit the exit block, don't process further
 
 	//DetectAndResolveEntityCollisions(p);
-	UpdateStatus(p, deltaTicks);
+	UpdateStatus(p, ticks);
 }
 
 bool IsInDeathZone(Creature &c)
@@ -483,7 +482,7 @@ bool HasCeilingRightAbove(DynamicEntity &c)
 	return false;
 }
 
-void ApplyForces(Creature &p, Uint32 deltaTicks)
+void ApplyForces(Creature &p, double ticks)
 {
 	/*acceleration = force(time, position, velocity) / mass;
 	time += timestep;
@@ -492,14 +491,15 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 	newAcceleration = force(time, position, velocity) / mass;
 	velocity += timestep * (newAcceleration - acceleration) / 2;*/
 
-	const double JUMP_VELOCITY = -155;
-	const double GROUND_FRICTION = 4;
-	const double AIR_FRICTION = 10;
-	const double ICE_SLIDING_FRICTION = 0.4;
-	const double ICE_WALKING_FRICTION = 1.5;
+	const double JUMP_VELOCITY = -3;
+	const double GROUND_FRICTION = 0.25;
+	const double AIR_FRICTION = 0.5;
+	const double ICE_SLIDING_FRICTION = 0.025;
+	const double ICE_WALKING_FRICTION = 0.04;
 	const double WATER_FRICTION_MULTIPLIER = 1.5;
 	const double WATER_MAX_VELOCITY_X_MULTIPLIER = 0.5;
 	const double WATER_MAX_VELOCITY_Y_MULTIPLIER = 0.5;
+	const double GRAVITY = 0.15;
 
 	Velocity vel; // Resulting velocity
 	vel = p.GetVelocity();
@@ -509,7 +509,7 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 
 	if(!p.ignoreGravity)
 	{
-		p.accel.y = 5 * p.gravityMultiplier;
+		p.accel.y = GRAVITY * p.gravityMultiplier;
 	}
 
 	if(p.state->Is(CREATURE_STATES::HANGING))
@@ -522,7 +522,7 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 		p.accel.y = 0;
 
 	if(p.jumptime > 0)
-		vel.y = JUMP_VELOCITY;
+		p.accel.y = p.jump_accel;
 
 	p.SetVelocity(vel);
 
@@ -530,8 +530,13 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 
 	vel.y += p.accel.y;
 	if(!p.state->Is(CREATURE_STATES::ONGROUND) && !p.ignoreWorld)
-		p.accel.x *= 99999;
-	vel.x += p.accel.x * deltaTicks;
+	{
+		if(p.accel.x < 0)
+			p.accel.x = -p.move_vel;
+		else if(p.accel.x > 0)
+			p.accel.x = p.move_vel;
+	}
+	vel.x += p.accel.x * (ticks * PHYSICS_SPEED_FACTOR);
 
 	double friction = GROUND_FRICTION;
 	if(!p.state->Is(CREATURE_STATES::ONGROUND))
@@ -602,11 +607,11 @@ void ApplyForces(Creature &p, Uint32 deltaTicks)
 		p.yNew = p.attached->hitbox->GetPRect().y + p.attY;
 	}
 
-	p.xNew += vel.x * (deltaTicks * PHYSICS_SPEED);
-	p.yNew += vel.y * (deltaTicks * PHYSICS_SPEED);
+	p.xNew += vel.x * (ticks * PHYSICS_SPEED_FACTOR);
+	p.yNew += vel.y * (ticks * PHYSICS_SPEED_FACTOR);
 }
 
-void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
+void ApplyPhysics(Machinery &d, double ticks)
 {
 	double x, y;
 	Velocity vel;
@@ -616,7 +621,7 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 	// Doors
 	if(d.type == MACHINERY_TYPES::MACHINERY_DOOR)
 	{
-		y += vel.y * (deltaTicks * PHYSICS_SPEED);
+		y += vel.y * (ticks * PHYSICS_SPEED_FACTOR);
 
 		// BROKE DOORS
 		if(y < d.default_pos.y - d.default_pos.h)
@@ -677,8 +682,8 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 
 				vel.x = (tx / dist) * plat->speed;
 				vel.y = (ty / dist) * plat->speed;
-				x += vel.x * (deltaTicks * PHYSICS_SPEED);
-				y += vel.y * (deltaTicks * PHYSICS_SPEED);
+				x += vel.x * (ticks * PHYSICS_SPEED_FACTOR);
+				y += vel.y * (ticks * PHYSICS_SPEED_FACTOR);
 			}
 			else
 			{
@@ -693,7 +698,7 @@ void ApplyPhysics(Machinery &d, Uint32 deltaTicks)
 	d.SetPos(x, y);
 }
 
-bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
+bool ApplyPhysics(Bullet &b, double ticks)
 {
 	const double IN_RAIN_FIREBALL_DECAY_MULTIPLIER = 3;
 	double x, y;
@@ -703,16 +708,16 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 	Accel accel = b.accel;
 	b.GetPos(x, y);
 
-	y += vel.y * (deltaTicks * PHYSICS_SPEED);
-	x += vel.x * (deltaTicks * PHYSICS_SPEED);
+	y += vel.y * (ticks * PHYSICS_SPEED_FACTOR);
+	x += vel.x * (ticks * PHYSICS_SPEED_FACTOR);
 	vel.y += accel.y;
 	vel.x += accel.x;
 
-	b.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+	b.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
 	if(IsInRain(b) && b.origin == WEAPON_FIREBALL)
-		b.statusTimer -= (int)(IN_RAIN_FIREBALL_DECAY_MULTIPLIER * deltaTicks * PHYSICS_SPEED_FACTOR);
+		b.statusTimer -= IN_RAIN_FIREBALL_DECAY_MULTIPLIER * ticks * PHYSICS_SPEED_FACTOR;
 	else
-		b.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+		b.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
 
 	if(b.statusTimer <= 0)
 	{
@@ -824,13 +829,13 @@ bool ApplyPhysics(Bullet &b, Uint32 deltaTicks)
 	return true;
 }
 
-bool ApplyPhysics(Lightning &l, Uint32 deltaTicks)
+bool ApplyPhysics(Lightning &l, double ticks)
 {
-	l.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+	l.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
 	if(IsInRain(l))
-		l.statusTimer -= (int)(3 * deltaTicks * PHYSICS_SPEED_FACTOR);
+		l.statusTimer -= 3 * ticks * PHYSICS_SPEED_FACTOR;
 	else
-		l.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+		l.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
 
 	if(l.statusTimer <= 0)
 	{
@@ -883,7 +888,7 @@ void ResolveBottom(Creature &p)
 			case PHYSICS_PLATFORM: case PHYSICS_HOOK_PLATFORM:
 			{
 				//PrintLog(LOG_SUPERDEBUG, "Tile intersection: Platform");
-				if(p.GetVelocity().y >= 0 && (p.yNew - tileBottom.y) < 2)
+				if(p.GetVelocity().y >= 0 && (p.yNew - tileBottom.y) < 3)
 				{
 					//PrintLog(LOG_SUPERDEBUG, "Intersecting platform at %d by %d. Returning back to y = %d", pr.y, result.h, y);
 					collisionFound = true;
@@ -1099,7 +1104,7 @@ bool HasCollisionWithEntity(Creature &p, Machinery &m)
 	return false;
 }
 
-void UpdateStatus(Creature &p, Uint32 deltaTicks)
+void UpdateStatus(Creature &p, double ticks)
 {
 	if(p.REMOVE_ME)
 		return;
@@ -1108,14 +1113,14 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 	{
 		if(p.statusTimer > 0)
 		{
-			p.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+			p.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
 			if(p.statusTimer <= 0) // time to switch to another status!
 			{
 				p.statusTimer = 0;
 				switch(p.status)
 				{
 					case STATUS_STUN:
-						p.SetInvulnerability(1 * 1000);
+						p.SetInvulnerability(1);
 						p.accel.x = 0;
 						if(p.health <= 0)
 							p.status = STATUS_DYING;
@@ -1138,7 +1143,7 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 
 	if(p.jumptime > 0)
 	{
-		p.jumptime -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+		p.jumptime -= ticks * PHYSICS_SPEED_FACTOR;
 		if(p.jumptime <= 0)
 		{
 			p.jumptime = 0;
@@ -1147,7 +1152,7 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 
 	if(p.shottime > 0)
 	{
-		p.shottime -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+		p.shottime -= ticks * PHYSICS_SPEED_FACTOR;
 		if(p.shottime <= 0)
 		{
 			p.shottime = 0;
@@ -1157,7 +1162,7 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 
 	if(p.charge_time > 0)
 	{
-		p.charge_time -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+		p.charge_time -= ticks * PHYSICS_SPEED_FACTOR;
 		if(p.charge_time <= 0)
 		{
 			p.charge_time = 0;
@@ -1174,9 +1179,9 @@ void UpdateStatus(Creature &p, Uint32 deltaTicks)
 	}
 }
 
-bool UpdateStatus(Effect &e, Uint32 deltaTicks) // used for static entity death processing for now
+bool UpdateStatus(Effect &e, double ticks) // used for static entity death processing for now
 {
-	e.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+	e.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
 	if(e.statusTimer <= 0)
 	{
 		e.statusTimer = 0;
@@ -1186,9 +1191,9 @@ bool UpdateStatus(Effect &e, Uint32 deltaTicks) // used for static entity death 
 	return true;
 }
 
-bool UpdateStatus(Pickup &e, Uint32 deltaTicks) // used for static entity death processing for now
+bool UpdateStatus(Pickup &e, double ticks) // used for static entity death processing for now
 {
-	e.statusTimer -= (int)(deltaTicks * PHYSICS_SPEED_FACTOR);
+	e.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
 	if(e.statusTimer <= 0)
 	{
 		e.statusTimer = 0;
@@ -1227,7 +1232,7 @@ std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity)
 	return std::pair<Creature*, Machinery*>(c, m);
 }
 
-void OnHitboxCollision(Creature &c, Creature &e, Uint32 deltaTicks)
+void OnHitboxCollision(Creature &c, Creature &e, double ticks)
 {
 	if(c.status == STATUS_NORMAL && e.status != STATUS_DYING)
 	{
@@ -1239,7 +1244,7 @@ void OnHitboxCollision(Creature &c, Creature &e, Uint32 deltaTicks)
 }
 
 // todo: why do we need creature c?
-void OnHitboxCollision(Creature &c, Pickup &p, Uint32 deltaTicks)
+void OnHitboxCollision(Creature &c, Pickup &p, double ticks)
 {
 	if(p.status != STATUS_DYING) // probably a collectable!
 	{
@@ -1249,9 +1254,9 @@ void OnHitboxCollision(Creature &c, Pickup &p, Uint32 deltaTicks)
 
 void ApplyKnockback(Creature &p, Creature &e)
 {
-	const double KNOCKBACK_VELOCITY_X = 300;
-	const double KNOCKBACK_VELOCITY_Y = -100;
-	const double KNOCKBACK_ACCEL_X = -4;
+	const double KNOCKBACK_VELOCITY_X = 3;
+	const double KNOCKBACK_VELOCITY_Y = -2;
+	const double KNOCKBACK_ACCEL_X = -0.4;
 
 	int knockbackDirection = e.GetX() > p.GetX() ? 1 : -1;
 	p.SetVelocity(-KNOCKBACK_VELOCITY_X * knockbackDirection, KNOCKBACK_VELOCITY_Y);

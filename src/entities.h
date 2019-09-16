@@ -33,7 +33,7 @@ struct Accel
 struct DamageSource
 {
 	int id;
-	int immunity;
+	double immunity;
 };
 
 class Hitbox
@@ -63,8 +63,7 @@ class Entity
 		Sprite *sprite;
 		int entityID;
 		int status; // dying state can be useful on static entities
-		int statusTimer; // Status timer time in ms
-		int deathLength; // how long to set dying status for (control animation length)
+		double statusTimer; // Status timer time in game ticks
 		DIRECTIONS direction;
 		double yNew;
 		double xNew;
@@ -130,7 +129,7 @@ class Bullet : public DynamicEntity
 	public:
 		DynamicEntity *owner;
 		WEAPONS origin;
-		int lifetime; // Time in ms
+		double lifetime; // Time in ticks
 		bool piercing;
 
 	public:
@@ -145,7 +144,7 @@ class Lightning : public DynamicEntity
 	public:
 		DynamicEntity *owner;
 		Velocity vel;
-		int lifetime; // Time in ms
+		double lifetime; // Time in ticks
 		bool piercing;
 		SDL_Texture *tex;
 
@@ -169,11 +168,12 @@ class Creature : public DynamicEntity
 {
 	public:
 		int health;
-		int jumptime; // Time in ms
+		double jumptime;
+		double jump_accel;
 		double term_vel;
 		double move_vel;
-		int shottime; // Time in ms
-		int charge_time;
+		double shottime;
+		double charge_time;
 		bool nearhookplatform;
 		bool lefthook;
 		Machinery *attached;
@@ -203,8 +203,8 @@ class Creature : public DynamicEntity
 		~Creature();
 		void ProcessBulletHit(Bullet *b);
 		void TakeDamage(int damage);
-		void SetInvulnerability(int milliseconds);
-		void SetStun(int milliseconds);
+		void SetInvulnerability(double sec);
+		void SetStun(double sec);
 		// TODO: Make it player specific
 		void ToggleDucking(bool enable);
 		void Walk();
@@ -261,7 +261,7 @@ class Player : public Creature
 	public:
 		bool ownedWeapons[NUMWEAPONS];
 		int ammo[NUMWEAPONS];
-		int fireDelay[NUMWEAPONS]; // Time in ms
+		double fireDelay[NUMWEAPONS]; // Time in ms
 		bool chargedColored = false;
 		int idleTimer;
 

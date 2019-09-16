@@ -21,7 +21,7 @@ namespace Game
 	void Start();
 	GAME_OVER_REASONS GetGameOverReason();
 	void GameOver(GAME_OVER_REASONS reason);
-	void Update(Uint32 dt);
+	void Update(double ticks);
 	void Reset();
 	void AddTime();
 	void OnLevelExit();
@@ -37,10 +37,10 @@ namespace Fading
 {
 	int GetVal();
 	FADING_STATES GetState();
-	void Update();
+	void Update(double ticks);
 	void Remove();
-	void Init(FADING_STATES state, int start, int end, int speed);
-	void Init(FADING_STATES state, int start, int end, int speed, GAMESTATES to);
+	void Init(FADING_STATES state, int start, int end, double sec);
+	void Init(FADING_STATES state, int start, int end, double sec, GAMESTATES to);
 }
 
 #endif

@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <vector>
 #include "globals.h"
+#include "utils.h"
 
 enum AI_TIMER_TYPE {
 	AI_TIMER_REACH,
@@ -23,19 +24,19 @@ class BaseAI
 		Creature *me;	
 		Creature *target;
 		std::vector<SDL_Point> targetPos;
-		std::vector<int> timerTime;
-		std::vector<int> timeToTrigger = {100};
+		std::vector<double> timerTime;
+		std::vector<double> timeToTrigger = {SecToTicks(0.1)};
 		int distanceToLoss;
 		int distanceToReach;
 		int distanceToReachX = 200;
 		int distanceToReachY = 200;
-		int AIreactionTime = 10;
-		int wanderChangeDirTime = 100;
+		double AIreactionTime = SecToTicks(0.01);
+		double wanderChangeDirTime = SecToTicks(0.1);
 		bool followTargetInAir = false;
 		bool oneTimeToggle = false;
 
 	public:
-		void RunAI();
+		void RunAI(double ticks);
 		void SetDistanceToReachX(int x) { distanceToReachX = x; distanceToReach = 1000; };
 		void SetDistanceToReachY(int y) { distanceToReachY = y; distanceToReach = 1000; };
 		virtual void OnStateChange(CREATURE_STATES oldState, CREATURE_STATES newState) {};
@@ -61,8 +62,8 @@ class AI_Chaser: public BaseAI
 			chase = false;
 			distanceToReach = 200;
 			distanceToLoss = 140;
-			timeToTrigger = std::vector<int> { wanderChangeDirTime };
-			timerTime = std::vector<int>{ 0 };
+			timeToTrigger = std::vector<double> { wanderChangeDirTime };
+			timerTime = std::vector<double>{ 0 };
 		};
 
 	private:
@@ -86,8 +87,8 @@ class AI_ChaserJumper: public BaseAI
 			threshold = 5;
 			distanceToReach = 200;
 			distanceToLoss = 500;
-			timeToTrigger = std::vector<int> { 20 };
-			timerTime = std::vector<int>{ 0 };
+			timeToTrigger = std::vector<double> { SecToTicks(0.02) };
+			timerTime = std::vector<double>{ 0 };
 			followTargetInAir = false;
 		};
 
@@ -102,8 +103,8 @@ class AI_Wanderer: public BaseAI
 	public:
 		AI_Wanderer(Creature *c) : BaseAI(c)
 		{
-			timeToTrigger = std::vector<int>{ 100 };
-			timerTime = std::vector<int>{ 0 };
+			timeToTrigger = std::vector<double>{ SecToTicks(1) };
+			timerTime = std::vector<double>{ 0 };
 		};
 
 	private:
@@ -129,8 +130,8 @@ class AI_HomingMissile: public BaseAI
 		AI_HomingMissile(Creature *c) : BaseAI(c)
 		{
 			distanceToReach = 130;
-			timeToTrigger = std::vector<int> { 20, 200 };
-			timerTime = std::vector<int>{ 0 ,0};
+			timeToTrigger = std::vector<double> { SecToTicks(0.02), SecToTicks(2) };
+			timerTime = std::vector<double>{ 0 ,0};
 			followTargetInAir = true;
 		};
 
@@ -146,8 +147,8 @@ class AI_Hypno: public BaseAI
 	int curDegree = 0;
 	public:
 		AI_Hypno(Creature *c) : BaseAI(c) {
-			timeToTrigger = std::vector<int>{ 0 };
-			timerTime = std::vector<int>{ 0 };
+			timeToTrigger = std::vector<double>{ 0 };
+			timerTime = std::vector<double>{ 0 };
 		};
 
 	private:
@@ -171,8 +172,8 @@ class AI_Sentinel: public BaseAI
 	public:
 		AI_Sentinel(Creature *c) : BaseAI(c) {
 			distanceToReach = 200;
-			timeToTrigger = std::vector<int>{ 200 };
-			timerTime = std::vector<int>{ 0 };
+			timeToTrigger = std::vector<double>{ SecToTicks(2) };
+			timerTime = std::vector<double>{ 0 };
 			oneTimeToggle = true;
 		};
 
@@ -199,8 +200,8 @@ class AI_Jumpingfire : public BaseAI
 	public:
 		AI_Jumpingfire(Creature *c) : BaseAI(c) {
 			distanceToReach = 200;
-			timeToTrigger = std::vector<int>{ 0 };
-			timerTime = std::vector<int>{ 0 };
+			timeToTrigger = std::vector<double>{ 0 };
+			timerTime = std::vector<double>{ 0 };
 		};
 
 	private:
@@ -215,8 +216,8 @@ class AI_GroundShockwaver : public BaseAI
 public:
 	AI_GroundShockwaver(Creature *c) : BaseAI(c) {
 		distanceToReach = 200;
-		timeToTrigger = std::vector<int>{ 0, 250 };
-		timerTime = std::vector<int>{ 0 , 0 };
+		timeToTrigger = std::vector<double>{ 0, SecToTicks(2) };
+		timerTime = std::vector<double>{ 0 , 0 };
 	};	
 
 private:

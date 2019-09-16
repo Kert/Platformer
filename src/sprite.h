@@ -20,7 +20,7 @@ class Sprite
 		int offset_y;
 
 	public:
-		int shootingAnimTimer = 0;
+		double shootingAnimTimer = 0;
 		//Initializes the variables
 		Sprite() {
 			current_anim = last_anim = ANIMATION_NONE;

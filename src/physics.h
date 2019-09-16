@@ -6,24 +6,24 @@
 #include "entities.h"
 #include "globals.h"
 
-void ApplyForces(Creature &c, Uint32 deltaTicks);
+void ApplyForces(Creature &c, double ticks);
 void DetectAndResolveMapCollisions(Creature &p);
 void DetectAndResolveEntityCollisions(Creature &p);
 bool HasCollisionWithEntity(Creature &p, Machinery &m);
 
-void ApplyPhysics(Machinery &d, Uint32 deltaTicks);
-void ApplyPhysics(Creature &c, Uint32 deltaTicks);
-bool ApplyPhysics(Bullet &b, Uint32 deltaTicks);
-bool ApplyPhysics(Lightning &l, Uint32 deltaTicks);
+void ApplyPhysics(Machinery &d, double ticks);
+void ApplyPhysics(Creature &c, double ticks);
+bool ApplyPhysics(Bullet &b, double ticks);
+bool ApplyPhysics(Lightning &l, double ticks);
 
 void ApplyKnockback(Creature &p, Creature &e);
 
-bool UpdateStatus(Effect &e, Uint32 deltaTicks);
-void UpdateStatus(Creature &e, Uint32 deltaTicks);
-bool UpdateStatus(Pickup &p, Uint32 deltaTicks);
+bool UpdateStatus(Effect &e, double deltaTicks);
+void UpdateStatus(Creature &e, double ticks);
+bool UpdateStatus(Pickup &p, double deltaTicks);
 
-void OnHitboxCollision(Creature &p, Creature &e, Uint32 deltaTicks);
-void OnHitboxCollision(Creature &c, Pickup &p, Uint32 deltaTicks);
+void OnHitboxCollision(Creature &p, Creature &e, double ticks);
+void OnHitboxCollision(Creature &c, Pickup &p, double ticks);
 
 std::pair<double, double> GetAngleSinCos(DynamicEntity &shooter);
 std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity);

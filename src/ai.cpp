@@ -19,11 +19,11 @@ BaseAI::BaseAI(Creature *c)
 	target = Game::GetPlayer();
 }
 
-void BaseAI::RunAI()
+void BaseAI::RunAI(double ticks)
 {
 	for (int i = 0; i < (int)timeToTrigger.size(); i++)
 	{
-		timerTime[i]--;
+		timerTime[i] -= ticks;
 		if (timerTime[i] < 0)
 		{
 			timerTime[i] = timeToTrigger[i];
@@ -115,7 +115,7 @@ void AI_Chaser::OnTimerTimeup(int id)
 		int checktileX = ConvertToTileCoord(me->GetX() + me->hitbox->GetRect().w + 1, false);
 		if(me->direction == DIRECTION_LEFT)
 			checktileX = ConvertToTileCoord(me->GetX() - 1, false);
-		int checktileY = ConvertToTileCoord(me->GetY(), false);
+		int checktileY = ConvertToTileCoord(me->GetY() - 1, false);
 
 		bool obstacled = false;
 		if(IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY)) || IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY - 1)))
@@ -157,7 +157,7 @@ void AI_ChaserJumper::OnTimerTimeup(int id)
 		int checktileX = ConvertToTileCoord(me->GetX() + me->hitbox->GetRect().w + 1, false);
 		if(me->direction == DIRECTION_LEFT)
 			checktileX = ConvertToTileCoord(me->GetX() - 1, false);
-		int checktileY = ConvertToTileCoord(me->GetY(), false);
+		int checktileY = ConvertToTileCoord(me->GetY() - 1, false);
 
 		bool obstacled = false;
 		if(IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY)) || IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY - 1)))
@@ -266,13 +266,8 @@ void AI_Jumpingfire::OnTimerTimeup(int id)
 	if (activated)
 	{
 		if (me->GetY() > startingY - 1) {
-			if (me->ignoreGravity == false) // blatant HACK
-			{
-				me->status = STATUS_DYING;
-				me->statusTimer = 1;
-			}
 			me->ignoreGravity = false;
-			me->SetVelocity(0, -1000);
+			me->SetVelocity(0, -10);
 		}
 	}
 	else
@@ -305,7 +300,7 @@ void AI_GroundShockwaver::OnStateChange(CREATURE_STATES oldState, CREATURE_STATE
 		me->direction = DIRECTION_RIGHT;
 		me->Shoot();
 		me->direction = oldDirection;
-		Graphics::ScreenShake(100);
+		Graphics::ScreenShake(1);
 	}
 }
 

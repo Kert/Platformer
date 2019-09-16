@@ -2,11 +2,12 @@
 #include "config.h"
 #include "input.h"
 #include "physics.h"
+#include "sound.h"
 #include "utils.h"
 
 extern std::vector<Machinery*> machinery;
 
-const int SHOOTING_ANIM_DURATION = 30;
+const double SHOOTING_ANIM_DURATION = SecToTicks(0.03);
 CreatureState* CreatureState::HandleInput(int input, int type)
 {
 	// if creature == player do
@@ -35,7 +36,7 @@ CreatureState* CreatureState::HandleInput(int input, int type)
 							p->ammo[p->weapon]--;
 							p->charging = true;
 							ProcessShot(p->weapon, *cr);
-							p->charge_time = 700;
+							p->charge_time = SecToTicks(0.7);
 						}
 						if(p->ammo[p->weapon] && p->weapon == WEAPON_AIRGUST)
 						{
@@ -141,7 +142,7 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 					//if (p->state->Is(CREATURE_STATES::ONGROUND))
 					//	return new DuckingState();
 					if(IsOnIce(*p))
-						if((p->GetVelocity().x > 80 && p->direction) || (p->GetVelocity().x < -80 && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
+						if((p->GetVelocity().x > (p->move_vel - 0.1) && p->direction) || (p->GetVelocity().x < -(p->move_vel - 0.1) && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
 							return new SlidingState(cr);
 					break;
 				case BIND_UP:
@@ -164,7 +165,7 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 				case BIND_JUMP:
 					if(IsBindPressed(BIND_DOWN) && IsOnPlatform(*p))
 					{
-						p->SetY(p->GetY() + 2);
+						p->SetY(p->GetY() + 3);
 						if(p->attached)
 						{
 							p->SetY(p->GetY() + 2);
@@ -190,7 +191,7 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 					break;*/
 				case BIND_RIGHT:
 					if(IsBindPressed(BIND_DOWN) && IsOnIce(*p))
-						if((p->GetVelocity().x > 100 && p->direction) || (p->GetVelocity().x < -100 && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
+						if((p->GetVelocity().x > (p->move_vel - 0.1) && p->direction) || (p->GetVelocity().x < -(p->move_vel - 0.1) && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
 							return new SlidingState(cr);
 					if(cr->status == STATUS_DYING)
 						break;
@@ -199,7 +200,7 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 					break;
 				case BIND_LEFT:
 					if(IsBindPressed(BIND_DOWN) && IsOnIce(*p))
-						if((p->GetVelocity().x > 100 && p->direction) || (p->GetVelocity().x < -100 && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
+						if((p->GetVelocity().x > (p->move_vel - 0.1) && p->direction) || (p->GetVelocity().x < -(p->move_vel - 0.1) && !p->direction))// && (IsBindPressed(BIND_LEFT) || IsBindPressed(BIND_RIGHT)))
 							return new SlidingState(cr);
 					if(cr->status == STATUS_DYING)
 						break;
@@ -349,11 +350,12 @@ JumpingState::JumpingState(Creature *cr) : CreatureState(cr)
 {
 	state = CREATURE_STATES::JUMPING;
 	PrintLog(LOG_DEBUG, "Switched to JUMPING");
-	cr->jumptime = 210;
+	cr->jumptime = 14;
+	cr->SetVelocity(cr->GetVelocity().x, -1.75);
 	cr->attached = false;
 	cr->onMachinery = false;
 	//Play the jump sound
-	//if (playSound) PlaySfx("jump");
+	Sound::PlaySfx("jump");
 	if(cr->doubleJumped)
 	{
 		Effect *eff = new Effect(EFFECT_DOUBLE_JUMP);
@@ -529,7 +531,7 @@ CreatureState* SlidingState::HandleInput(int input, int type)
 					{
 						if(p->GetVelocity().x == 0)
 						{
-							p->SetVelocity(-50, 0);
+							p->SetVelocity(-0.5, 0);
 							p->direction = DIRECTION_LEFT;
 							CreatureState::HandleInput(input, type);
 						}
@@ -545,7 +547,7 @@ CreatureState* SlidingState::HandleInput(int input, int type)
 					{
 						if(p->GetVelocity().x == 0)
 						{
-							p->SetVelocity(50, 0);
+							p->SetVelocity(0.5, 0);
 							p->direction = DIRECTION_RIGHT;
 							CreatureState::HandleInput(input, type);
 						}

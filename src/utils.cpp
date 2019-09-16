@@ -192,3 +192,8 @@ bool HasEnding(std::string const &fullString, std::string const &ending)
 	else
 		return false;
 }
+
+double SecToTicks(double sec)
+{
+	return sec / (1. / 60.);
+}

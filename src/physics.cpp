@@ -528,7 +528,7 @@ void ApplyForces(Creature &p, double ticks)
 
 	vel = p.GetVelocity();
 
-	vel.y += p.accel.y;
+	vel.y += p.accel.y * (ticks * PHYSICS_SPEED_FACTOR);
 	if(!p.state->Is(CREATURE_STATES::ONGROUND) && !p.ignoreWorld)
 	{
 		if(p.accel.x < 0)
@@ -560,13 +560,13 @@ void ApplyForces(Creature &p, double ticks)
 	{
 		if(vel.x > 0)
 		{
-			vel.x -= friction;
+			vel.x -= friction * (ticks * PHYSICS_SPEED_FACTOR);
 			if(vel.x < 0)
 				vel.x = 0;
 		}
 		if(vel.x < 0)
 		{
-			vel.x += friction;
+			vel.x += friction * (ticks * PHYSICS_SPEED_FACTOR);
 			if(vel.x > 0)
 				vel.x = 0;
 		}

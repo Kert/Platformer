@@ -236,6 +236,12 @@ namespace Graphics
 	int SetDisplayMode(SDL_DisplayMode mode)
 	{
 		displayMode = mode;
+		if(GetFullscreenMode() != SDL_WINDOW_FULLSCREEN)
+		{
+			SDL_DisplayMode desktopMode;
+			SDL_GetDesktopDisplayMode(displayIndex, &desktopMode);
+			displayMode.refresh_rate = desktopMode.refresh_rate;
+		}
 		int WINDOW_WIDTH = mode.w;
 		int WINDOW_HEIGHT = mode.h;
 
@@ -295,6 +301,7 @@ namespace Graphics
 			SDL_GetWindowDisplayMode(win, &displayMode);
 			displayIndex = SDL_GetWindowDisplayIndex(win);
 			SetDisplayMode(displayMode);
+			SDL_SetWindowDisplayMode(win, &displayMode);
 			MenusCleanup();
 			LoadMenus();
 			return;
@@ -325,6 +332,7 @@ namespace Graphics
 			}
 		}
 		SetDisplayMode(mode);
+		SDL_SetWindowDisplayMode(win, &mode);
 		// TODO: Check for leaks
 		MenusCleanup();
 		LoadMenus();

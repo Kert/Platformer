@@ -91,7 +91,8 @@ int main(int argc, char* argv[])
 		// Workaround to allow for gapless ogg looping without bugs
 		Sound::ProcessMusic();
 		// prevent 100% usage of cpu
-		std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+		// no longer needed because of vsync
+		//std::this_thread::sleep_for(std::chrono::nanoseconds(1));
 	}
 
 	// I'm not sure if this is even necessary since the program is about to quit and lose all memory anyway

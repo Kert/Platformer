@@ -89,6 +89,8 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					{
 						Graphics::SetDisplayMode(Graphics::GetDisplayMode(Graphics::GetDisplayIndex(), menus.at(MENU_SELECTION_DISPLAY_MODE)->selected));
 						Graphics::UpdateDisplayMode();
+						// Calling it once more (SDL bug workaround)
+						Graphics::UpdateDisplayMode();
 					}
 					if(SelectedItem == 4)
 						SetCurrentMenu(MENU_OPTIONS);

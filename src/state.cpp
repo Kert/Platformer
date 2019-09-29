@@ -355,7 +355,8 @@ JumpingState::JumpingState(Creature *cr) : CreatureState(cr)
 	cr->attached = false;
 	cr->onMachinery = false;
 	//Play the jump sound
-	Sound::PlaySfx("jump");
+	if(!cr->IsAI())
+		Sound::PlaySfx("jump");
 	if(cr->doubleJumped)
 	{
 		Effect *eff = new Effect(EFFECT_DOUBLE_JUMP);

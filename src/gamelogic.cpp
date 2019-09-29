@@ -173,12 +173,12 @@ namespace Game
 			return;
 		}
 
-		gameTimer.Run();
-		if(gameTimer.completed)
-		{
-			PrintLog(LOG_DEBUG, "%2d:%2d", min, sec);
-			AddTime();
-		}
+		//gameTimer.Run();
+		//if(gameTimer.completed)
+		//{
+		//	PrintLog(LOG_DEBUG, "%2d:%2d", min, sec);
+		//	AddTime();
+		//}
 
 		//LevelLogic();
 

@@ -85,8 +85,6 @@ namespace Game
 			if(GetCurrentTransition() == TRANSITION_LEVELCLEAR)
 			{
 				Sound::PlaySfx("level_clear");
-				Graphics::RenderTransition(); // don't make player wait for the level to unload to see his astonishing victory
-				RemoveLevel();
 			}
 		}
 		if(state == STATE_PAUSED)

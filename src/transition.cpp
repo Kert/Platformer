@@ -17,13 +17,12 @@ void ProgressTransition()
 			SetCurrentMenu(MENU_MAIN);
 			break;
 		case TRANSITION_LEVELCLEAR:
-			SetCurrentTransition(TRANSITION_LEVELSTART);
-			Game::ChangeState(STATE_TRANSITION);
-			// force the loading screen to draw for one frame before we start loading
-			Graphics::RenderTransition();
-			Graphics::WindowUpdate();
 			Game::RemoveLevel();
-			Game::GetLevel()->Reload();
+			// Load next level
+			//Game::ChangeState(STATE_GAME);
+			// Or load level select screen
+			Game::ChangeState(STATE_MENU);
+			SetCurrentMenu(MENU_MAPSELECT);			
 			break;
 	}
 }

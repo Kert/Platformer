@@ -119,6 +119,11 @@ namespace Game
 			Start();
 			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 0.3, STATE_GAME);
 		}
+		else if(oldstate == STATE_MENU && state == STATE_GAME)
+		{
+			Start();
+			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 0.3, STATE_GAME);
+		}
 		else if(oldstate == STATE_GAME && state == STATE_TRANSITION)
 		{
 			Fading::Init(FADING_STATE_BLACKNBACK, 150, 0, 0.3, STATE_TRANSITION);

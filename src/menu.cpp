@@ -62,13 +62,9 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 				else if(CurrentMenu == MENU_MAPSELECT)
 				{
 					std::string currentLevel = menus.at(MENU_MAPSELECT)->GetItemInfo(SelectedItem)->text;
-					SetCurrentTransition(TRANSITION_LEVELSTART);
-					Game::ChangeState(STATE_TRANSITION);
-					// force the loading screen to draw for one frame before we start loading
-					Graphics::RenderTransition();
-					Graphics::WindowUpdate();
 					Game::CreateLevel(currentLevel);
 					Game::ResetPlayerLives();
+					Game::ChangeState(STATE_GAME);
 				}
 				else if(CurrentMenu == MENU_OPTIONS)
 				{
@@ -134,14 +130,12 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					if(SelectedItem == 0)
 					{
 						Game::GetLevel()->Reload();
-						SetCurrentTransition(TRANSITION_LEVELSTART);
-						Game::ChangeState(STATE_TRANSITION);
+						Game::ChangeState(STATE_GAME);
 					}
 					else if(SelectedItem == 1)
 					{
 						Game::GetLevel()->Reload();
-						SetCurrentTransition(TRANSITION_LEVELSTART);
-						Game::ChangeState(STATE_TRANSITION);
+						Game::ChangeState(STATE_GAME);
 						Game::ResetPlayerLives();
 					}
 					else if(SelectedItem == 2)
@@ -156,8 +150,7 @@ void DoMenuAction(int kbkey, int jbutton, int bind)
 					if(SelectedItem == 0)
 					{
 						Game::GetLevel()->Reload();
-						SetCurrentTransition(TRANSITION_LEVELSTART);
-						Game::ChangeState(STATE_TRANSITION);
+						Game::ChangeState(STATE_GAME);
 						Game::ResetPlayerLives();
 					}
 					else if(SelectedItem == 1)

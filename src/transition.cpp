@@ -16,12 +16,6 @@ void ProgressTransition()
 			Game::ChangeState(STATE_MENU);
 			SetCurrentMenu(MENU_MAIN);
 			break;
-		case TRANSITION_LEVELSTART:
-			if(Game::GetLevel()->loaded)
-			{
-				Game::ChangeState(STATE_GAME);
-			}
-			break;
 		case TRANSITION_LEVELCLEAR:
 			SetCurrentTransition(TRANSITION_LEVELSTART);
 			Game::ChangeState(STATE_TRANSITION);

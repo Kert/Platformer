@@ -830,31 +830,6 @@ namespace Graphics
 			case TRANSITION_TITLE:
 				SDL_RenderCopy(renderer, *textureManager.GetTexture("assets/textures/title.png"), NULL, NULL);
 				break;
-			case TRANSITION_LEVELSTART:
-				//if (!level->loaded)
-				if(Game::GetLevel() == nullptr)
-				{
-					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADING LEVEL...", menu_font, menu_color, TEXT_ALIGN_CENTER);
-				}
-				else
-				{
-					// Show level info
-					int min, sec;
-					min = Game::GetTimeLimit() / 60;
-					sec = Game::GetTimeLimit() % 60;
-
-					std::ostringstream msg;
-					msg << "TIME: " << std::setw(2) << min << " MIN " << sec << " SEC";
-					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2), msg.str(), game_font, selected_color, TEXT_ALIGN_CENTER);
-					
-					msg.str("");
-					msg.clear();
-					msg << "LIVES LEFT: " << Game::GetPlayerLivesLeft();
-					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.2) + 100, msg.str(), game_font, selected_color, TEXT_ALIGN_CENTER);
-
-					RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LOADED! PRESS A KEY TO START", menu_font, menu_color, TEXT_ALIGN_CENTER);
-				}
-				break;
 			case TRANSITION_LEVELCLEAR:
 				RenderText(GetWindowNormalizedX(0.5), GetWindowNormalizedY(0.5), "LEVEL CLEAR!", game_font, menu_color, TEXT_ALIGN_CENTER);
 				break;

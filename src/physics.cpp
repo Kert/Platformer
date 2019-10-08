@@ -880,7 +880,8 @@ void ResolveBottom(Creature &p)
 		if(IsSolid(type))
 		{
 			//PrintLog(LOG_IMPORTANT, "Intersecting block bottom at %d. Returning back to y = %lf", tileBottom.y, p.yNew);
-			collisionFound = true;
+			if(p.GetVelocity().y > 0) // Don't instantly snap to ground if jumped from to a corner of a block
+				collisionFound = true;
 			break;
 		}
 		switch(type)

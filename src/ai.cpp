@@ -100,7 +100,7 @@ void AI_Chaser::OnTimerTimeup(int id)
 {
 	//PrintLog(LOG_SUPERDEBUG, "I'M CHASER");
 
-	bool jump = true;
+	bool jumpEnabled = true;
 
 	if(chase)
 	{
@@ -112,16 +112,19 @@ void AI_Chaser::OnTimerTimeup(int id)
 				me->SetDirection(DIRECTION_RIGHT);
 		}
 		me->Walk();
-		int checktileX = ConvertToTileCoord(me->GetX() + me->hitbox->GetRect().w + 1, false);
+		int checktileX = ConvertToTileCoord(me->GetX() + me->hitbox->GetRect().w + 2, false);
 		if(me->direction == DIRECTION_LEFT)
-			checktileX = ConvertToTileCoord(me->GetX() - 1, false);
+			checktileX = ConvertToTileCoord(me->GetX() - 2, false);
 		int checktileY = ConvertToTileCoord(me->GetY() - 1, false);
 
-		bool obstacled = false;
+		bool shouldJump = false;
 		if(IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY)) || IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY - 1)))
-			obstacled = true;
+			shouldJump = true;
 
-		if(jump && obstacled)
+    if(!IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY + 1)) && this->target->GetY() < me->GetY())
+      shouldJump = true;
+
+		if(jumpEnabled && shouldJump)
 		{
 			me->SetState(CREATURE_STATES::JUMPING);
 		}

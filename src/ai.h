@@ -222,6 +222,7 @@ public:
 
 private:
 	void OnDistanceReached();
+	void OnDistanceLost();
 	void OnTimerTimeup(int id);
 	void OnStateChange(CREATURE_STATES oldState, CREATURE_STATES newState);
 };

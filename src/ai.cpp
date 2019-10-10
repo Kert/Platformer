@@ -284,6 +284,7 @@ void AI_GroundShockwaver::OnTimerTimeup(int id)
 	if(!activated)
 		return;
 
+	this->TurnToTarget();
 	if(id == AI_TIMER_SHOOT)
 	{
 		me->SetState(CREATURE_STATES::JUMPING);
@@ -314,4 +315,9 @@ void AI_GroundShockwaver::OnDistanceReached()
 		me->weapon = WEAPON_GROUNDSHOCKWAVE;
 		activated = true;
 	}
+}
+
+void AI_GroundShockwaver::OnDistanceLost()
+{
+	activated = false;
 }

@@ -1092,7 +1092,7 @@ void Creature::ProcessBulletHit(Bullet *b)
 		}
 		case WEAPONS::WEAPON_FIREBALL:
 		{
-			damage = 50;
+			damage = 25;
 			break;
 		}
 		case WEAPONS::WEAPON_BOMBDROP:

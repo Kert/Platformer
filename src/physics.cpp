@@ -257,9 +257,9 @@ void CheckSpecialBehaviour(Creature &p) {
 			SDL_Rect hook;
 			if(tileType == PHYSICS_HOOK)
 			{
-				hook.x = z * TILESIZE + 6;
-				hook.y = head * TILESIZE + 8;
-				hook.w = hook.h = 10;
+				hook.x = z * TILESIZE + 2;
+				hook.y = head * TILESIZE + 2;
+				hook.w = hook.h = 14;
 			}
 			else if(tileType == PHYSICS_HOOK_PLATFORM)
 			{

@@ -1121,7 +1121,7 @@ void UpdateStatus(Creature &p, double ticks)
 				switch(p.status)
 				{
 					case STATUS_STUN:
-						p.SetInvulnerability(1);
+						p.SetInvulnerability(0.75);
 						p.accel.x = 0;
 						if(p.health <= 0)
 							p.status = STATUS_DYING;

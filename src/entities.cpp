@@ -1000,9 +1000,9 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			hitbox = LoadEntityHitbox("assets/data/graphics/grenade.ini");
 			sprite = LoadEntitySprite("assets/data/graphics/grenade.ini");
 			SetVelocity(2 * (direction ? 1 : -1), -2);
-			accel.y = 5;
+			accel.y = 0.2;
 			accel.x = 0;
-			lifetime = SecToTicks(1.8);
+			lifetime = SecToTicks(3);
 			statusTimer = lifetime;
 			piercing = false;
 			break;

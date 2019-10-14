@@ -16,6 +16,7 @@ void ApplyPhysics(Creature &c, double ticks);
 bool ApplyPhysics(Bullet &b, double ticks);
 bool ApplyPhysics(Lightning &l, double ticks);
 
+void ApplyKnockback(Creature &p, DIRECTIONS dir);
 void ApplyKnockback(Creature &p, Creature &e);
 
 bool UpdateStatus(Effect &e, double deltaTicks);

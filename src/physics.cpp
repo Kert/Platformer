@@ -1253,13 +1253,18 @@ void OnHitboxCollision(Creature &c, Pickup &p, double ticks)
 	}
 }
 
-void ApplyKnockback(Creature &p, Creature &e)
+void ApplyKnockback(Creature &p, DIRECTIONS dir)
 {
 	const double KNOCKBACK_VELOCITY_X = 3;
 	const double KNOCKBACK_VELOCITY_Y = -2;
 	const double KNOCKBACK_ACCEL_X = -0.4;
 
-	int knockbackDirection = e.GetX() > p.GetX() ? 1 : -1;
-	p.SetVelocity(-KNOCKBACK_VELOCITY_X * knockbackDirection, KNOCKBACK_VELOCITY_Y);
-	p.accel.x = KNOCKBACK_ACCEL_X * knockbackDirection;
+	p.SetVelocity(-KNOCKBACK_VELOCITY_X * dir, KNOCKBACK_VELOCITY_Y);
+	p.accel.x = KNOCKBACK_ACCEL_X * dir;
+}
+
+void ApplyKnockback(Creature &p, Creature &e)
+{
+	DIRECTIONS knockbackDirection = static_cast<DIRECTIONS>(e.GetX() > p.GetX() ? 1 : -1);
+	ApplyKnockback(p, knockbackDirection);
 }

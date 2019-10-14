@@ -455,7 +455,7 @@ bool IsInWater(DynamicEntity &c)
 
 bool IsSolid(PHYSICS_TYPES type)
 {
-	return type == PHYSICS_BLOCK || type == PHYSICS_ICEBLOCK || type == PHYSICS_ICE;
+	return type == PHYSICS_BLOCK || type == PHYSICS_ICEBLOCK || type == PHYSICS_ICE || type == PHYSICS_SPIKES;
 }
 
 bool HasCeilingRightAbove(DynamicEntity &c)
@@ -877,6 +877,8 @@ void ResolveBottom(Creature &p)
 
 		tileBottom = GetTileRect(i, feet);
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(i, feet);
+		if(type == PHYSICS_SPIKES)
+			p.TouchSpikes();
 		if(IsSolid(type))
 		{
 			//PrintLog(LOG_IMPORTANT, "Intersecting block bottom at %d. Returning back to y = %lf", tileBottom.y, p.yNew);
@@ -935,6 +937,8 @@ void ResolveTop(Creature &p)
 	for(int i = minx; i < maxx; i++)
 	{
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(i, head);
+		if(type == PHYSICS_SPIKES)
+			p.TouchSpikes();
 		if(IsSolid(type))
 		{
 			SDL_Rect tileTop;
@@ -972,6 +976,8 @@ void ResolveRight(Creature &p)
 	{
 		if(break_flag) break;
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(maxx, j);
+		if(type == PHYSICS_SPIKES)
+			p.TouchSpikes();
 		if(IsSolid(type))
 		{
 			collisionFound = true;
@@ -1025,6 +1031,8 @@ void ResolveLeft(Creature &p)
 	{
 		if(break_flag) break;
 		PHYSICS_TYPES type = GetTileTypeAtTiledPos(minx, j);
+		if(type == PHYSICS_SPIKES)
+			p.TouchSpikes();
 		if(IsSolid(type))
 		{
 			//PrintLog(LOG_INFO, "Intersecting wall left at %lf. Returning back to x = %lf", ppr.x, p.xNew);

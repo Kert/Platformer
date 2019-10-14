@@ -157,6 +157,8 @@ void Level::LoadLevelFromFile(std::string filename)
 				type = PHYSICS_WATER;
 			else if(type_string == "watertop" || type_string == std::to_string(PHYSICS_WATERTOP))
 				type = PHYSICS_WATERTOP;
+			else if(type_string == "spikes" || type_string == std::to_string(PHYSICS_SPIKES))
+				type = PHYSICS_SPIKES;
 			tileset[id].type = type;
 		}
 		TiXmlElement* anim = tile->FirstChildElement("animation");

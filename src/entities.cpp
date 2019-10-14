@@ -1411,6 +1411,11 @@ void Creature::Die()
 		this->SetVelocity(1, -2);
 }
 
+void Creature::TouchSpikes()
+{
+	this->TakeDamage(25);
+}
+
 std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)
 {
 	std::vector<SDL_Point> points;

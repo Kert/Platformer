@@ -228,6 +228,7 @@ class Creature : public DynamicEntity
 		void HandleStateIdle();
 		void AttachTo(Machinery *machy);
 		void Crush();
+		void TouchSpikes();
 };
 
 struct CreatureData

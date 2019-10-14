@@ -121,8 +121,8 @@ void AI_Chaser::OnTimerTimeup(int id)
 		if(IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY)) || IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY - 1)))
 			shouldJump = true;
 
-    if(!IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY + 1)) && this->target->GetY() < me->GetY())
-      shouldJump = true;
+		if(!IsSolid(GetTileTypeAtTiledPos(checktileX, checktileY + 1)) && this->target->GetY() < me->GetY())
+			shouldJump = true;
 
 		if(jumpEnabled && shouldJump)
 		{

@@ -951,6 +951,7 @@ void ResolveTop(Creature &p)
 	}
 	if(collisionFound)
 	{
+		p.jumptime = 0;
 		if(p.pushedFrom.bottom)
 		{
 			p.Crush();

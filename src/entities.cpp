@@ -1413,7 +1413,10 @@ void Creature::Die()
 
 void Creature::TouchSpikes()
 {
-	this->TakeDamage(25);
+	if(!this->IsAI())
+	{
+		this->TakeDamage(25);
+	}
 }
 
 std::vector<SDL_Point> CalcLightningPoints(SDL_Point from, DIRECTIONS direction)

@@ -1377,12 +1377,12 @@ void EntityCleanup()
 
 void Creature::MoveUp()
 {
-	this->accel.y = -0.7;
+	this->accel.y = -0.02;
 }
 
 void Creature::MoveDown()
 {
-	this->accel.y = 0.7;
+	this->accel.y = 0.02;
 }
 
 void Creature::Shoot()

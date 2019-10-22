@@ -130,7 +130,7 @@ class AI_HomingMissile: public BaseAI
 		AI_HomingMissile(Creature *c) : BaseAI(c)
 		{
 			distanceToReach = 130;
-			timeToTrigger = std::vector<double> { SecToTicks(0.02), SecToTicks(2) };
+			timeToTrigger = std::vector<double> { SecToTicks(0.2), SecToTicks(2) };
 			timerTime = std::vector<double>{ 0 ,0};
 			followTargetInAir = true;
 		};

@@ -507,7 +507,7 @@ void Level::LoadPlayer()
 {
 	Player* player = Game::CreatePlayer();
 	player->SetPos(playerSpawn.x, playerSpawn.y);
-	player->GiveWeapon(WEAPON_FIREBALL);
+	player->SetAbilities(ABILITY_FIRE);
 }
 
 void Level::LoadNonRandomElements()

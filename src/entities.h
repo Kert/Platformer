@@ -229,6 +229,7 @@ class Creature : public DynamicEntity
 		void AttachTo(Machinery *machy);
 		void Crush();
 		void TouchSpikes();
+		WEAPONS GetWeapon();
 };
 
 struct CreatureData
@@ -265,7 +266,7 @@ class Player : public Creature
 		double fireDelay[NUMWEAPONS]; // Time in ms
 		bool chargedColored = false;
 		int idleTimer;
-
+		ABILITIES abilities[MAX_ABILITIES];
 	public:
 		Player();
 		~Player();
@@ -276,6 +277,12 @@ class Player : public Creature
 		bool CanMoveWhileFiring();
 		void ToggleChargedColor();
 		void DisableChargedColor();
+		bool HasAbility(ABILITIES a);
+		bool HasAbilities();
+		void SetAbilities(ABILITIES first, ABILITIES second = ABILITY_NONE);
+		ABILITIES GetAbility(int index);
+		bool IsUltraAbility(ABILITIES a);
+		bool IsOnlyAbility(ABILITIES a);
 };
 
 class Pickup : public StaticEntity

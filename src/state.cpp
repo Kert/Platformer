@@ -19,33 +19,54 @@ CreatureState* CreatureState::HandleInput(int input, int type)
 			switch(input)
 			{
 				case BIND_FIRE:
-					if(p->shottime == 0)
+				{
+					if(!p->HasAbilities())
+						break;
+					WEAPONS weapon = cr->GetWeapon();
+					if(weapon != WEAPON_NONE)
 					{
-						p->shottime = p->fireDelay[p->weapon];
-						if(p->ammo[p->weapon] && p->weapon == WEAPON_GRENADE)
+						if(p->shottime == 0)
 						{
-							p->ammo[p->weapon]--;
-							ProcessShot(p->weapon, *cr);
+							p->shottime = p->fireDelay[weapon];
+
+							switch(weapon)
+							{
+								case WEAPON_GRENADE:
+									if(p->ammo[weapon])
+									{
+										p->ammo[weapon]--;
+										ProcessShot(weapon, *cr);
+									}
+									break;
+								case WEAPON_LIGHTNING:
+									ProcessShot(weapon, *cr);
+									break;
+								case WEAPON_FIREBALL:
+									if(p->ammo[weapon])
+									{
+										p->ammo[weapon]--;
+										ProcessShot(weapon, *cr);
+										if(p->IsUltraAbility(ABILITY_FIRE))
+										{
+											p->charging = true;
+											p->charge_time = SecToTicks(0.7);
+										}
+									}
+									break;
+								case WEAPON_AIRGUST:
+									if(p->ammo[weapon])
+									{
+										p->ammo[weapon]--;
+										ProcessShot(weapon, *cr);
+									}
+									break;
+							}							
+							p->sprite->shootingAnimTimer = SHOOTING_ANIM_DURATION;
 						}
-						if(p->weapon == WEAPON_LIGHTNING)
-						{
-							ProcessShot(p->weapon, *cr);
-						}
-						if(p->ammo[p->weapon] && p->weapon == WEAPON_FIREBALL)
-						{
-							p->ammo[p->weapon]--;
-							p->charging = true;
-							ProcessShot(p->weapon, *cr);
-							p->charge_time = SecToTicks(0.7);
-						}
-						if(p->ammo[p->weapon] && p->weapon == WEAPON_AIRGUST)
-						{
-							p->ammo[p->weapon]--;
-							ProcessShot(p->weapon, *cr);
-						}
-						p->sprite->shootingAnimTimer = SHOOTING_ANIM_DURATION;
+						break;
 					}
 					break;
+				}
 				case BIND_SWITCH:
 					//if(!p->hasState(STATE_SHOOTING))
 					//	p->SwitchWeapon();
@@ -84,9 +105,9 @@ CreatureState* CreatureState::HandleInput(int input, int type)
 			switch(input)
 			{
 				case BIND_FIRE:
-					if(cr->weapon == WEAPON_FIREBALL)
+					if(cr->GetWeapon() == WEAPON_FIREBALL)
 					{
-						if(cr->charging && cr->charge_time == 0)
+						if(p->IsUltraAbility(ABILITY_FIRE) && cr->charging && cr->charge_time == 0)
 						{
 							if(!IsInRain(*p))
 							{
@@ -244,7 +265,7 @@ CreatureState* InAirState::HandleInput(int input, int type)
 			switch(input)
 			{
 				case BIND_JUMP:
-					if(cr->weapon == WEAPON_AIRGUST && !cr->doubleJumped)
+					if(p->HasAbility(ABILITY_WIND) && !cr->doubleJumped)
 					{
 						cr->doubleJumped = true;
 						return new JumpingState(cr);

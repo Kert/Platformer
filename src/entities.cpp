@@ -201,6 +201,10 @@ Player::Player()
 
 	ammo[WEAPON_FIREBALL] = 3;
 	ammo[WEAPON_AIRGUST] = 2;
+
+	abilities[0] = ABILITY_NONE;
+	abilities[1] = ABILITY_NONE;
+
 	//Initialize the velocity
 	SetVelocity(0, 0);
 	
@@ -209,6 +213,87 @@ Player::Player()
 	Graphics::InitPlayerTexture();
 
 	state = new OnGroundState(this);	
+}
+
+ABILITIES Player::GetAbility(int index)
+{
+	if(index >= MAX_ABILITIES)
+	{
+		PrintLog(LOG_IMPORTANT, "Incorrect ability index %d in Player::GetAbility", index);
+		index = 0;
+	}
+	return abilities[index];
+}
+
+bool Player::HasAbility(ABILITIES a)
+{
+	return GetAbility(0) == a || GetAbility(1) == a;
+}
+
+bool Player::HasAbilities()
+{
+	return GetAbility(0) != ABILITY_NONE || GetAbility(1) != ABILITY_NONE;
+}
+
+bool Player::IsOnlyAbility(ABILITIES a)
+{
+	return GetAbility(0) == a && GetAbility(1) == ABILITY_NONE ||
+		   GetAbility(1) == a && GetAbility(0) == ABILITY_NONE;
+}
+
+bool Player::IsUltraAbility(ABILITIES a)
+{
+	return GetAbility(0) == a && GetAbility(1) == a;
+}
+
+void Player::SetAbilities(ABILITIES first, ABILITIES second)
+{
+	abilities[0] = first;
+	abilities[1] = second;
+	
+	if(IsOnlyAbility(ABILITY_FIRE))
+	{
+		GiveWeapon(WEAPON_FIREBALL);
+		Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 0, 0, 255 });
+		Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 255, 0, 0, 255 });
+	}
+	if(IsUltraAbility(ABILITY_FIRE))
+	{
+		// probably a bigger fireball
+		GiveWeapon(WEAPON_FIREBALL);
+	}
+	
+	
+	if(IsOnlyAbility(ABILITY_SPARK))
+	{
+		// GiveWeapon(WEAPON_EMP);
+		GiveWeapon(WEAPON_LIGHTNING);
+		Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
+		Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 0, 0, 255, 255 });
+	}
+	//if(IsUltraAbility(ABILITY_SPARK))
+	// full screen stun in rain?
+	
+	if(IsOnlyAbility(ABILITY_WIND))
+	{
+		GiveWeapon(WEAPON_AIRGUST);
+		Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 255, 255, 255 });
+		Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 255, 255, 255, 255 });
+	}
+	//if(IsUltraAbility(ABILITY_WIND))
+    // Add FUS RO DAH
+
+	//if(IsOnlyAbility(ABILITY_ICE))
+	//	GiveWeapon(WEAPON_ICETRIPLE);
+	//if(IsUltraAbility(ABILITY_ICE))
+    // Add enemy freezing + hail
+	
+	if(GetAbility(0) == ABILITY_NONE)
+	{
+		Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
+	}
+
+	ChangeInterfaceFrame(first - 1, INTERFACE_ABILITY);
 }
 
 void Player::SwitchWeapon()
@@ -225,31 +310,8 @@ void Player::SwitchWeapon()
 
 void Player::SwitchWeapon(WEAPONS newWeap)
 {
-	if(ownedWeapons[newWeap]) weapon = newWeap;
-	switch(weapon)
-	{
-		case WEAPON_FIREBALL:
-		{
-			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 0, 0, 255 });
-			Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 255, 0, 0, 255 });
-			break;
-		}
-		case WEAPON_LIGHTNING:
-		{
-			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
-			Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 0, 0, 255, 255 });
-			break;
-		}
-		case WEAPON_AIRGUST:
-		{
-			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 255, 255, 255, 255 });
-			Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 255, 255, 255, 255 });
-			break;
-		}
-		default:
-			Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
-	}
-	ChangeInterfaceFrame(weapon, INTERFACE_ABILITY);
+	if(ownedWeapons[newWeap])
+		weapon = newWeap;
 }
 
 void Player::GiveWeapon(WEAPONS weap)
@@ -555,6 +617,7 @@ Creature::Creature()
 	charging = false;
 	onMachinery = false;
 	jump_accel = -0.05;
+	weapon = WEAPON_NONE;
 
 	state = new InAirState(this);
 	// creatures are leaking a few bytes when created, something to do with DamageSource it seems like?
@@ -586,6 +649,11 @@ void Creature::AttachTo(Machinery *machy)
 void Creature::Crush()
 {
 	this->TakeDamage(25);
+}
+
+WEAPONS Creature::GetWeapon()
+{
+	return weapon;
 }
 
 void Entity::GetPos(double &x, double &y)

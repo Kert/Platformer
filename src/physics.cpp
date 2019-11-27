@@ -1259,6 +1259,12 @@ void OnHitboxCollision(Creature &c, Creature &e, double ticks)
 		Sound::PlaySfx("player_hit");
 		c.TakeDamage(25);
 		ApplyKnockback(c, e);
+		Player *player = Game::GetPlayer();
+		if(&c == (Creature*)player && player->HasAbility(ABILITY_SPARK))
+		{
+			e.TakeDamage(25);
+			ApplyKnockback(e, c);
+		}			
 	}
 }
 

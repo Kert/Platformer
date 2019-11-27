@@ -27,7 +27,7 @@ void OnHitboxCollision(Creature &p, Creature &e, double ticks);
 void OnHitboxCollision(Creature &c, Pickup &p, double ticks);
 
 std::pair<double, double> GetAngleSinCos(DynamicEntity &shooter);
-std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity);
+std::pair<std::vector<Creature*>, std::vector<Machinery*>> CheckForCollision(Bullet *entity);
 void ProcessShot(WEAPONS weapon, Creature &shooter);
 bool IsInDeathZone(Creature &c);
 bool IsOnIce(Creature &c);

@@ -732,24 +732,34 @@ bool ApplyPhysics(Bullet &b, double ticks)
 	}
 
 	bool complete = false;
-	std::pair<Creature*, Machinery*> wasHit;
+	std::pair<std::vector<Creature*>, std::vector<Machinery*>> wasHit;
 	wasHit = CheckForCollision(&b);
-	// do not allow enemies to damage other enemies
 	Player *player = Game::GetPlayer();
-	if(b.owner == player || b.owner != player && wasHit.first == player)
+	for(auto &cr : wasHit.first)
 	{
-		if(wasHit.first != nullptr && wasHit.first != b.owner)
+		// do not allow enemies to damage other enemies
+		if(b.owner == player || b.owner != player && cr == player)
 		{
-			if(!b.piercing && wasHit.first->status == STATUS_NORMAL)
-				complete = true;
-			wasHit.first->ProcessBulletHit(&b);
+			if(cr != nullptr && cr != b.owner)
+			{
+				if(!b.piercing && cr->status == STATUS_NORMAL)
+					complete = true;
+				cr->ProcessBulletHit(&b);
+			}
+		}		
+	}
+	for(auto &ma : wasHit.second)
+	{
+		if(ma != nullptr && ma->solid)
+		{
+			if(ma->destructable && b.origin == WEAPON_ROCKETL)
+				ma->~Machinery();
+			complete = true;
 		}
 	}
-	if(wasHit.second != nullptr && wasHit.second->solid)
-	{
-		if(wasHit.second->destructable && b.origin == WEAPON_ROCKETL) wasHit.second->~Machinery();
-		complete = true;
-	}
+	
+	
+	
 
 	int tileX = (int)(ceil((double)(x + (b.hitbox->GetRect().w * b.direction)) / (TILESIZE)) - 0.5);
 	int tileY = ConvertToTileCoord(y - b.hitbox->GetRect().h / 2, 0);
@@ -813,7 +823,7 @@ bool ApplyPhysics(Bullet &b, double ticks)
 		complete = true;
 	}
 
-	if(complete && b.origin != WEAPON_FLAME)
+	if(complete && b.origin != WEAPON_FLAME && b.origin != WEAPON_EMP)
 	{
 		Effect *effect;
 		switch(b.origin)
@@ -1219,32 +1229,26 @@ bool UpdateStatus(Pickup &e, double ticks) // used for static entity death proce
 }
 
 // Returns pointers to entities that were hit
-std::pair<Creature*, Machinery*> CheckForCollision(Bullet *entity)
+std::pair<std::vector<Creature*>, std::vector<Machinery*>> CheckForCollision(Bullet *entity)
 {
-	Creature* c = NULL;
-	Machinery* m = NULL;
+	std::vector<Creature*> c;
+	std::vector<Machinery*> m;
 	for(auto &j : creatures)
 	{
 		if(j == nullptr)
 			continue;
 		if(entity->hitbox->HasCollision(j->hitbox))
-		{
-			c = j;
-			break;
-		}
+			c.push_back(j);
 	}
 	Player *player = Game::GetPlayer();
 	if(entity->hitbox->HasCollision(player->hitbox))
-		c = player;
+		c.push_back(player);
 	for(auto &ma : machinery)
 	{
 		if(entity->hitbox->HasCollision(ma->hitbox))
-		{
-			m = ma;
-			break;
-		}
+			m.push_back(ma);
 	}
-	return std::pair<Creature*, Machinery*>(c, m);
+	return std::pair<std::vector<Creature*>, std::vector<Machinery*>>(c, m);
 }
 
 void OnHitboxCollision(Creature &c, Creature &e, double ticks)

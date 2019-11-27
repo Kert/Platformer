@@ -38,7 +38,7 @@ CreatureState* CreatureState::HandleInput(int input, int type)
 										ProcessShot(weapon, *cr);
 									}
 									break;
-								case WEAPON_LIGHTNING:
+								case WEAPON_LIGHTNING: case WEAPON_EMP:
 									ProcessShot(weapon, *cr);
 									break;
 								case WEAPON_FIREBALL:

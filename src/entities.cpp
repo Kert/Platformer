@@ -266,8 +266,7 @@ void Player::SetAbilities(ABILITIES first, ABILITIES second)
 	
 	if(IsOnlyAbility(ABILITY_SPARK))
 	{
-		// GiveWeapon(WEAPON_EMP);
-		GiveWeapon(WEAPON_LIGHTNING);
+		GiveWeapon(WEAPON_EMP);
 		Graphics::ChangePlayerColor(PLAYER_BODY_SPECIAL, { 0, 0, 255, 255 });
 		Graphics::ChangePlayerColor(PLAYER_BODY_TAIL, { 0, 0, 255, 255 });
 	}
@@ -349,6 +348,7 @@ void Player::ResetWeapons()
 	fireDelay[WEAPON_LIGHTNING] = SecToTicks(1.5);
 	fireDelay[WEAPON_FIREBALL] = SecToTicks(0.1);
 	fireDelay[WEAPON_AIRGUST] = SecToTicks(0.2);
+	fireDelay[WEAPON_EMP] = SecToTicks(1.5);
 }
 
 bool Player::CanMoveWhileFiring()
@@ -1114,6 +1114,16 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			statusTimer = lifetime;
 			piercing = false;
 			break;
+		case WEAPON_EMP:
+			hitbox = LoadEntityHitbox("assets/data/graphics/emp.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/emp.ini");
+			SetVelocity(0, 0);
+			accel.y = 0;
+			accel.x = 0;
+			lifetime = SecToTicks(0.5);
+			statusTimer = lifetime;
+			piercing = false;
+			break;
 	}
 	origin = firedFrom;
 }
@@ -1174,6 +1184,11 @@ void Creature::ProcessBulletHit(Bullet *b)
 			break;
 		}
 		case WEAPONS::WEAPON_AIRGUST:
+		{
+			damage = 25;
+			break;
+		}
+		case WEAPONS::WEAPON_EMP:
 		{
 			damage = 25;
 			break;

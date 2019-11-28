@@ -59,7 +59,8 @@ void Sprite::Animate()
 
 void Sprite::SetCurrentFrame(int frame)
 {
-	animation.at(current_anim).Animate(rect.x, rect.y);
+	animation.at(current_anim).ShowFrame(frame, rect.x, rect.y);
+	current_anim = ANIMATION_NONE;
 }
 
 ANIMATION_TYPE Sprite::GetAnimation()

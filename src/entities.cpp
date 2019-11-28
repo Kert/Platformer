@@ -282,8 +282,8 @@ void Player::SetAbilities(ABILITIES first, ABILITIES second)
 	//if(IsUltraAbility(ABILITY_WIND))
     // Add FUS RO DAH
 
-	//if(IsOnlyAbility(ABILITY_ICE))
-	//	GiveWeapon(WEAPON_ICETRIPLE);
+	if(IsOnlyAbility(ABILITY_ICE))
+		GiveWeapon(WEAPON_ICETRIPLE);
 	//if(IsUltraAbility(ABILITY_ICE))
     // Add enemy freezing + hail
 	
@@ -349,6 +349,7 @@ void Player::ResetWeapons()
 	fireDelay[WEAPON_FIREBALL] = SecToTicks(0.1);
 	fireDelay[WEAPON_AIRGUST] = SecToTicks(0.2);
 	fireDelay[WEAPON_EMP] = SecToTicks(1.5);
+	fireDelay[WEAPON_ICETRIPLE] = SecToTicks(0.4);
 }
 
 bool Player::CanMoveWhileFiring()
@@ -1124,6 +1125,16 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			statusTimer = lifetime;
 			piercing = false;
 			break;
+		case WEAPON_ICETRIPLE:
+			hitbox = LoadEntityHitbox("assets/data/graphics/icetriple.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/icetriple.ini");
+			SetVelocity(0, 0);
+			accel.y = 0;
+			accel.x = 0;
+			lifetime = SecToTicks(0.8);
+			statusTimer = lifetime;
+			piercing = false;
+			break;
 	}
 	origin = firedFrom;
 }
@@ -1189,6 +1200,11 @@ void Creature::ProcessBulletHit(Bullet *b)
 			break;
 		}
 		case WEAPONS::WEAPON_EMP:
+		{
+			damage = 25;
+			break;
+		}
+		case WEAPONS::WEAPON_ICETRIPLE:
 		{
 			damage = 25;
 			break;

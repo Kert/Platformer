@@ -66,7 +66,36 @@ void ProcessShot(WEAPONS weapon, Creature &shooter)
 			adjustedX = rect.x - bullet->hitbox->GetRect().w / 4 - rect.w / 2;
 			adjustedY = rect.y + bullet->hitbox->GetRect().h / 4 + rect.h;
 		}
+
 		bullet->SetPos(adjustedX, adjustedY);
+
+		if(weapon == WEAPON_ICETRIPLE)
+		{
+			const double ICICLE_VEL = 4;
+			bullet->SetPos(adjustedX, adjustedY);
+			if(shooter.direction == DIRECTION_RIGHT)
+				bullet->SetVelocity(ICICLE_VEL, 0);
+			else
+				bullet->SetVelocity(-ICICLE_VEL, 0);
+			bullet->sprite->SetAnimation(ANIMATION_STANDING);
+			bullet->sprite->SetCurrentFrame(1);
+
+			Bullet *iceUp = new Bullet(weapon, shooter);
+			iceUp->SetPos(adjustedX, adjustedY);
+			iceUp->SetVelocity(0, -ICICLE_VEL);
+			iceUp->sprite->SetAnimation(ANIMATION_STANDING);
+			iceUp->sprite->SetCurrentFrame(2);
+
+			Bullet *iceDiagonal = new Bullet(weapon, shooter);
+			iceDiagonal->SetPos(adjustedX, adjustedY);
+			if(shooter.direction == DIRECTION_RIGHT)
+				iceDiagonal->SetVelocity(ICICLE_VEL / 2, -ICICLE_VEL / 2);
+			else
+				iceDiagonal->SetVelocity(-ICICLE_VEL / 2, -ICICLE_VEL / 2);
+			iceDiagonal->sprite->SetAnimation(ANIMATION_STANDING);
+			iceDiagonal->sprite->SetCurrentFrame(3);
+		}
+
 	}
 	else
 	{

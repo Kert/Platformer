@@ -7,7 +7,7 @@
 
 extern std::vector<Machinery*> machinery;
 
-const double SHOOTING_ANIM_DURATION = SecToTicks(0.03);
+const double SHOOTING_ANIM_DURATION = SecToTicks(0.4);
 CreatureState* CreatureState::HandleInput(int input, int type)
 {
 	// if creature == player do

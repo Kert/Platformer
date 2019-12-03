@@ -204,6 +204,11 @@ namespace Game
 
 		for(auto &b : bullets)
 		{
+			if(b->REMOVE_ME)
+			{
+				delete b;
+				continue;
+			}
 			ApplyPhysics(*b, ticks);
 		}
 		CleanFromNullPointers(&bullets);

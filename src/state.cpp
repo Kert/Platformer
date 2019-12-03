@@ -20,6 +20,21 @@ CreatureState* CreatureState::HandleInput(int input, int type)
 			{
 				case BIND_FIRE:
 				{
+					if(p->IsOnlyAbility(ABILITY_ROCK))
+					{
+						if(!p->pickedBlock)
+						{
+							p->pickedBlock = PickBlock(p, p->direction);
+							if(p->pickedBlock)
+								break;
+						}
+						else
+						{
+							ProcessShot(WEAPON_BLOCK, *cr);
+							p->pickedBlock = nullptr;
+							break;
+						}
+					}
 					if(!p->HasAbilities())
 						break;
 					WEAPONS weapon = cr->GetWeapon();
@@ -191,12 +206,12 @@ CreatureState* OnGroundState::HandleInput(int input, int type)
 						{
 							p->SetY(p->GetY() + 2);
 							p->onMachinery = false;
-							p->attached = nullptr;
+							p->Detach();
 						}
 					}						
 					else
 						return new JumpingState(cr);
-					break;						
+					break;
 				default:
 					CreatureState::HandleInput(input, type);
 			}
@@ -373,7 +388,7 @@ JumpingState::JumpingState(Creature *cr) : CreatureState(cr)
 	PrintLog(LOG_DEBUG, "Switched to JUMPING");
 	cr->jumptime = 14;
 	cr->SetVelocity(cr->GetVelocity().x, -1.75);
-	cr->attached = false;
+	cr->Detach();
 	cr->onMachinery = false;
 	//Play the jump sound
 	if(!cr->IsAI())
@@ -480,11 +495,11 @@ CreatureState* HangingState::HandleInput(int input, int type)
 					break;
 				case BIND_DOWN:
 					p->lefthook = true;
-					p->attached = nullptr;
+					p->Detach();
 					return new InAirState(cr);
 				case BIND_JUMP:
 					p->lefthook = true;
-					p->attached = nullptr;
+					p->Detach();
 					if(IsBindPressed(BIND_DOWN))
 						return new InAirState(cr);
 					else

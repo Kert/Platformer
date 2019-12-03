@@ -107,13 +107,17 @@ class DynamicEntity : public Entity
 		bool ignoreWorld = 0;
 		bool ignoreGravity = 0;
 		double gravityMultiplier = 1;
-
+		DynamicEntity *attached;
+		double attX;
+		double attY;
 	public:
 		~DynamicEntity();
 		Velocity GetVelocity();
 		bool isMoving(bool onlyX);
 		void SetVelocity(Velocity vel);
 		void SetVelocity(double x, double y);
+		void AttachTo(DynamicEntity *e);
+		void Detach();
 		virtual void Remove();
 };
 
@@ -131,6 +135,7 @@ class Bullet : public DynamicEntity
 		WEAPONS origin;
 		double lifetime; // Time in ticks
 		bool piercing;
+		int damage;
 
 	public:
 		Bullet();
@@ -176,9 +181,6 @@ class Creature : public DynamicEntity
 		double charge_time;
 		bool nearhookplatform;
 		bool lefthook;
-		Machinery *attached;
-		double attX;
-		double attY;
 		int interactTarget;
 		BaseAI *AI = nullptr;
 		WEAPONS weapon;
@@ -189,6 +191,7 @@ class Creature : public DynamicEntity
 		bool charging;
 		bool onMachinery;
 		bool doubleJumped = false; // air ability specific
+		Bullet *pickedBlock = nullptr;
 		struct
 		{
 			bool left;
@@ -226,7 +229,6 @@ class Creature : public DynamicEntity
 		void SetState(CreatureState *newState);
 		void HandleInput(int input, int type);
 		void HandleStateIdle();
-		void AttachTo(Machinery *machy);
 		void Crush();
 		void TouchSpikes();
 		WEAPONS GetWeapon();

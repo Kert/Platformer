@@ -640,11 +640,17 @@ bool Creature::IsAI()
 	return !(this->AI == nullptr);
 }
 
-void Creature::AttachTo(Machinery *machy)
+void DynamicEntity::AttachTo(DynamicEntity *e)
 {
-	attached = machy;
-	attX = xNew - machy->GetX();
-	attY = yNew - machy->GetY() + machy->hitbox->GetPRect().h;
+	attached = e;
+	attX = xNew - e->GetX();
+	attY = yNew - e->GetY() + e->hitbox->GetPRect().h;
+}
+
+void DynamicEntity::Detach()
+{
+	attached = nullptr;
+	attX = attY = 0;
 }
 
 void Creature::Crush()
@@ -1031,6 +1037,8 @@ Bullet::Bullet()
 
 	origin = WEAPON_FLAME;
 	direction = DIRECTION_RIGHT;
+	attached = nullptr;
+	damage = 25;
 }
 
 // Bullets are leaking memory and I don't know why
@@ -1040,6 +1048,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 	entityID = AssignEntityID(LIST_BULLETS);
 	owner = &shooter;
 	direction = shooter.direction;
+	attached = nullptr;
 
 	std::pair<double, double> angles = GetAngleSinCos(shooter);
 
@@ -1054,6 +1063,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(1);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 50;
 			break;
 		case WEAPON_FLAME:
 			hitbox = LoadEntityHitbox("assets/data/graphics/flame.ini");
@@ -1064,6 +1074,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(0.3);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 30;
 			break;
 		case WEAPON_GRENADE:
 			hitbox = LoadEntityHitbox("assets/data/graphics/grenade.ini");
@@ -1074,6 +1085,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(3);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 50;
 			break;
 		case WEAPON_FIREBALL:
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
@@ -1084,6 +1096,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(2);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 25;
 			break;
 		case WEAPON_BOMBDROP:
 			hitbox = LoadEntityHitbox("assets/data/graphics/bombdrop.ini");
@@ -1094,6 +1107,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(15);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 25;
 			break;
 		case WEAPON_GROUNDSHOCKWAVE:
 			hitbox = LoadEntityHitbox("assets/data/graphics/fireball.ini");
@@ -1104,6 +1118,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(0.5);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 25;
 			break;
 		case WEAPON_AIRGUST:
 			hitbox = LoadEntityHitbox("assets/data/graphics/airgust.ini");
@@ -1114,6 +1129,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(2);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 25;
 			break;
 		case WEAPON_EMP:
 			hitbox = LoadEntityHitbox("assets/data/graphics/emp.ini");
@@ -1124,6 +1140,7 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(0.5);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 25;
 			break;
 		case WEAPON_ICETRIPLE:
 			hitbox = LoadEntityHitbox("assets/data/graphics/icetriple.ini");
@@ -1134,6 +1151,18 @@ Bullet::Bullet(WEAPONS firedFrom, Creature &shooter)
 			lifetime = SecToTicks(0.8);
 			statusTimer = lifetime;
 			piercing = false;
+			damage = 25;
+			break;
+		case WEAPON_BLOCK:
+			hitbox = LoadEntityHitbox("assets/data/graphics/block.ini");
+			sprite = LoadEntitySprite("assets/data/graphics/block.ini");
+			SetVelocity(0, 0);
+			accel.y = 0;
+			accel.x = 0;
+			lifetime = SecToTicks(2);
+			statusTimer = lifetime;
+			piercing = true;
+			damage = 0;
 			break;
 	}
 	origin = firedFrom;
@@ -1161,56 +1190,7 @@ void Creature::ProcessBulletHit(Bullet *b)
 		hitFrom.push_back(d);
 	}
 
-	int damage = 0;
-	switch(b->origin)
-	{
-		case WEAPONS::WEAPON_ROCKETL:
-		{
-			damage = 50;
-			break;
-		}
-		case WEAPONS::WEAPON_FLAME:
-		{
-			damage = 30;
-			break;
-		}
-		case WEAPONS::WEAPON_GRENADE:
-		{
-			damage = 50;
-			break;
-		}
-		case WEAPONS::WEAPON_FIREBALL:
-		{
-			damage = 25;
-			break;
-		}
-		case WEAPONS::WEAPON_BOMBDROP:
-		{
-			damage = 25;
-			break;
-		}
-		case WEAPONS::WEAPON_GROUNDSHOCKWAVE:
-		{
-			damage = 25;
-			break;
-		}
-		case WEAPONS::WEAPON_AIRGUST:
-		{
-			damage = 25;
-			break;
-		}
-		case WEAPONS::WEAPON_EMP:
-		{
-			damage = 25;
-			break;
-		}
-		case WEAPONS::WEAPON_ICETRIPLE:
-		{
-			damage = 25;
-			break;
-		}
-	}
-	this->TakeDamage(damage);
+	this->TakeDamage(b->damage);
 	if(this == Game::GetPlayer())
 		ApplyKnockback(*this, *(Creature*)b->owner);
 }

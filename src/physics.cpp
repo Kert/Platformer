@@ -35,10 +35,13 @@ void ProcessShot(WEAPONS weapon, Creature &shooter)
 {
 	const int offset_weapon_y = 1;
 
-	if(weapon != WEAPONS::WEAPON_LIGHTNING)
+	if(weapon == WEAPONS::WEAPON_LIGHTNING)
+		Lightning *lightning = new Lightning(shooter);
+	else
 	{
 		// LEAK: bullets created here aren't properly disposed??
 		Bullet *bullet = new Bullet(weapon, shooter);
+		bullet->status = STATUS_DYING;
 		SDL_Rect rect = shooter.hitbox->GetRect();
 		if(shooter.state->Is(CREATURE_STATES::DUCKING))
 		{
@@ -96,11 +99,18 @@ void ProcessShot(WEAPONS weapon, Creature &shooter)
 			iceDiagonal->sprite->SetCurrentFrame(3);
 		}
 
+		if(weapon == WEAPON_BLOCK)
+		{
+			bullet->REMOVE_ME = true;
+			bullet = shooter.pickedBlock;
+			bullet->Detach();
+			bullet->damage = 50;
+			bullet->status = STATUS_DYING;
+			bullet->SetPos(adjustedX, adjustedY);
+			bullet->SetVelocity(4 * (shooter.direction ? 1 : -1), 0);
+		}
 	}
-	else
-	{
-		Lightning *lightning = new Lightning(shooter);
-	}
+
 	switch(weapon)
 	{
 		case WEAPONS::WEAPON_ROCKETL:
@@ -261,7 +271,7 @@ void DetectAndResolveEntityCollisions(Creature &p)
 		if(p.attached)
 			p.SetState(CREATURE_STATES::INAIR);
 		p.onMachinery = false;
-		p.attached = nullptr;
+		p.Detach();
 		p.nearhookplatform = false;
 	}
 
@@ -747,18 +757,36 @@ bool ApplyPhysics(Bullet &b, double ticks)
 	vel.y += accel.y;
 	vel.x += accel.x;
 
-	b.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
-	if(IsInRain(b) && b.origin == WEAPON_FIREBALL)
-		b.statusTimer -= IN_RAIN_FIREBALL_DECAY_MULTIPLIER * ticks * PHYSICS_SPEED_FACTOR;
-	else
-		b.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
-
-	if(b.statusTimer <= 0)
+	if(b.attached)
 	{
-		b.statusTimer = 0;
-		b.Remove();
-		return false;
+		b.attached->GetPos(x, y);
+		x += b.attX;
+		y += b.attY;
+		vel.x = vel.y = 0;
 	}
+
+	if(b.status == STATUS_DYING)
+	{
+		b.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
+		if(IsInRain(b) && b.origin == WEAPON_FIREBALL)
+			b.statusTimer -= IN_RAIN_FIREBALL_DECAY_MULTIPLIER * ticks * PHYSICS_SPEED_FACTOR;
+		else
+			b.statusTimer -= ticks * PHYSICS_SPEED_FACTOR;
+
+		if(b.statusTimer <= 0)
+		{
+			b.statusTimer = 0;
+			b.Remove();
+			return false;
+		}
+	}
+
+	if(!b.damage)
+	{
+		b.SetVelocity(vel);
+		b.SetPos(x, y);
+		return true;
+	}		
 
 	bool complete = false;
 	std::pair<std::vector<Creature*>, std::vector<Machinery*>> wasHit;
@@ -1320,4 +1348,61 @@ void ApplyKnockback(Creature &p, Creature &e)
 {
 	DIRECTIONS knockbackDirection = static_cast<DIRECTIONS>(e.GetX() > p.GetX() ? 1 : -1);
 	ApplyKnockback(p, knockbackDirection);
+}
+
+Bullet* PickBlock(Creature *cr, DIRECTIONS dir)
+{
+	const int MAX_PICK_HEIGHT = 2 * TILESIZE;
+
+	int minx, maxx;
+	if(dir == DIRECTION_RIGHT)
+	{
+		minx = ConvertToTileCoord(cr->GetX(), false);
+		maxx = ConvertToTileCoord(cr->GetX() + cr->hitbox->GetRect().w, false);
+	}
+	else
+	{
+		minx = ConvertToTileCoord(cr->GetX() - 1, false);
+		maxx = ConvertToTileCoord(cr->GetX() + cr->hitbox->GetRect().w, false);
+	}
+
+	int head = ConvertToTileCoord(cr->GetY() - MAX_PICK_HEIGHT, false);
+	int feet = ConvertToTileCoord(cr->GetY(), false);
+	
+	for(int x = minx; x <= maxx; x++)
+	{
+		for(int y = head; y < feet; y++)
+		{
+			PHYSICS_TYPES type = GetTileTypeAtTiledPos(x, y);
+			switch(type)
+			{
+				case PHYSICS_ICEBLOCK:
+				{
+					for(auto &layer : tileLayers)
+					{
+						Tile *tile = layer.tiles[x][y];
+						if(tile != nullptr)
+						{
+							if(tile->type == PHYSICS_ICEBLOCK)
+							{
+								delete tile;
+							}
+						}
+					}
+					Bullet *bullet = new Bullet(WEAPON_BLOCK, *cr);
+					if(type == PHYSICS_ICEBLOCK)
+					{
+						bullet->sprite->SetAnimation(ANIMATION_STANDING);
+						bullet->sprite->SetCurrentFrame(0);
+					}
+					bullet->status = STATUS_NORMAL;
+					bullet->AttachTo(cr);
+					bullet->attX = 0;
+					bullet->attY = -cr->hitbox->GetRect().h;
+					return bullet;
+				}
+			}
+		}
+	}
+	return nullptr;
 }

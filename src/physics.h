@@ -35,5 +35,6 @@ bool IsOnPlatform(Creature &c);
 bool IsInRain(DynamicEntity &c);
 bool IsSolid(PHYSICS_TYPES type);
 bool HasCeilingRightAbove(DynamicEntity &c);
+Bullet* PickBlock(Creature *cr, DIRECTIONS dir);
 
 #endif

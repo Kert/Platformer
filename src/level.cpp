@@ -180,22 +180,20 @@ void Level::LoadLevelFromFile(std::string filename)
 		tileLayerData.parallaxOffsetY = 0;
 		tileLayerData.parallaxDepthX = 1;
 		tileLayerData.parallaxDepthY = 1;
-		TiXmlElement* prop = curLayer->FirstChildElement("properties");
-		if(prop)
-		{
-			for(TiXmlElement* curProp = prop->FirstChildElement("property"); curProp != NULL; curProp = curProp->NextSiblingElement("property"))
-			{
-				std::string propName = curProp->Attribute("name");
-				if(propName == "parallaxOffsetX")
-					tileLayerData.parallaxOffsetX = atoi(curProp->Attribute("value"));
-				else if(propName == "parallaxOffsetY")
-					tileLayerData.parallaxOffsetY = atoi(curProp->Attribute("value"));
-				else if(propName == "parallaxDepthX")
-					tileLayerData.parallaxDepthX = atof(curProp->Attribute("value"));
-				else if(propName == "parallaxDepthY")
-					tileLayerData.parallaxDepthY = atof(curProp->Attribute("value"));
-			}
-		}
+		const char * tmp;
+		tmp = curLayer->Attribute("offsetx");
+		if(tmp != NULL)
+			tileLayerData.parallaxOffsetX = atoi(tmp);
+		tmp = curLayer->Attribute("offsety");
+		if(tmp != NULL)
+			tileLayerData.parallaxOffsetY = atoi(tmp);
+		tmp = curLayer->Attribute("parallaxx");
+		if(tmp != NULL)
+			tileLayerData.parallaxDepthX = atof(tmp);
+		tmp = curLayer->Attribute("parallaxy");
+		if(tmp != NULL)
+			tileLayerData.parallaxDepthY = atof(tmp);
+
 		tileLayerData.tiles = std::vector<std::vector<Tile*>>(this->width_in_tiles, std::vector<Tile*>(this->height_in_tiles));
 		tileLayers.push_back(tileLayerData);
 		

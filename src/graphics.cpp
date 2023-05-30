@@ -389,31 +389,32 @@ namespace Graphics
 			TileLayerData *curLayer = &tileLayers[layerIndex];
 			double parallaxDepthX = curLayer->parallaxDepthX;
 			int parallaxOffsetX = curLayer->parallaxOffsetX;
-			int actualX = (int)floor(parallaxOffsetX * parallaxDepthX * TILESIZE + virtCam.x * parallaxDepthX);
-			if(scalingMode != SCALING_LETTERBOXED)
-				actualX -= (int)floor(virtCam.x - prect.x);
+
+			int actualX = (int)floor(parallaxDepthX * prect.x - parallaxOffsetX);
+			if(scalingMode == SCALING_LETTERBOXED)
+				actualX += virtCam.x - prect.x;
 			actualX /= TILESIZE;
+
 			for(int i = actualX; i <= actualX + w; i++)
 			{
 				double parallaxDepthY = curLayer->parallaxDepthY;
 				int parallaxOffsetY = curLayer->parallaxOffsetY;
-				int actualY = (int)floor(parallaxOffsetY * parallaxDepthY * TILESIZE + virtCam.y * parallaxDepthY);
-				if(scalingMode != SCALING_LETTERBOXED)
-					actualY -= (int)floor(virtCam.y - prect.y);
+				int actualY = (int)floor(parallaxDepthY * prect.y - parallaxOffsetY);
+				if(scalingMode == SCALING_LETTERBOXED)
+					actualY += virtCam.y - prect.y;
 				actualY /= TILESIZE;
+				int p = (int)floor(i * TILESIZE - prect.x * parallaxDepthX + parallaxOffsetX);
 				for(int j = actualY; j <= actualY + h; j++)
 				{
 					if(i >= 0 && j >= 0 && i < level->width_in_tiles && j < level->height_in_tiles)
 					{
-						int p = (int)floor(i * TILESIZE - virtCam.x * parallaxDepthX - parallaxOffsetX * TILESIZE * parallaxDepthX + (virtCam.x - prect.x));
-						int q = (int)floor(j * TILESIZE - virtCam.y * parallaxDepthY - parallaxOffsetY * TILESIZE * parallaxDepthY + (virtCam.y - prect.y));
-
+						int q = (int)floor(j * TILESIZE - prect.y * parallaxDepthY + parallaxOffsetY);
 						Tile *tile = curLayer->tiles[i][j];
 						if(tile != nullptr)
 						{
 							tile->Animate();
 							BlitObserveTileAt(tile, p, q);
-						}						
+						}
 					}
 				}
 			}
